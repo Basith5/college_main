@@ -137,8 +137,14 @@ async function addMark(req: Request, res: Response) {
           C1Q27: resultData.C1Q27,
           C1Q28: resultData.C1Q28,
           C1STATUS: resultData.C1STATUS,
-          STAFF:  resultData.staff,
+          C1STAFF:  resultData.C1STAFF,
           studentId: student ? student.id : 0,
+
+          C1CO1: resultData.C1Q1 + resultData.C1Q2 + resultData.C1Q5 + resultData.C1Q6 + resultData.C1Q9 + resultData.C1Q10 + resultData.C1Q13 + resultData.C1Q14 + resultData.C1Q17 + resultData.C1Q18,
+          C1CO2: resultData.C1Q3 + resultData.C1Q4 + resultData.C1Q7 + resultData.C1Q8 + resultData.C1Q11 + resultData.C1Q12 + resultData.C1Q15 + resultData.C1Q16 + resultData.C1Q19 + resultData.C1Q20 + resultData.C1Q21,
+          C1CO3: resultData.C1Q22 + resultData.C1Q23 + resultData.C1Q26,
+          C1CO4: resultData.C1Q24 + resultData.C1Q25 + resultData.C1Q27,
+          C1CO5: resultData.C1Q28,
 
           C2Q1: 0,
           C2Q2: 0,
@@ -169,6 +175,12 @@ async function addMark(req: Request, res: Response) {
           C2Q27: 0,
           C2Q28: 0,
 
+          C2CO1: 0,
+          C2CO2: 0,
+          C2CO3: 0,
+          C2CO4: 0,
+          C2CO5: 0,
+
           ESEQ1: 0,
           ESEQ2: 0,
           ESEQ3: 0,
@@ -198,8 +210,24 @@ async function addMark(req: Request, res: Response) {
           ESEQ27: 0,
           ESEQ28: 0,
 
+          ESECO1: 0,
+          ESECO2: 0,
+          ESECO3: 0,
+          ESECO4: 0,
+          ESECO5: 0,
+
+          TCO1: 0,
+          TCO2: 0,
+          TCO3: 0,
+          TCO4: 0,
+          TCO5: 0,
+
           ASG1: 0,
           ASG2: 0,
+
+          ASGCO1: 0,
+          ASGCO2: 0,
+          
         },
       });
     } 
@@ -290,6 +318,16 @@ async function addMark(req: Request, res: Response) {
           C2Q26: resultData.C2Q26,
           C2Q27: resultData.C2Q27,
           C2Q28: resultData.C2Q28,
+
+          C2CO1: resultData.C2Q1 + resultData.C2Q2 + resultData.C2Q5 + resultData.C2Q6 + resultData.C2Q9 + resultData.C2Q10 + resultData.C2Q13 + resultData.C2Q14 + resultData.C2Q17 + resultData.C2Q18,
+          C2CO2: resultData.C2Q3 + resultData.C2Q4 + resultData.C2Q7 + resultData.C2Q8 + resultData.C2Q11 + resultData.C2Q12 + resultData.C2Q15 + resultData.C2Q16 + resultData.C2Q19 + resultData.C2Q20 + resultData.C2Q21,
+          C2CO3: resultData.C2Q22 + resultData.C2Q23 + resultData.C2Q26,
+          C2CO4: resultData.C2Q24 + resultData.C2Q25 + resultData.C2Q27,
+          C2CO5: resultData.C2Q28,
+
+          C2STATUS: resultData.C2STATUS,
+          C2STAFF: resultData.C2STAFF,    //cia -2 staff initiall
+
         },
       });
     
@@ -359,7 +397,7 @@ async function addMark(req: Request, res: Response) {
       });
     
       return res.json({
-        updateAssignment,
+        studentId: updateAssignment.studentId,
         success: "ASSIGMENT MARK is updated successfully",
       });
     }
@@ -438,6 +476,14 @@ async function addMark(req: Request, res: Response) {
           ESEQ26: resultData.ESEQ26,
           ESEQ27: resultData.ESEQ27,
           ESEQ28: resultData.ESEQ28,
+
+          ESECO2: resultData.ESEQ3 + resultData.ESEQ4 + resultData.ESEQ7 + resultData.ESEQ8 + resultData.ESEQ11 + resultData.ESEQ12 + resultData.ESEQ15 + resultData.ESEQ16 + resultData.ESEQ19 + resultData.ESEQ20 + resultData.ESEQ21,
+          ESECO3: resultData.ESEQ22 + resultData.ESEQ23 + resultData.ESEQ26,
+          ESECO4: resultData.ESEQ24 + resultData.ESEQ25 + resultData.ESEQ27,
+          ESECO5: resultData.ESEQ28,
+
+          ESESTATUS: resultData.ESESTATUS,
+          ESESTAFF: resultData.ESESTAFF,    //ESE -2 staff initiall
         },
       });
 

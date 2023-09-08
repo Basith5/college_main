@@ -125,9 +125,6 @@ model marks {
   ASG2       Float?
   ASGCO1     Float?
   ASGCO2     Float?
-  ASGCO3     Float?
-  ASGCO4     Float?
-  ASGCO5     Float?
   C1CO1      Float?
   C1CO2      Float?
   C1CO3      Float?
@@ -151,7 +148,9 @@ model marks {
   C1STATUS    String?
   C2STATUS    String?
   ESESTATUS   String?
-  STAFF           String
+  C1STAFF           String?
+  C2STAFF           String?
+  ESESTAFF           String?
   studentId       Int
   student         student   @relation(fields: [studentId], references: [id])
 }
