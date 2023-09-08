@@ -299,10 +299,9 @@ async function addMark(req: Request, res: Response) {
     }
     
     
-     else if (exam == "ASG"){
-
+    else if (exam === "ASG") {
       const data3 = assignmentSchema.safeParse(req.body);
-
+    
       if (!data3.success) {
         let errMessage: string = fromZodError(data3.error).message;
         return res.status(400).json({
@@ -311,16 +310,16 @@ async function addMark(req: Request, res: Response) {
           },
         });
       }
-
+    
       const resultData: assignmentData = data3.data;
-
+    
       // Check if CIA-1 marks exist for this student
       let existingCIA1Marks = await prisma.marks.findFirst({
         where: {
           studentId: student ? student.id : 0,
         },
       });
-  
+    
       if (!existingCIA1Marks || existingCIA1Marks.C1Q1 === null) {
         return res.status(409).json({
           error: {
@@ -328,26 +327,46 @@ async function addMark(req: Request, res: Response) {
           },
         });
       }
-
-      ///update querry error and simultaneouse update of assigmnet marks??????????????????
-
+    
+      // Check if there is anything to update
+      if (!resultData.ASG1 && !resultData.ASG2) {
+        return res.status(400).json({
+          error: {
+            message: "Nothing to update",
+          },
+        });
+      }
+    
+      // Prepare the data for update
+      const updateData: any = {};
+    
+      if (resultData.ASG1 !== undefined) {
+        updateData.ASG1 = resultData.ASG1;
+        updateData.ASGCO1 = (resultData.ASG1 || 0) * (5/3);
+      }
+    
+      if (resultData.ASG2 !== undefined) {
+        updateData.ASG2 = resultData.ASG2;
+        updateData.ASGCO2 = (resultData.ASG2 || 0) * (5/3);
+      }
+    
+      // Update the assignment marks
       const updateAssignment = await prisma.marks.update({
         where: {
           id: existingCIA1Marks.id,
         },
-        data: {
-          ASG1: resultData.ASG1,
-          ASG2: resultData.ASG2,
-          ASGCO1: (resultData.ASG1 || 0) * (5/3),
-          ASGCO2: (resultData.ASG2 || 0) * (5/3),
-        }
-      })
-
-      return res.json({
-        success: "ASSIGMENT MARK is added successfully"
+        data: updateData,
       });
-
-    } else if (exam == "ESE") {
+    
+      return res.json({
+        updateAssignment,
+        success: "ASSIGMENT MARK is updated successfully",
+      });
+    }
+    
+    
+    
+    else if (exam == "ESE") {
 
       const data4 = ESESchema.safeParse(req.body);
 
