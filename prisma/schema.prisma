@@ -1,0 +1,157 @@
+// This is your Prisma schema file.
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "mysql"
+  url      = env("DATABASE_URL")
+}
+
+model department {
+  id              Int       @id @default(autoincrement())
+  departmentCode  String    @unique
+  name            String
+  codes           code[]
+}
+
+model code {
+  id              Int       @id @default(autoincrement())
+  code            String 
+  name            String
+  depCode         String    
+  department      department @relation(fields: [depCode], references: [departmentCode])
+  students        student[] 
+}
+
+model student {
+  id              Int       @id @default(autoincrement())
+  regNo           String
+  claass           String
+  section         String
+  marks           marks[]   
+  codeId          Int
+  code            code    @relation(fields: [codeId], references: [id]) 
+}
+
+model marks {
+  id              Int       @id @default(autoincrement())
+  C1Q1      Float?
+  C1Q2      Float?
+  C1Q3      Float?
+  C1Q4      Float?
+  C1Q5      Float?
+  C1Q6      Float?
+  C1Q7      Float?
+  C1Q8      Float?
+  C1Q9      Float?
+  C1Q10     Float?
+  C1Q11     Float?
+  C1Q12     Float?
+  C1Q13     Float?
+  C1Q14     Float?
+  C1Q15     Float?
+  C1Q16     Float?
+  C1Q17     Float?
+  C1Q18     Float?
+  C1Q19     Float?
+  C1Q20     Float?
+  C1Q21     Float?
+  C1Q22     Float?
+  C1Q23     Float?
+  C1Q24     Float?
+  C1Q25     Float?
+  C1Q26     Float?
+  C1Q27     Float?
+  C1Q28     Float?
+  C2Q1      Float?
+  C2Q2      Float?
+  C2Q3      Float?
+  C2Q4      Float?
+  C2Q5      Float?
+  C2Q6      Float?
+  C2Q7      Float?
+  C2Q8      Float?
+  C2Q9      Float?
+  C2Q10     Float?
+  C2Q11     Float?
+  C2Q12     Float?
+  C2Q13     Float?
+  C2Q14     Float?
+  C2Q15     Float?
+  C2Q16     Float?
+  C2Q17     Float?
+  C2Q18     Float?
+  C2Q19     Float?
+  C2Q20     Float?
+  C2Q21     Float?
+  C2Q22     Float?
+  C2Q23     Float?
+  C2Q24     Float?
+  C2Q25     Float?
+  C2Q26     Float?
+  C2Q27     Float?
+  C2Q28     Float?
+  ESEQ1      Float?
+  ESEQ2      Float?
+  ESEQ3      Float?
+  ESEQ4      Float?
+  ESEQ5      Float?
+  ESEQ6      Float?
+  ESEQ7      Float?
+  ESEQ8      Float?
+  ESEQ9      Float?
+  ESEQ10     Float?
+  ESEQ11     Float?
+  ESEQ12     Float?
+  ESEQ13     Float?
+  ESEQ14     Float?
+  ESEQ15     Float?
+  ESEQ16     Float?
+  ESEQ17     Float?
+  ESEQ18     Float?
+  ESEQ19     Float?
+  ESEQ20     Float?
+  ESEQ21     Float?
+  ESEQ22     Float?
+  ESEQ23     Float?
+  ESEQ24     Float?
+  ESEQ25     Float?
+  ESEQ26     Float?
+  ESEQ27     Float?
+  ESEQ28     Float?
+  ASG1       Float?
+  ASG2       Float?
+  ASGCO1     Float?
+  ASGCO2     Float?
+  ASGCO3     Float?
+  ASGCO4     Float?
+  ASGCO5     Float?
+  C1CO1      Float?
+  C1CO2      Float?
+  C1CO3      Float?
+  C1CO4      Float?
+  C1CO5      Float?
+  C2CO1      Float?
+  C2CO2      Float?
+  C2CO3      Float?
+  C2CO4      Float?
+  C2CO5      Float?
+  ESECO1      Float?
+  ESECO2      Float?
+  ESECO3      Float?
+  ESECO4      Float?
+  ESECO5      Float?
+  TCO1      Float?
+  TCO2      Float?
+  TCO3      Float?
+  TCO4      Float?
+  TCO5      Float?
+  C1STATUS    String?
+  C2STATUS    String?
+  ESESTATUS   String?
+  STAFF           String
+  studentId       Int
+  student         student   @relation(fields: [studentId], references: [id])
+}
