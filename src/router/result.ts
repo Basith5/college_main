@@ -10,6 +10,7 @@ const prisma = new PrismaClient();
 export const userRouter = express.Router();
 
 userRouter.post("/addMarks", addMark);
+userRouter.put("/getMarks", getMarks);
 
 //Add Marks
 async function addMark(req: Request, res: Response) {
@@ -146,90 +147,95 @@ async function addMark(req: Request, res: Response) {
           C1CO4: resultData.C1Q24 + resultData.C1Q25 + resultData.C1Q27,
           C1CO5: resultData.C1Q28,
 
-          C2Q1: 0,
-          C2Q2: 0,
-          C2Q3: 0,
-          C2Q4: 0,
-          C2Q5: 0,
-          C2Q6: 0,
-          C2Q7: 0,
-          C2Q8: 0,
-          C2Q9: 0,
-          C2Q10: 0,
-          C2Q11: 0,
-          C2Q12: 0,
-          C2Q13: 0,
-          C2Q14: 0,
-          C2Q15: 0,
-          C2Q16: 0,
-          C2Q17: 0,
-          C2Q18: 0,
-          C2Q19: 0,
-          C2Q20: 0,
-          C2Q21: 0,
-          C2Q22: 0,
-          C2Q23: 0,
-          C2Q24: 0,
-          C2Q25: 0,
-          C2Q26: 0,
-          C2Q27: 0,
-          C2Q28: 0,
+          // C2Q1: 0,
+          // C2Q2: 0,
+          // C2Q3: 0,
+          // C2Q4: 0,
+          // C2Q5: 0,
+          // C2Q6: 0,
+          // C2Q7: 0,
+          // C2Q8: 0,
+          // C2Q9: 0,
+          // C2Q10: 0,
+          // C2Q11: 0,
+          // C2Q12: 0,
+          // C2Q13: 0,
+          // C2Q14: 0,
+          // C2Q15: 0,
+          // C2Q16: 0,
+          // C2Q17: 0,
+          // C2Q18: 0,
+          // C2Q19: 0,
+          // C2Q20: 0,
+          // C2Q21: 0,
+          // C2Q22: 0,
+          // C2Q23: 0,
+          // C2Q24: 0,
+          // C2Q25: 0,
+          // C2Q26: 0,
+          // C2Q27: 0,
+          // C2Q28: 0,
 
-          C2CO1: 0,
-          C2CO2: 0,
-          C2CO3: 0,
-          C2CO4: 0,
-          C2CO5: 0,
+          // C2CO1: 0,
+          // C2CO2: 0,
+          // C2CO3: 0,
+          // C2CO4: 0,
+          // C2CO5: 0,
 
-          ESEQ1: 0,
-          ESEQ2: 0,
-          ESEQ3: 0,
-          ESEQ4: 0,
-          ESEQ5: 0,
-          ESEQ6: 0,
-          ESEQ7: 0,
-          ESEQ8: 0,
-          ESEQ9: 0,
-          ESEQ10: 0,
-          ESEQ11: 0,
-          ESEQ12: 0,
-          ESEQ13: 0,
-          ESEQ14: 0,
-          ESEQ15: 0,
-          ESEQ16: 0,
-          ESEQ17: 0,
-          ESEQ18: 0,
-          ESEQ19: 0,
-          ESEQ20: 0,
-          ESEQ21: 0,
-          ESEQ22: 0,
-          ESEQ23: 0,
-          ESEQ24: 0,
-          ESEQ25: 0,
-          ESEQ26: 0,
-          ESEQ27: 0,
-          ESEQ28: 0,
+          // ESEQ1: 0,
+          // ESEQ2: 0,
+          // ESEQ3: 0,
+          // ESEQ4: 0,
+          // ESEQ5: 0,
+          // ESEQ6: 0,
+          // ESEQ7: 0,
+          // ESEQ8: 0,
+          // ESEQ9: 0,
+          // ESEQ10: 0,
+          // ESEQ11: 0,
+          // ESEQ12: 0,
+          // ESEQ13: 0,
+          // ESEQ14: 0,
+          // ESEQ15: 0,
+          // ESEQ16: 0,
+          // ESEQ17: 0,
+          // ESEQ18: 0,
+          // ESEQ19: 0,
+          // ESEQ20: 0,
+          // ESEQ21: 0,
+          // ESEQ22: 0,
+          // ESEQ23: 0,
+          // ESEQ24: 0,
+          // ESEQ25: 0,
+          // ESEQ26: 0,
+          // ESEQ27: 0,
+          // ESEQ28: 0,
 
-          ESECO1: 0,
-          ESECO2: 0,
-          ESECO3: 0,
-          ESECO4: 0,
-          ESECO5: 0,
+          // ESECO1: 0,
+          // ESECO2: 0,
+          // ESECO3: 0,
+          // ESECO4: 0,
+          // ESECO5: 0,
 
-          TCO1: 0,
-          TCO2: 0,
-          TCO3: 0,
-          TCO4: 0,
-          TCO5: 0,
+          // TCO1: 0,
+          // TCO2: 0,
+          // TCO3: 0,
+          // TCO4: 0,
+          // TCO5: 0,
 
-          ASG1: 0,
-          ASG2: 0,
+          // ASG1: 0,
+          // ASG2: 0,
 
-          ASGCO1: 0,
-          ASGCO2: 0,
+          // ASGCO1: 0,
+          // ASGCO2: 0,
           
         },
       });
+
+      return res.json({
+        success: "CIA-1 is added successfully"
+      });
+
     } 
     
     else if (exam === "CIA-2") {
@@ -402,8 +408,6 @@ async function addMark(req: Request, res: Response) {
       });
     }
     
-    
-    
     else if (exam == "ESE") {
 
       const data4 = ESESchema.safeParse(req.body);
@@ -477,6 +481,7 @@ async function addMark(req: Request, res: Response) {
           ESEQ27: resultData.ESEQ27,
           ESEQ28: resultData.ESEQ28,
 
+          ESECO1: resultData.ESEQ1 + resultData.ESEQ2 + resultData.ESEQ5 + resultData.ESEQ6 + resultData.ESEQ9 + resultData.ESEQ10 + resultData.ESEQ13 + resultData.ESEQ14 + resultData.ESEQ17 + resultData.ESEQ18,
           ESECO2: resultData.ESEQ3 + resultData.ESEQ4 + resultData.ESEQ7 + resultData.ESEQ8 + resultData.ESEQ11 + resultData.ESEQ12 + resultData.ESEQ15 + resultData.ESEQ16 + resultData.ESEQ19 + resultData.ESEQ20 + resultData.ESEQ21,
           ESECO3: resultData.ESEQ22 + resultData.ESEQ23 + resultData.ESEQ26,
           ESECO4: resultData.ESEQ24 + resultData.ESEQ25 + resultData.ESEQ27,
@@ -484,6 +489,9 @@ async function addMark(req: Request, res: Response) {
 
           ESESTATUS: resultData.ESESTATUS,
           ESESTAFF: resultData.ESESTAFF,    //ESE -2 staff initiall
+
+          //extras total after the semester
+
         },
       });
 
@@ -516,4 +524,427 @@ async function addMark(req: Request, res: Response) {
     });
   }
 }
+
+
+//get marks api
+// async function getMarks(req: Request, res: Response) {
+//   const { code, department } = req.body;
+
+//   if (!code || !department) {
+//     return res.status(400).json({
+//       error: {
+//         message: "Missing required fields code or department.",
+//       },
+//     });
+//   }
+
+//   try {
+//     // Check if the department is associated with the provided code
+//     const departmentWithCode = await prisma.department.findFirst({
+//       where: {
+//         departmentCode: department,
+//         codes: {
+//           some: {
+//             code: code,
+//           },
+//         },
+//       },
+//     });
+
+//     if (!departmentWithCode) {
+//       return res.status(400).json({ error: 'Department not found for the given code.' });
+//     }
+
+//     // Retrieve students associated with the department and code, including their marks
+//     const students = await prisma.student.findMany({
+//       where: {
+//         code: {
+//           code: code,
+//         },
+//       },
+//       include: {
+//         marks: true,
+//       },
+//     });
+
+//     // Calculate TCO values for each student
+//     const updatedStudents = students.map((student) => {
+//       // Calculate TCO values for each student
+//       const TCO1 = student.marks.reduce((total, mark) => {
+//         const C1CO1 = mark.C1CO1 || 0;
+//         const C2CO1 = mark.C2CO1 || 0;
+//         const ASGCO1 = mark.ASGCO1 || 0;
+//         return total + C1CO1 + C2CO1 + ASGCO1;
+//       }, 0);
+
+//       const TCO2 = student.marks.reduce((total, mark) => {
+//         const C1CO2 = mark.C1CO2 || 0;
+//         const C2CO2 = mark.C2CO2 || 0;
+//         const ASGCO2 = mark.ASGCO2 || 0;
+//         return total + C1CO2 + C2CO2 + ASGCO2;
+//       }, 0);
+
+//       const TCO3 = student.marks.reduce((total, mark) => {
+//         const C1CO3 = mark.C1CO3 || 0;
+//         const C2CO3 = mark.C2CO3 || 0;
+//         return total + C1CO3 + C2CO3;
+//       }, 0);
+
+//       const TCO4 = student.marks.reduce((total, mark) => {
+//         const C1CO4 = mark.C1CO4 || 0;
+//         const C2CO4 = mark.C2CO4 || 0;
+//         return total + C1CO4 + C2CO4;
+//       }, 0);
+
+//       const TCO5 = student.marks.reduce((total, mark) => {
+//         const C1CO5 = mark.C1CO5 || 0;
+//         const C2CO5 = mark.C2CO5 || 0;
+//         return total + C1CO5 + C2CO5;
+//       }, 0);
+
+//       return {
+//         id: student.id,
+//         TCO1: TCO1,
+//         TCO2: TCO2,
+//         TCO3: TCO3,
+//         TCO4: TCO4,
+//         TCO5: TCO5,
+//       };
+//     });
+
+//     // Update the marks for all students in the department and code
+//     for (const updatedStudent of updatedStudents) {
+//       // Find the specific mark associated with the student
+//       const mark = students
+//         .find((s) => s.id === updatedStudent.id)
+//         ?.marks.find((m) => m.studentId === updatedStudent.id);
+
+//       if (mark) {
+//         await prisma.marks.update({
+//           where: {
+//             id: mark.id,
+//           },
+//           data: {
+//             TCO1: updatedStudent.TCO1,
+//             TCO2: updatedStudent.TCO2,
+//             TCO3: updatedStudent.TCO3,
+//             TCO4: updatedStudent.TCO4,
+//             TCO5: updatedStudent.TCO5,
+//           },
+//         });
+//       }
+//     }
+
+//   // Create an object to hold updated marks data
+//   const updatedMarks = updatedStudents.map((updatedStudent) => {
+//     return {
+//       id: updatedStudent.id,
+//       TCO1: updatedStudent.TCO1,
+//       TCO2: updatedStudent.TCO2,
+//       TCO3: updatedStudent.TCO3,
+//       TCO4: updatedStudent.TCO4,
+//       TCO5: updatedStudent.TCO5,
+//     };
+//   });
+
+//     // Check TCO1 against the condition
+//     const above40TCO1 = updatedMarks.filter((student) => student.TCO1 >= 12);
+
+//     // Check TCO2 against the condition
+//     const above40TCO2 = updatedMarks.filter((student) => student.TCO2 >= 16);
+
+//     // Check TCO3 against the condition
+//     const above40TCO3 = updatedMarks.filter((student) => student.TCO3 >= 14);
+
+//     // Check TCO4 against the condition
+//     const above40TCO4 = updatedMarks.filter((student) => student.TCO4 >= 14);
+
+//     // Check TCO5 against the condition
+//     const above40TCO5 = updatedMarks.filter((student) => student.TCO5 >= 8);
+
+//     // Create an object to hold all above-40 TCO values
+//     const above40TCO = {
+//       TCO1: above40TCO1,
+//       TCO2: above40TCO2,
+//       TCO3: above40TCO3,
+//       TCO4: above40TCO4,
+//       TCO5: above40TCO5,
+//     };
+
+//     // Calculate the total number of students
+//     const totalStudents = updatedMarks.length;
+
+//     // Calculate the count of students meeting the above-40 condition for each TCO
+//     const countAbove40TCO1 = above40TCO1.length;
+//     const countAbove40TCO2 = above40TCO2.length;
+//     const countAbove40TCO3 = above40TCO3.length;
+//     const countAbove40TCO4 = above40TCO4.length;
+//     const countAbove40TCO5 = above40TCO5.length;
+
+//     // Calculate the percentage for each TCO
+//     const percentageTCO1 = (countAbove40TCO1 / totalStudents) * 100;
+//     const percentageTCO2 = (countAbove40TCO2 / totalStudents) * 100;
+//     const percentageTCO3 = (countAbove40TCO3 / totalStudents) * 100;
+//     const percentageTCO4 = (countAbove40TCO4 / totalStudents) * 100;
+//     const percentageTCO5 = (countAbove40TCO5 / totalStudents) * 100;
+
+//     // Create an object to hold the percentages
+//     const percentages = {
+//       TCO1: percentageTCO1,
+//       TCO2: percentageTCO2,
+//       TCO3: percentageTCO3,
+//       TCO4: percentageTCO4,
+//       TCO5: percentageTCO5,
+//     };
+
+//     // Define a function to calculate ATTAINLEVEL based on percentage
+//     function calculateAttainLevel(percentage: number) {
+//       if (percentage < 40) {
+//         return 0;
+//       } else if (percentage >= 40 && percentage < 60) {
+//         return 1;
+//       } else if (percentage >= 60 && percentage < 75) {
+//         return 2;
+//       } else {
+//         return 3;
+//       }
+//     }
+
+//     // Calculate ATTAINLEVEL for each TCO
+//     const attainLevelTCO1 = calculateAttainLevel(percentageTCO1);
+//     const attainLevelTCO2 = calculateAttainLevel(percentageTCO2);
+//     const attainLevelTCO3 = calculateAttainLevel(percentageTCO3);
+//     const attainLevelTCO4 = calculateAttainLevel(percentageTCO4);
+//     const attainLevelTCO5 = calculateAttainLevel(percentageTCO5);
+
+//     // Create an object to hold ATTAINLEVEL for each TCO
+//     const attainLevels = {
+//       TCO1: attainLevelTCO1,
+//       TCO2: attainLevelTCO2,
+//       TCO3: attainLevelTCO3,
+//       TCO4: attainLevelTCO4,
+//       TCO5: attainLevelTCO5,
+//     };
+
+//     // Send the attainLevels as part of your JSON response
+//     return res.status(200).json({ 
+//       message: 'Marks updated successfully.', 
+//       above40TCO,
+//       percentages,
+//       attainLevels,
+//     });
+
+// } catch (error) {
+//     console.error(error);
+//     res.status(500).json({ error: 'Internal server error.' });
+//   }
+// }
+
+async function getMarks(req: Request, res: Response) {
+  const { code, department } = req.body;
+
+  if (!code || !department) {
+    return res.status(400).json({
+      error: {
+        message: "Missing required fields code or department.",
+      },
+    });
+  }
+
+  try {
+    // Check if the department is associated with the provided code
+    const departmentWithCode = await prisma.department.findFirst({
+      where: {
+        departmentCode: department,
+        codes: {
+          some: {
+            code: code,
+          },
+        },
+      },
+    });
+
+    if (!departmentWithCode) {
+      return res.status(400).json({ error: 'Department not found for the given code.' });
+    }
+
+    // Retrieve students associated with the department and code, including their marks
+    const students = await prisma.student.findMany({
+      where: {
+        code: {
+          code: code,
+        },
+      },
+      include: {
+        marks: true,
+      },
+    });
+
+    // Calculate TCO values for each student
+    const updatedStudents = students.map((student) => {
+      // Calculate TCO values for each student
+      const TCO1 = student.marks.reduce((total, mark) => {
+        const C1CO1 = mark.C1CO1 || 0;
+        const C2CO1 = mark.C2CO1 || 0;
+        const ASGCO1 = mark.ASGCO1 || 0;
+        return total + C1CO1 + C2CO1 + ASGCO1;
+      }, 0);
+
+      const TCO2 = student.marks.reduce((total, mark) => {
+        const C1CO2 = mark.C1CO2 || 0;
+        const C2CO2 = mark.C2CO2 || 0;
+        const ASGCO2 = mark.ASGCO2 || 0;
+        return total + C1CO2 + C2CO2 + ASGCO2;
+      }, 0);
+
+      const TCO3 = student.marks.reduce((total, mark) => {
+        const C1CO3 = mark.C1CO3 || 0;
+        const C2CO3 = mark.C2CO3 || 0;
+        return total + C1CO3 + C2CO3;
+      }, 0);
+
+      const TCO4 = student.marks.reduce((total, mark) => {
+        const C1CO4 = mark.C1CO4 || 0;
+        const C2CO4 = mark.C2CO4 || 0;
+        return total + C1CO4 + C2CO4;
+      }, 0);
+
+      const TCO5 = student.marks.reduce((total, mark) => {
+        const C1CO5 = mark.C1CO5 || 0;
+        const C2CO5 = mark.C2CO5 || 0;
+        return total + C1CO5 + C2CO5;
+      }, 0);
+
+      return {
+        id: student.id,
+        TCO1: TCO1,
+        TCO2: TCO2,
+        TCO3: TCO3,
+        TCO4: TCO4,
+        TCO5: TCO5,
+      };
+    });
+
+    // Create an object to hold updated marks data
+    const updatedMarks = updatedStudents.map((updatedStudent) => {
+      return {
+        id: updatedStudent.id,
+        TCO1: updatedStudent.TCO1,
+        TCO2: updatedStudent.TCO2,
+        TCO3: updatedStudent.TCO3,
+        TCO4: updatedStudent.TCO4,
+        TCO5: updatedStudent.TCO5,
+      };
+    });
+
+    // Calculate the total number of students
+    const totalStudents = updatedMarks.length;
+
+    // Check TCO1 against the condition
+    const above40TCO1 = updatedMarks.filter((student) => student.TCO1 >= 12);
+
+    // Check TCO2 against the condition
+    const above40TCO2 = updatedMarks.filter((student) => student.TCO2 >= 16);
+
+    // Check TCO3 against the condition
+    const above40TCO3 = updatedMarks.filter((student) => student.TCO3 >= 14);
+
+    // Check TCO4 against the condition
+    const above40TCO4 = updatedMarks.filter((student) => student.TCO4 >= 14);
+
+    // Check TCO5 against the condition
+    const above40TCO5 = updatedMarks.filter((student) => student.TCO5 >= 8);
+
+    // Calculate the count of students meeting the above-40 condition for each TCO
+    const countAbove40TCO1 = above40TCO1.length;
+    const countAbove40TCO2 = above40TCO2.length;
+    const countAbove40TCO3 = above40TCO3.length;
+    const countAbove40TCO4 = above40TCO4.length;
+    const countAbove40TCO5 = above40TCO5.length;
+
+    // Calculate the percentage for each TCO
+    const percentageTCO1 = (countAbove40TCO1 / totalStudents) * 100;
+    const percentageTCO2 = (countAbove40TCO2 / totalStudents) * 100;
+    const percentageTCO3 = (countAbove40TCO3 / totalStudents) * 100;
+    const percentageTCO4 = (countAbove40TCO4 / totalStudents) * 100;
+    const percentageTCO5 = (countAbove40TCO5 / totalStudents) * 100;
+
+    // Create an object to hold all above-40 TCO values
+    const above40TCO = {
+      TCO1: above40TCO1.length,
+      TCO2: above40TCO2.length,
+      TCO3: above40TCO3.length,
+      TCO4: above40TCO4.length,
+      TCO5: above40TCO5.length,
+    };
+
+    // Define a function to calculate ATTAINLEVEL based on percentage
+    function calculateAttainLevel(percentage: number) {
+      if (percentage < 40) {
+        return 0;
+      } else if (percentage >= 40 && percentage < 60) {
+        return 1;
+      } else if (percentage >= 60 && percentage < 75) {
+        return 2;
+      } else {
+        return 3;
+      }
+    }
+
+    const percentages = {
+      TCO1: 0,
+      TCO2: 0,
+      TCO3: 0,
+      TCO4: 0,
+      TCO5: 0,
+    };
+
+    // Calculate the percentage for each TCO if there are students meeting the condition
+    if (totalStudents > 0) {
+      percentages.TCO1 = (countAbove40TCO1 / totalStudents) * 100;
+      percentages.TCO2 = (countAbove40TCO2 / totalStudents) * 100;
+      percentages.TCO3 = (countAbove40TCO3 / totalStudents) * 100;
+      percentages.TCO4 = (countAbove40TCO4 / totalStudents) * 100;
+      percentages.TCO5 = (countAbove40TCO5 / totalStudents) * 100;
+    }
+
+    // Calculate ATTAINLEVEL for each TCO
+    const attainLevelTCO1 = calculateAttainLevel(percentageTCO1);
+    const attainLevelTCO2 = calculateAttainLevel(percentageTCO2);
+    const attainLevelTCO3 = calculateAttainLevel(percentageTCO3);
+    const attainLevelTCO4 = calculateAttainLevel(percentageTCO4);
+    const attainLevelTCO5 = calculateAttainLevel(percentageTCO5);
+
+    // Create an object to hold ATTAINLEVEL for each TCO
+    const attainLevels = {
+      TCO1: attainLevelTCO1,
+      TCO2: attainLevelTCO2,
+      TCO3: attainLevelTCO3,
+      TCO4: attainLevelTCO4,
+      TCO5: attainLevelTCO5,
+    };
+
+
+// Send the attainLevels and above40ESECO as part of your JSON response
+return res.status(200).json({ 
+  message: 'Marks updated successfully.', 
+  above40TCO,
+  percentages,
+  attainLevels,
+  
+});
+
+
+
+
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ error: 'Internal server error.' });
+  }
+}
+
+
+
+
+
 
