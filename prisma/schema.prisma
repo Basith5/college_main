@@ -22,7 +22,8 @@ model code {
   name            String
   depCode         String    
   department      department @relation(fields: [depCode], references: [departmentCode])
-  students        student[] 
+  students        student[]
+  pso             PSO[]
 }
 
 model student {
@@ -153,4 +154,35 @@ model marks {
   ESESTAFF           String?
   studentId       Int
   student         student   @relation(fields: [studentId], references: [id])
+}
+
+model PSO {
+  id              Int       @id @default(autoincrement())
+  PSO1CO1         Int
+  PSO1CO2         Int
+  PSO1CO3         Int
+  PSO1CO4         Int
+  PSO1CO5         Int
+  PSO2CO1         Int
+  PSO2CO2         Int
+  PSO2CO3         Int
+  PSO2CO4         Int
+  PSO2CO5         Int
+  PSO3CO1         Int
+  PSO3CO2         Int
+  PSO3CO3         Int
+  PSO3CO4         Int
+  PSO3CO5         Int
+  PSO4CO1         Int
+  PSO4CO2         Int
+  PSO4CO3         Int
+  PSO4CO4         Int
+  PSO4CO5         Int
+  PSO5CO1         Int
+  PSO5CO2         Int
+  PSO5CO3         Int
+  PSO5CO4         Int
+  PSO5CO5         Int
+  codeId          Int
+  code            code    @relation(fields: [codeId], references: [id]) 
 }
