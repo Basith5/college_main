@@ -613,6 +613,34 @@ async function getMarks(req: Request, res: Response) {
       };
     });
 
+    // ...
+
+    // Perform batch updates to update the TCO values in the marks table
+    const updateresult = await Promise.all(
+        updatedStudents.map(async (updatedStudent) => {
+          await prisma.marks.updateMany({
+            where: {
+              studentId: updatedStudent.id,
+            },
+            data: {
+              TCO1: updatedStudent.TCO1,
+              TCO2: updatedStudent.TCO2,
+              TCO3: updatedStudent.TCO3,
+              TCO4: updatedStudent.TCO4,
+              TCO5: updatedStudent.TCO5,
+            },
+          });
+        })
+      );
+
+      if(!updateresult){
+        return res.status(400).json({
+          error: {
+            message: "TCO's not updated",
+          },
+        });
+      }
+
     // Create an object to hold updated marks data
     const updatedMarks = updatedStudents.map((updatedStudent) => {
       return {
@@ -667,34 +695,17 @@ async function getMarks(req: Request, res: Response) {
     };
 
     // Define a function to calculate ATTAINLEVEL based on percentage
-    function calculateAttainLevel(percentage: number) {
-      if (percentage < 40) {
-        return 0;
-      } else if (percentage >= 40 && percentage < 60) {
-        return 1;
-      } else if (percentage >= 60 && percentage < 75) {
-        return 2;
-      } else {
-        return 3;
-      }
+    const calculateAttainLevel = (percentage: number) => {
+      return percentage < 40 ? 0 : percentage < 60 ? 1 : percentage < 75 ? 2 : 3;
     }
 
     const percentages = {
-      TCO1: 0,
-      TCO2: 0,
-      TCO3: 0,
-      TCO4: 0,
-      TCO5: 0,
+      TCO1: totalStudents > 0 ? (countAbove40TCO1 / totalStudents) * 100 : 0,
+      TCO2: totalStudents > 0 ? (countAbove40TCO2 / totalStudents) * 100 : 0,
+      TCO3: totalStudents > 0 ? (countAbove40TCO3 / totalStudents) * 100 : 0,
+      TCO4: totalStudents > 0 ? (countAbove40TCO4 / totalStudents) * 100 : 0,
+      TCO5: totalStudents > 0 ? (countAbove40TCO5 / totalStudents) * 100 : 0,
     };
-
-    // Calculate the percentage for each TCO if there are students meeting the condition
-    if (totalStudents > 0) {
-      percentages.TCO1 = (countAbove40TCO1 / totalStudents) * 100;
-      percentages.TCO2 = (countAbove40TCO2 / totalStudents) * 100;
-      percentages.TCO3 = (countAbove40TCO3 / totalStudents) * 100;
-      percentages.TCO4 = (countAbove40TCO4 / totalStudents) * 100;
-      percentages.TCO5 = (countAbove40TCO5 / totalStudents) * 100;
-    }
 
     // Calculate ATTAINLEVEL for each TCO
     const attainLevelTCO1 = calculateAttainLevel(percentageTCO1);
