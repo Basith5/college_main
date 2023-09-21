@@ -13,6 +13,9 @@ userRouter.post("/addMarks", addMark);
 userRouter.put("/getMarks", getMarks);
 userRouter.post("/addPso", addPso);
 
+userRouter.get("/getMarkByCode", getMarkByCode);
+// userRouter.get("/searchCode", getCode); 
+
 
 //Add Marks
 async function addMark(req: Request, res: Response) {
@@ -527,7 +530,7 @@ async function addMark(req: Request, res: Response) {
   }
 }
 
-//get marks api
+//get marks
 async function getMarks(req: Request, res: Response) {
   const { code, department } = req.body;
 
@@ -971,5 +974,83 @@ async function addPso(req: Request, res: Response) {
         message: "Internal server error",
       },
     });
+  }
+}
+
+//searchDepartment
+async function searchDepartment(req: Request, res: Response) {
+  const { question } = req.query;
+
+  try {
+    if (question) {
+      const departments = await prisma.department.findMany({
+        where: {
+          departmentCode: {
+            contains: question as string,
+          },
+        },
+      });
+      return res.status(200).json({
+        data: departments,
+      });
+    }
+  } catch (error) {
+    return res.status(500).json({
+      error: {
+        message: "Internal server error",
+      },
+    });
+  }
+}
+
+//get Marks by code
+async function getMarkByCode(req: Request, res: Response) {
+  const { code, department } = req.body;
+
+  try {
+    // Check if the department exists
+    const existingDepartment = await prisma.department.findFirst({
+      where: {
+        departmentCode: department,
+      },
+    });
+
+    if (!existingDepartment) {
+      return res.status(400).json({
+        error: 'Department not found for the given code.',
+      });
+    }
+
+    // Check if the code exists
+    const existingCode = await prisma.code.findFirst({
+      where: {
+        code: code,
+      },
+    });
+
+    if (!existingCode) {
+      return res.status(400).json({
+        error: 'Code not found.',
+      });
+    }
+
+    // Retrieve students associated with the department and code, including their marks
+    const students = await prisma.student.findMany({
+      where: {
+        code: {
+          code: code,
+        },
+        codeId: existingDepartment.id,
+      },
+      include: {
+        marks: true,
+      },
+    });
+
+    // Return the students and their marks
+    res.status(200).json({ students });
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ error: 'Internal server error.' });
   }
 }
