@@ -76,9 +76,8 @@ async function addMark(req: Request, res: Response) {
 
     // Now, create the marks
     if (exam == "CIA-1") {
-
       const data1 = cia1Schema.safeParse(req.body);
-
+    
       if (!data1.success) {
         let errMessage: string = fromZodError(data1.error).message;
         return res.status(400).json({
@@ -87,9 +86,9 @@ async function addMark(req: Request, res: Response) {
           },
         });
       }
-
+    
       const resultData: cia1Data = data1.data;
-
+    
       if (!resultData) {
         return res.status(409).json({
           error: {
@@ -97,7 +96,7 @@ async function addMark(req: Request, res: Response) {
           },
         });
       }
-
+    
       let marks = await prisma.marks.findFirst({
         where: {
           studentId: student ? student.id : 0,
@@ -105,13 +104,56 @@ async function addMark(req: Request, res: Response) {
       });
     
       if (marks) {
-        return res.status(409).json({
-          error: {
-            message: "CIA-1 marks already exist for this student",
+        // Marks already exist, update them
+        const updatedMark = await prisma.marks.update({
+          where: { id: marks.id }, // Assuming there's an ID for the existing mark
+          data: {
+            C1Q1: resultData.C1Q1,
+             C1Q2: resultData.C1Q2,
+             C1Q3: resultData.C1Q3,
+             C1Q4: resultData.C1Q4,
+             C1Q5: resultData.C1Q5,
+             C1Q6: resultData.C1Q6,
+             C1Q7: resultData.C1Q7,
+             C1Q8: resultData.C1Q8,
+             C1Q9: resultData.C1Q9,
+             C1Q10: resultData.C1Q10,
+             C1Q11: resultData.C1Q11,
+             C1Q12: resultData.C1Q12,
+             C1Q13: resultData.C1Q13,
+             C1Q14: resultData.C1Q14,
+             C1Q15: resultData.C1Q15,
+             C1Q16: resultData.C1Q16,
+             C1Q17: resultData.C1Q17,
+             C1Q18: resultData.C1Q18,
+             C1Q19: resultData.C1Q19,
+             C1Q20: resultData.C1Q20,
+             C1Q21: resultData.C1Q21,
+             C1Q22: resultData.C1Q22,
+             C1Q23: resultData.C1Q23,
+             C1Q24: resultData.C1Q24,
+             C1Q25: resultData.C1Q25,
+             C1Q26: resultData.C1Q26,
+             C1Q27: resultData.C1Q27,
+             C1Q28: resultData.C1Q28,
+             C1STATUS: resultData.C1STATUS,
+             C1STAFF:  resultData.C1STAFF,
+             studentId: student ? student.id : 0,
+  
+             C1CO1: resultData.C1Q1 + resultData.C1Q2 + resultData.C1Q5 + resultData.C1Q6 + resultData.C1Q9 + resultData.C1Q10 + resultData.C1Q13 + resultData.C1Q14 + resultData.C1Q17 + resultData.C1Q18,
+             C1CO2: resultData.C1Q3 + resultData.C1Q4 + resultData.C1Q7 + resultData.C1Q8 + resultData.C1Q11 + resultData.C1Q12 + resultData.C1Q15 + resultData.C1Q16 + resultData.C1Q19 + resultData.C1Q20 + resultData.C1Q21,
+             C1CO3: resultData.C1Q22 + resultData.C1Q23 + resultData.C1Q26,
+             C1CO4: resultData.C1Q24 + resultData.C1Q25 + resultData.C1Q27,
+             C1CO5: resultData.C1Q28,
           },
         });
+    
+        return res.json({
+          success: "CIA-1 marks are updated successfully",
+        });
       }
-
+    
+      // If marks do not exist, create them
       const mark = await prisma.marks.create({
         data: {
           C1Q1: resultData.C1Q1,
@@ -151,97 +193,14 @@ async function addMark(req: Request, res: Response) {
           C1CO3: resultData.C1Q22 + resultData.C1Q23 + resultData.C1Q26,
           C1CO4: resultData.C1Q24 + resultData.C1Q25 + resultData.C1Q27,
           C1CO5: resultData.C1Q28,
-
-          // C2Q1: 0,
-          // C2Q2: 0,
-          // C2Q3: 0,
-          // C2Q4: 0,
-          // C2Q5: 0,
-          // C2Q6: 0,
-          // C2Q7: 0,
-          // C2Q8: 0,
-          // C2Q9: 0,
-          // C2Q10: 0,
-          // C2Q11: 0,
-          // C2Q12: 0,
-          // C2Q13: 0,
-          // C2Q14: 0,
-          // C2Q15: 0,
-          // C2Q16: 0,
-          // C2Q17: 0,
-          // C2Q18: 0,
-          // C2Q19: 0,
-          // C2Q20: 0,
-          // C2Q21: 0,
-          // C2Q22: 0,
-          // C2Q23: 0,
-          // C2Q24: 0,
-          // C2Q25: 0,
-          // C2Q26: 0,
-          // C2Q27: 0,
-          // C2Q28: 0,
-
-          // C2CO1: 0,
-          // C2CO2: 0,
-          // C2CO3: 0,
-          // C2CO4: 0,
-          // C2CO5: 0,
-
-          // ESEQ1: 0,
-          // ESEQ2: 0,
-          // ESEQ3: 0,
-          // ESEQ4: 0,
-          // ESEQ5: 0,
-          // ESEQ6: 0,
-          // ESEQ7: 0,
-          // ESEQ8: 0,
-          // ESEQ9: 0,
-          // ESEQ10: 0,
-          // ESEQ11: 0,
-          // ESEQ12: 0,
-          // ESEQ13: 0,
-          // ESEQ14: 0,
-          // ESEQ15: 0,
-          // ESEQ16: 0,
-          // ESEQ17: 0,
-          // ESEQ18: 0,
-          // ESEQ19: 0,
-          // ESEQ20: 0,
-          // ESEQ21: 0,
-          // ESEQ22: 0,
-          // ESEQ23: 0,
-          // ESEQ24: 0,
-          // ESEQ25: 0,
-          // ESEQ26: 0,
-          // ESEQ27: 0,
-          // ESEQ28: 0,
-
-          // ESECO1: 0,
-          // ESECO2: 0,
-          // ESECO3: 0,
-          // ESECO4: 0,
-          // ESECO5: 0,
-
-          // TCO1: 0,
-          // TCO2: 0,
-          // TCO3: 0,
-          // TCO4: 0,
-          // TCO5: 0,
-
-          // ASG1: 0,
-          // ASG2: 0,
-
-          // ASGCO1: 0,
-          // ASGCO2: 0,
-          
         },
       });
-
+    
       return res.json({
-        success: "CIA-1 is added successfully"
+        success: "CIA-1 marks are added successfully",
       });
-
-    } 
+    }
+     
     
     else if (exam === "CIA-2") {
       const data2 = cia2Schema.safeParse(req.body);
