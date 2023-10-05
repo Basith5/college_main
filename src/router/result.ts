@@ -12,12 +12,14 @@ export const userRouter = express.Router();
 userRouter.post("/addMarks", addMark);
 userRouter.put("/getMarks", getMarks);
 userRouter.post("/addPso", addPso);
-
+userRouter.get("/searchDepartment", searchDepartment);
 userRouter.get("/getMarkByCode", getMarkByCode);
-// userRouter.get("/searchCode", getCode); 
+userRouter.put("/byCode", getMarksWithCode);
+userRouter.get("/searchCode", getCode);
+userRouter.delete("/deleteMark", deleteMark)
 
 
-//Add Marks
+//#region Add Marks
 async function addMark(req: Request, res: Response) {
   const { regNo, exam, code, department, claass, section } = req.body;
 
@@ -31,7 +33,7 @@ async function addMark(req: Request, res: Response) {
   }
 
   try {
-    
+
     const check = await prisma.code.findFirst({
       where: {
         depCode: department,
@@ -75,9 +77,9 @@ async function addMark(req: Request, res: Response) {
     }
 
     // Now, create the marks
-    if (exam == "CIA-1") {
+    if (exam == "C1") {
       const data1 = cia1Schema.safeParse(req.body);
-    
+
       if (!data1.success) {
         let errMessage: string = fromZodError(data1.error).message;
         return res.status(400).json({
@@ -86,9 +88,9 @@ async function addMark(req: Request, res: Response) {
           },
         });
       }
-    
+
       const resultData: cia1Data = data1.data;
-    
+
       if (!resultData) {
         return res.status(409).json({
           error: {
@@ -96,63 +98,63 @@ async function addMark(req: Request, res: Response) {
           },
         });
       }
-    
+
       let marks = await prisma.marks.findFirst({
         where: {
           studentId: student ? student.id : 0,
         },
       });
-    
+
       if (marks) {
         // Marks already exist, update them
         const updatedMark = await prisma.marks.update({
           where: { id: marks.id }, // Assuming there's an ID for the existing mark
           data: {
             C1Q1: resultData.C1Q1,
-             C1Q2: resultData.C1Q2,
-             C1Q3: resultData.C1Q3,
-             C1Q4: resultData.C1Q4,
-             C1Q5: resultData.C1Q5,
-             C1Q6: resultData.C1Q6,
-             C1Q7: resultData.C1Q7,
-             C1Q8: resultData.C1Q8,
-             C1Q9: resultData.C1Q9,
-             C1Q10: resultData.C1Q10,
-             C1Q11: resultData.C1Q11,
-             C1Q12: resultData.C1Q12,
-             C1Q13: resultData.C1Q13,
-             C1Q14: resultData.C1Q14,
-             C1Q15: resultData.C1Q15,
-             C1Q16: resultData.C1Q16,
-             C1Q17: resultData.C1Q17,
-             C1Q18: resultData.C1Q18,
-             C1Q19: resultData.C1Q19,
-             C1Q20: resultData.C1Q20,
-             C1Q21: resultData.C1Q21,
-             C1Q22: resultData.C1Q22,
-             C1Q23: resultData.C1Q23,
-             C1Q24: resultData.C1Q24,
-             C1Q25: resultData.C1Q25,
-             C1Q26: resultData.C1Q26,
-             C1Q27: resultData.C1Q27,
-             C1Q28: resultData.C1Q28,
-             C1STATUS: resultData.C1STATUS,
-             C1STAFF:  resultData.C1STAFF,
-             studentId: student ? student.id : 0,
-  
-             C1CO1: resultData.C1Q1 + resultData.C1Q2 + resultData.C1Q5 + resultData.C1Q6 + resultData.C1Q9 + resultData.C1Q10 + resultData.C1Q13 + resultData.C1Q14 + resultData.C1Q17 + resultData.C1Q18,
-             C1CO2: resultData.C1Q3 + resultData.C1Q4 + resultData.C1Q7 + resultData.C1Q8 + resultData.C1Q11 + resultData.C1Q12 + resultData.C1Q15 + resultData.C1Q16 + resultData.C1Q19 + resultData.C1Q20 + resultData.C1Q21,
-             C1CO3: resultData.C1Q22 + resultData.C1Q23 + resultData.C1Q26,
-             C1CO4: resultData.C1Q24 + resultData.C1Q25 + resultData.C1Q27,
-             C1CO5: resultData.C1Q28,
+            C1Q2: resultData.C1Q2,
+            C1Q3: resultData.C1Q3,
+            C1Q4: resultData.C1Q4,
+            C1Q5: resultData.C1Q5,
+            C1Q6: resultData.C1Q6,
+            C1Q7: resultData.C1Q7,
+            C1Q8: resultData.C1Q8,
+            C1Q9: resultData.C1Q9,
+            C1Q10: resultData.C1Q10,
+            C1Q11: resultData.C1Q11,
+            C1Q12: resultData.C1Q12,
+            C1Q13: resultData.C1Q13,
+            C1Q14: resultData.C1Q14,
+            C1Q15: resultData.C1Q15,
+            C1Q16: resultData.C1Q16,
+            C1Q17: resultData.C1Q17,
+            C1Q18: resultData.C1Q18,
+            C1Q19: resultData.C1Q19,
+            C1Q20: resultData.C1Q20,
+            C1Q21: resultData.C1Q21,
+            C1Q22: resultData.C1Q22,
+            C1Q23: resultData.C1Q23,
+            C1Q24: resultData.C1Q24,
+            C1Q25: resultData.C1Q25,
+            C1Q26: resultData.C1Q26,
+            C1Q27: resultData.C1Q27,
+            C1Q28: resultData.C1Q28,
+            C1STATUS: resultData.C1STATUS,
+            C1STAFF: resultData.C1STAFF,
+            studentId: student ? student.id : 0,
+
+            C1CO1: resultData.C1Q1 + resultData.C1Q2 + resultData.C1Q5 + resultData.C1Q6 + resultData.C1Q9 + resultData.C1Q10 + resultData.C1Q13 + resultData.C1Q14 + resultData.C1Q17 + resultData.C1Q18,
+            C1CO2: resultData.C1Q3 + resultData.C1Q4 + resultData.C1Q7 + resultData.C1Q8 + resultData.C1Q11 + resultData.C1Q12 + resultData.C1Q15 + resultData.C1Q16 + resultData.C1Q19 + resultData.C1Q20 + resultData.C1Q21,
+            C1CO3: resultData.C1Q22 + resultData.C1Q23 + resultData.C1Q26,
+            C1CO4: resultData.C1Q24 + resultData.C1Q25 + resultData.C1Q27,
+            C1CO5: resultData.C1Q28,
           },
         });
-    
+
         return res.json({
           success: "CIA-1 marks are updated successfully",
         });
       }
-    
+
       // If marks do not exist, create them
       const mark = await prisma.marks.create({
         data: {
@@ -185,7 +187,7 @@ async function addMark(req: Request, res: Response) {
           C1Q27: resultData.C1Q27,
           C1Q28: resultData.C1Q28,
           C1STATUS: resultData.C1STATUS,
-          C1STAFF:  resultData.C1STAFF,
+          C1STAFF: resultData.C1STAFF,
           studentId: student ? student.id : 0,
 
           C1CO1: resultData.C1Q1 + resultData.C1Q2 + resultData.C1Q5 + resultData.C1Q6 + resultData.C1Q9 + resultData.C1Q10 + resultData.C1Q13 + resultData.C1Q14 + resultData.C1Q17 + resultData.C1Q18,
@@ -195,16 +197,15 @@ async function addMark(req: Request, res: Response) {
           C1CO5: resultData.C1Q28,
         },
       });
-    
+
       return res.json({
         success: "CIA-1 marks are added successfully",
       });
     }
-     
-    
-    else if (exam === "CIA-2") {
+
+    else if (exam === "C2") {
       const data2 = cia2Schema.safeParse(req.body);
-    
+
       if (!data2.success) {
         let errMessage: string = fromZodError(data2.error).message;
         return res.status(400).json({
@@ -213,9 +214,9 @@ async function addMark(req: Request, res: Response) {
           },
         });
       }
-    
+
       const resultData: cia2Data = data2.data;
-    
+
       if (!resultData) {
         return res.status(409).json({
           error: {
@@ -223,14 +224,14 @@ async function addMark(req: Request, res: Response) {
           },
         });
       }
-    
+
       // Check if CIA-1 marks exist for this student
       let existingCIA1Marks = await prisma.marks.findFirst({
         where: {
           studentId: student ? student.id : 0,
         },
       });
-    
+
       if (!existingCIA1Marks || existingCIA1Marks.C1Q1 === null) {
         return res.status(409).json({
           error: {
@@ -238,14 +239,14 @@ async function addMark(req: Request, res: Response) {
           },
         });
       }
-    
+
       // Now, you can proceed with updating CIA-2 marks
       let existingCIA2Marks = await prisma.marks.findFirst({
         where: {
           studentId: student ? student.id : 0,
         },
       });
-    
+
       if (!existingCIA2Marks) {
         return res.status(409).json({
           error: {
@@ -253,7 +254,7 @@ async function addMark(req: Request, res: Response) {
           },
         });
       }
-    
+
       // Update the existing CIA-2 marks with the new data.
       const updatedCIA2Marks = await prisma.marks.update({
         where: {
@@ -300,16 +301,16 @@ async function addMark(req: Request, res: Response) {
 
         },
       });
-    
+
       return res.json({
         success: "CIA-2 is added successfully"
       });
     }
-    
-    
+
+
     else if (exam === "ASG") {
       const data3 = assignmentSchema.safeParse(req.body);
-    
+
       if (!data3.success) {
         let errMessage: string = fromZodError(data3.error).message;
         return res.status(400).json({
@@ -318,16 +319,16 @@ async function addMark(req: Request, res: Response) {
           },
         });
       }
-    
+
       const resultData: assignmentData = data3.data;
-    
+
       // Check if CIA-1 marks exist for this student
       let existingCIA1Marks = await prisma.marks.findFirst({
         where: {
           studentId: student ? student.id : 0,
         },
       });
-    
+
       if (!existingCIA1Marks || existingCIA1Marks.C1Q1 === null) {
         return res.status(409).json({
           error: {
@@ -335,7 +336,7 @@ async function addMark(req: Request, res: Response) {
           },
         });
       }
-    
+
       // Check if there is anything to update
       if (!resultData.ASG1 && !resultData.ASG2) {
         return res.status(400).json({
@@ -344,20 +345,20 @@ async function addMark(req: Request, res: Response) {
           },
         });
       }
-    
+
       // Prepare the data for update
       const updateData: any = {};
-    
+
       if (resultData.ASG1 !== undefined) {
         updateData.ASG1 = resultData.ASG1;
-        updateData.ASGCO1 = (resultData.ASG1 || 0) * (5/3);
+        updateData.ASGCO1 = (resultData.ASG1 || 0) * (5 / 3);
       }
-    
+
       if (resultData.ASG2 !== undefined) {
         updateData.ASG2 = resultData.ASG2;
-        updateData.ASGCO2 = (resultData.ASG2 || 0) * (5/3);
+        updateData.ASGCO2 = (resultData.ASG2 || 0) * (5 / 3);
       }
-    
+
       // Update the assignment marks
       const updateAssignment = await prisma.marks.update({
         where: {
@@ -365,13 +366,13 @@ async function addMark(req: Request, res: Response) {
         },
         data: updateData,
       });
-    
+
       return res.json({
         studentId: updateAssignment.studentId,
         success: "ASSIGMENT MARK is updated successfully",
       });
     }
-    
+
     else if (exam == "ESE") {
 
       const data4 = ESESchema.safeParse(req.body);
@@ -401,7 +402,7 @@ async function addMark(req: Request, res: Response) {
           studentId: student ? student.id : 0,
         },
       });
-    
+
       if (!existingESEMarks || existingESEMarks.C2Q1 === null) {
         return res.status(409).json({
           error: {
@@ -488,8 +489,9 @@ async function addMark(req: Request, res: Response) {
     });
   }
 }
+//#endregion
 
-//get marks
+//#region get marks
 async function getMarks(req: Request, res: Response) {
   const { code, department } = req.body;
 
@@ -579,29 +581,29 @@ async function getMarks(req: Request, res: Response) {
 
     // Perform batch updates to update the TCO values in the marks table
     const updateresult = await Promise.all(
-        updatedStudents.map(async (updatedStudent) => {
-          await prisma.marks.updateMany({
-            where: {
-              studentId: updatedStudent.id,
-            },
-            data: {
-              TCO1: updatedStudent.TCO1,
-              TCO2: updatedStudent.TCO2,
-              TCO3: updatedStudent.TCO3,
-              TCO4: updatedStudent.TCO4,
-              TCO5: updatedStudent.TCO5,
-            },
-          });
-        })
-      );
-
-      if(!updateresult){
-        return res.status(400).json({
-          error: {
-            message: "TCO's not updated",
+      updatedStudents.map(async (updatedStudent) => {
+        await prisma.marks.updateMany({
+          where: {
+            studentId: updatedStudent.id,
+          },
+          data: {
+            TCO1: updatedStudent.TCO1,
+            TCO2: updatedStudent.TCO2,
+            TCO3: updatedStudent.TCO3,
+            TCO4: updatedStudent.TCO4,
+            TCO5: updatedStudent.TCO5,
           },
         });
-      }
+      })
+    );
+
+    if (!updateresult) {
+      return res.status(400).json({
+        error: {
+          message: "TCO's not updated",
+        },
+      });
+    }
 
     // Create an object to hold updated marks data
     const updatedMarks = updatedStudents.map((updatedStudent) => {
@@ -662,11 +664,11 @@ async function getMarks(req: Request, res: Response) {
     }
 
     const percentages = {
-      TCO1: totalStudents > 0 ? (countAbove40TCO1 / totalStudents) * 100 : 0,
-      TCO2: totalStudents > 0 ? (countAbove40TCO2 / totalStudents) * 100 : 0,
-      TCO3: totalStudents > 0 ? (countAbove40TCO3 / totalStudents) * 100 : 0,
-      TCO4: totalStudents > 0 ? (countAbove40TCO4 / totalStudents) * 100 : 0,
-      TCO5: totalStudents > 0 ? (countAbove40TCO5 / totalStudents) * 100 : 0,
+      TCO1: totalStudents > 0 ? ((countAbove40TCO1 / totalStudents) * 100).toFixed(2) : 0,
+      TCO2: totalStudents > 0 ? ((countAbove40TCO2 / totalStudents) * 100).toFixed(2) : 0,
+      TCO3: totalStudents > 0 ? ((countAbove40TCO3 / totalStudents) * 100).toFixed(2) : 0,
+      TCO4: totalStudents > 0 ? ((countAbove40TCO4 / totalStudents) * 100).toFixed(2) : 0,
+      TCO5: totalStudents > 0 ? ((countAbove40TCO5 / totalStudents) * 100).toFixed(2) : 0,
     };
 
     // Calculate ATTAINLEVEL for each TCO
@@ -687,19 +689,19 @@ async function getMarks(req: Request, res: Response) {
 
     // Create an object to hold the count of students meeting the condition for each ESECO field
     const countAbove12ESECO1 = students.filter((student) =>
-      student.marks.some((mark) => mark.ESECO1 !== null && mark.ESECO1 >= 12)
+      student.marks.some((mark) => mark.ESECO1 !== null && mark.ESECO1 >= 5)
     ).length;
     const countAbove16ESECO2 = students.filter((student) =>
-      student.marks.some((mark) => mark.ESECO2 !== null && mark.ESECO2 >= 16)
+      student.marks.some((mark) => mark.ESECO2 !== null && mark.ESECO2 >= 6)
     ).length;
     const countAbove14ESECO3 = students.filter((student) =>
-      student.marks.some((mark) => mark.ESECO3 !== null && mark.ESECO3 >= 14)
+      student.marks.some((mark) => mark.ESECO3 !== null && mark.ESECO3 >= 7)
     ).length;
     const countAbove14ESECO4 = students.filter((student) =>
-      student.marks.some((mark) => mark.ESECO4 !== null && mark.ESECO4 >= 14)
+      student.marks.some((mark) => mark.ESECO4 !== null && mark.ESECO4 >= 7)
     ).length;
     const countAbove8ESECO5 = students.filter((student) =>
-      student.marks.some((mark) => mark.ESECO5 !== null && mark.ESECO5 >= 8)
+      student.marks.some((mark) => mark.ESECO5 !== null && mark.ESECO5 >= 4)
     ).length;
 
 
@@ -719,23 +721,23 @@ async function getMarks(req: Request, res: Response) {
       ESECO4: 0,
       ESECO5: 0,
     };
-    
+
     // Calculate the percentage for each ESECO if there are students meeting the condition
     if (totalStudents > 0) {
-      percentagesESECO.ESECO1 = (countAbove12ESECO1 / totalStudents) * 100;
-      percentagesESECO.ESECO2 = (countAbove16ESECO2 / totalStudents) * 100;
-      percentagesESECO.ESECO3 = (countAbove14ESECO3 / totalStudents) * 100;
-      percentagesESECO.ESECO4 = (countAbove14ESECO4 / totalStudents) * 100;
-      percentagesESECO.ESECO5 = (countAbove8ESECO5 / totalStudents) * 100;
+      percentagesESECO.ESECO1 = parseFloat(((countAbove12ESECO1 / totalStudents) * 100).toFixed(2));
+      percentagesESECO.ESECO2 = parseFloat(((countAbove16ESECO2 / totalStudents) * 100).toFixed(2));
+      percentagesESECO.ESECO3 = parseFloat(((countAbove14ESECO3 / totalStudents) * 100).toFixed(2));
+      percentagesESECO.ESECO4 = parseFloat(((countAbove14ESECO4 / totalStudents) * 100).toFixed(2));
+      percentagesESECO.ESECO5 = parseFloat(((countAbove8ESECO5 / totalStudents) * 100).toFixed(2));
     }
-    
+
     // Calculate ATTAINLEVEL for each ESECO
     const attainLevelESECO1 = calculateAttainLevel(percentagesESECO.ESECO1);
     const attainLevelESECO2 = calculateAttainLevel(percentagesESECO.ESECO2);
     const attainLevelESECO3 = calculateAttainLevel(percentagesESECO.ESECO3);
     const attainLevelESECO4 = calculateAttainLevel(percentagesESECO.ESECO4);
     const attainLevelESECO5 = calculateAttainLevel(percentagesESECO.ESECO5);
-    
+
     // Create an object to hold ATTAINLEVEL for each ESECO
     const attainLevelsESECO = {
       ESECO1: attainLevelESECO1,
@@ -743,97 +745,97 @@ async function getMarks(req: Request, res: Response) {
       ESECO3: attainLevelESECO3,
       ESECO4: attainLevelESECO4,
       ESECO5: attainLevelESECO5,
-      
+
     };
 
     let overAll = {
-      CO1 : (attainLevels.TCO1 + attainLevelsESECO.ESECO1) / 2 ,
-      CO2 : (attainLevels.TCO2 + attainLevelsESECO.ESECO2) / 2 ,
-      CO3 : (attainLevels.TCO3 + attainLevelsESECO.ESECO3) / 2 ,
-      CO4 : (attainLevels.TCO4 + attainLevelsESECO.ESECO4) / 2 ,
-      CO5 : (attainLevels.TCO5 + attainLevelsESECO.ESECO5) / 2 ,
+      CO1: (attainLevels.TCO1 + attainLevelsESECO.ESECO1) / 2,
+      CO2: (attainLevels.TCO2 + attainLevelsESECO.ESECO2) / 2,
+      CO3: (attainLevels.TCO3 + attainLevelsESECO.ESECO3) / 2,
+      CO4: (attainLevels.TCO4 + attainLevelsESECO.ESECO4) / 2,
+      CO5: (attainLevels.TCO5 + attainLevelsESECO.ESECO5) / 2,
     }
 
-    let averageAttainLevel = ( overAll.CO1 + overAll.CO2 + overAll.CO3 + overAll.CO4 + overAll.CO5 ) / 5
+    let averageAttainLevel = (overAll.CO1 + overAll.CO2 + overAll.CO3 + overAll.CO4 + overAll.CO5) / 5
 
     let direct80 = (80 * averageAttainLevel) / 100
 
-    const psoRecord = await prisma.pSO.findFirst({
-      where: {
-        code: {
-          code: code,
-        },
-      },
-    });
+    // const psoRecord = await prisma.pSO.findFirst({
+    //   where: {
+    //     code: {
+    //       code: code,
+    //     },
+    //   },
+    // });
 
-    if (!psoRecord) {
-      return "PSO not found for given course code";
-    }
+    // if (!psoRecord) {
+    //   return "PSO not found for given course code";
+    // }
 
-    // Extract PSO1CO1 to PSO1CO5 values from the PSO record
-    const { PSO1CO1, PSO1CO2, PSO1CO3, PSO1CO4, PSO1CO5, PSO2CO1, PSO2CO2, PSO2CO3, PSO2CO4, PSO2CO5, PSO3CO1, PSO3CO2, PSO3CO3, PSO3CO4, PSO3CO5, PSO4CO1, PSO4CO2, PSO4CO3, PSO4CO4, PSO4CO5, PSO5CO1, PSO5CO2, PSO5CO3, PSO5CO4, PSO5CO5 } = psoRecord;
+    // // Extract PSO1CO1 to PSO1CO5 values from the PSO record
+    // const { PSO1CO1, PSO1CO2, PSO1CO3, PSO1CO4, PSO1CO5, PSO2CO1, PSO2CO2, PSO2CO3, PSO2CO4, PSO2CO5, PSO3CO1, PSO3CO2, PSO3CO3, PSO3CO4, PSO3CO5, PSO4CO1, PSO4CO2, PSO4CO3, PSO4CO4, PSO4CO5, PSO5CO1, PSO5CO2, PSO5CO3, PSO5CO4, PSO5CO5 } = psoRecord;
 
-    // Calculate the denominator (PSOCO1 + PSOCO2 + PSOCO3 + PSOCO4 + PSOCO5)
-    const denominator1 = PSO1CO1 + PSO1CO2 + PSO1CO3 + PSO1CO4 + PSO1CO5;
-    const denominator2 = PSO2CO1 + PSO2CO2 + PSO2CO3 + PSO2CO4 + PSO2CO5;
-    const denominator3 = PSO3CO1 + PSO3CO2 + PSO3CO3 + PSO3CO4 + PSO3CO5;
-    const denominator4 = PSO4CO1 + PSO4CO2 + PSO4CO3 + PSO4CO4 + PSO4CO5;
-    const denominator5 = PSO5CO1 + PSO5CO2 + PSO5CO3 + PSO5CO4 + PSO5CO5;
+    // // Calculate the denominator (PSOCO1 + PSOCO2 + PSOCO3 + PSOCO4 + PSOCO5)
+    // const denominator1 = PSO1CO1 + PSO1CO2 + PSO1CO3 + PSO1CO4 + PSO1CO5;
+    // const denominator2 = PSO2CO1 + PSO2CO2 + PSO2CO3 + PSO2CO4 + PSO2CO5;
+    // const denominator3 = PSO3CO1 + PSO3CO2 + PSO3CO3 + PSO3CO4 + PSO3CO5;
+    // const denominator4 = PSO4CO1 + PSO4CO2 + PSO4CO3 + PSO4CO4 + PSO4CO5;
+    // const denominator5 = PSO5CO1 + PSO5CO2 + PSO5CO3 + PSO5CO4 + PSO5CO5;
 
-    // Calculate PSA using the provided formula
-    const PSA1 =
-      (overAll.CO1 * PSO1CO1 +
-        overAll.CO2 * PSO1CO2 +
-        overAll.CO3 * PSO1CO3 +
-        overAll.CO4 * PSO1CO4 +
-        overAll.CO5 * PSO1CO5) /
-      denominator1;
+    // // Calculate PSA using the provided formula
+    // const PSA1 =
+    //   (overAll.CO1 * PSO1CO1 +
+    //     overAll.CO2 * PSO1CO2 +
+    //     overAll.CO3 * PSO1CO3 +
+    //     overAll.CO4 * PSO1CO4 +
+    //     overAll.CO5 * PSO1CO5) /
+    //   denominator1;
 
-      const PSA2 =
-      (overAll.CO1 * PSO2CO1 +
-        overAll.CO2 * PSO2CO2 +
-        overAll.CO3 * PSO2CO3 +
-        overAll.CO4 * PSO2CO4 +
-        overAll.CO5 * PSO2CO5) /
-      denominator2;
+    // const PSA2 =
+    //   (overAll.CO1 * PSO2CO1 +
+    //     overAll.CO2 * PSO2CO2 +
+    //     overAll.CO3 * PSO2CO3 +
+    //     overAll.CO4 * PSO2CO4 +
+    //     overAll.CO5 * PSO2CO5) /
+    //   denominator2;
 
-      const PSA3 =
-      (overAll.CO1 * PSO3CO1 +
-        overAll.CO2 * PSO3CO2 +
-        overAll.CO3 * PSO3CO3 +
-        overAll.CO4 * PSO3CO4 +
-        overAll.CO5 * PSO3CO5) /
-      denominator3;
+    // const PSA3 =
+    //   (overAll.CO1 * PSO3CO1 +
+    //     overAll.CO2 * PSO3CO2 +
+    //     overAll.CO3 * PSO3CO3 +
+    //     overAll.CO4 * PSO3CO4 +
+    //     overAll.CO5 * PSO3CO5) /
+    //   denominator3;
 
-      const PSA4 =
-      (overAll.CO1 * PSO3CO1 +
-        overAll.CO2 * PSO4CO2 +
-        overAll.CO3 * PSO4CO3 +
-        overAll.CO4 * PSO4CO4 +
-        overAll.CO5 * PSO4CO5) /
-      denominator4;
+    // const PSA4 =
+    //   (overAll.CO1 * PSO3CO1 +
+    //     overAll.CO2 * PSO4CO2 +
+    //     overAll.CO3 * PSO4CO3 +
+    //     overAll.CO4 * PSO4CO4 +
+    //     overAll.CO5 * PSO4CO5) /
+    //   denominator4;
 
-      const PSA5 =
-      (overAll.CO1 * PSO5CO1 +
-        overAll.CO2 * PSO5CO2 +
-        overAll.CO3 * PSO5CO3 +
-        overAll.CO4 * PSO5CO4 +
-        overAll.CO5 * PSO5CO5) /
-      denominator5;
+    // const PSA5 =
+    //   (overAll.CO1 * PSO5CO1 +
+    //     overAll.CO2 * PSO5CO2 +
+    //     overAll.CO3 * PSO5CO3 +
+    //     overAll.CO4 * PSO5CO4 +
+    //     overAll.CO5 * PSO5CO5) /
+    //   denominator5;
 
-      const PSA = {
-        PSA1: PSA1,
-        PSA2: PSA2,
-        PSA3: PSA3,
-        PSA4: PSA4,
-        PSA5: PSA5,
-      }
+    // const PSA = {
+    //   PSA1: PSA1,
+    //   PSA2: PSA2,
+    //   PSA3: PSA3,
+    //   PSA4: PSA4,
+    //   PSA5: PSA5,
+    // }
 
-      const PsaMean = (PSA.PSA1 + PSA.PSA2 + PSA.PSA3 + PSA.PSA4 + PSA.PSA5) / 5
+    // const PsaMean = (PSA.PSA1 + PSA.PSA2 + PSA.PSA3 + PSA.PSA4 + PSA.PSA5) / 5
 
     // Send the attainLevels, above40TCO, and above40ESECO as part of your JSON response
-    return res.status(200).json({ 
-      message: 'Marks updated successfully.', 
+    return res.status(200).json({
+      message: 'Marks updated successfully.',
       above40TCO,
       percentages,
       attainLevels,
@@ -843,17 +845,19 @@ async function getMarks(req: Request, res: Response) {
       overAll,
       averageAttainLevel,
       direct80,
-      PSA,
-      PsaMean
+      // PSA,
+      // PsaMean
     });
   } catch (error) {
     console.error(error);
     res.status(500).json({ error: 'Internal server error.' });
   }
 }
+//#endregion
 
-//addPso
+//#region addPso
 async function addPso(req: Request, res: Response) {
+
   const data = psoSchema.safeParse(req.body);
 
   if (!data.success) {
@@ -935,8 +939,9 @@ async function addPso(req: Request, res: Response) {
     });
   }
 }
+//#endregion
 
-//searchDepartment
+//#region searchDepartment
 async function searchDepartment(req: Request, res: Response) {
   const { question } = req.query;
 
@@ -961,16 +966,44 @@ async function searchDepartment(req: Request, res: Response) {
     });
   }
 }
+//#endregion
 
-//get Marks by code
+//#region getCode
+async function getCode(req: Request, res: Response) {
+  const { question } = req.query;
+
+  try {
+    if (question) {
+      const Courses = await prisma.code.findMany({
+        where: {
+          depCode: question as string,
+        },
+      });
+
+      return res.status(200).json({
+        data: Courses,
+      });
+    }
+  } catch (error) {
+    console.error(error);
+    return res.status(500).json({
+      error: {
+        message: "Internal server error",
+      },
+    });
+  }
+}
+//#endregion
+
+//#region get Marks by code
 async function getMarkByCode(req: Request, res: Response) {
-  const { code, department } = req.body;
+  const { code, department, page, pageSize } = req.query;
 
   try {
     // Check if the department exists
     const existingDepartment = await prisma.department.findFirst({
       where: {
-        departmentCode: department,
+        departmentCode: department?.toString(),
       },
     });
 
@@ -983,7 +1016,7 @@ async function getMarkByCode(req: Request, res: Response) {
     // Check if the code exists
     const existingCode = await prisma.code.findFirst({
       where: {
-        code: code,
+        code: code?.toString(),
       },
     });
 
@@ -993,23 +1026,225 @@ async function getMarkByCode(req: Request, res: Response) {
       });
     }
 
+    // Calculate pagination parameters
+    const pageNumber = parseInt(page?.toString() || '1', 15);
+    const pageSizeNumber = parseInt(pageSize?.toString() || '10', 15);
+    const skip = (pageNumber - 1) * pageSizeNumber;
+
     // Retrieve students associated with the department and code, including their marks
     const students = await prisma.student.findMany({
       where: {
         code: {
-          code: code,
+          code: code?.toString(),
         },
-        codeId: existingDepartment.id,
+        codeId: existingCode.id,
       },
       include: {
         marks: true,
       },
+      orderBy: {
+        id: "desc",
+      },
+      skip, // Skip records based on the page number
+      take: pageSizeNumber, // Limit the number of records per page
     });
 
-    // Return the students and their marks
-    res.status(200).json({ students });
+    // Calculate the total number of students that match the query
+    const totalStudentsCount = await prisma.student.count({
+      where: {
+        code: {
+          code: code?.toString(),
+        },
+        codeId: existingCode.id,
+      },
+    });
+
+    // Calculate the total number of pages
+    const totalPages = Math.ceil(totalStudentsCount / pageSizeNumber);
+
+    // Return the students, their marks, and the total number of pages
+    res.status(200).json({ data: students, totalPages });
   } catch (error) {
     console.error(error);
     res.status(500).json({ error: 'Internal server error.' });
   }
 }
+
+//#endregion
+
+//#region deleteMark
+//delete the mark
+async function deleteMark(req: Request, res: Response) {
+  try {
+    const { id, exam } = req.body;
+
+    if (!id || !exam) {
+      return res.status(400).json({
+        error: "Params missing id or exam"
+      });
+    }
+
+    if (typeof id !== 'number') {
+      return res.status(400).json({
+        error: "Invalid ID. ID must be a number."
+      });
+    }
+
+    const mark = await prisma.marks.findUnique({
+      where: {
+        id: id,
+      }
+    });
+
+    if (!mark) {
+      return res.status(404).json({
+        error: "Mark not found"
+      });
+    }
+
+     // Check if specific fields (e.g., C1Q1, C2Q1, ESEQ1) are null
+     if (
+      (exam === "C1" && mark.C1Q1 === null) ||
+      (exam === "C2" && mark.C2Q1 === null) ||
+      (exam === "ESE" && mark.ESEQ1 === null)
+    ) {
+      // Delete the record
+      await prisma.marks.delete({
+        where: {
+          id: id
+        }
+      });
+
+      return res.status(200).json({
+        success: "Mark deleted successfully",
+      });
+    }
+
+    // Create an object to specify the fields to update based on the exam type
+    const updateFields: Record<string, null> = {}; // Specify the type
+
+    if (exam === "C1") {
+      for (let i = 1; i <= 28; i++) {
+        updateFields[`C1Q${i}`] = null;
+      }
+      // Nullify C1C01 to C1C05
+      for (let i = 1; i <= 5; i++) {
+        updateFields[`C1CO${i}`] = null;
+      }
+
+      // Nullify C1STATUS and C1STAFF
+      updateFields["C1STATUS"] = null;
+      updateFields["C1STAFF"] = null;
+
+    } else if (exam === "C2") {
+      for (let i = 1; i <= 28; i++) {
+        updateFields[`C2Q${i}`] = null;
+      }
+      // Nullify C2C01 to C2C05
+      for (let i = 1; i <= 5; i++) {
+        updateFields[`C2CO${i}`] = null;
+      }
+
+      updateFields["C2STATUS"] = null;
+      updateFields["C2STAFF"] = null;
+
+    } else if (exam === "ESE") {
+      for (let i = 1; i <= 28; i++) {
+        updateFields[`ESEQ${i}`] = null;
+      }
+      // Nullify ESEC01 to ESEC05
+      for (let i = 1; i <= 5; i++) {
+        updateFields[`ESECO${i}`] = null;
+      }
+
+      updateFields["ESESTATUS"] = null;
+      updateFields["ESESTAFF"] = null;
+
+    } else {
+      return res.status(404).json({
+        error: "Invalid exam type"
+      });
+    }
+    
+
+    // Update the specified fields in the marks table
+    await prisma.marks.update({
+      where: {
+        id: id,
+      },
+      data: updateFields,
+    });
+
+    return res.status(200).json({
+      success: "Successfully marks updated to null",
+    });
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ error: 'Internal server error.' });
+  }
+}
+//#endregion
+
+//#region get marks by code
+//get marks by code
+async function getMarksWithCode(req: Request, res: Response) {
+  try {
+    const { department, code, regNo } = req.body;
+
+    if (!department || !code || !regNo) {
+      return res.status(400).json({
+        error: "Missing required parameters: department, code, or regNo",
+      });
+    }
+
+    if (typeof department !== 'string') {
+      return res.status(400).json({
+        error: "department is string."
+      });
+    }
+
+    if (typeof code !== 'string') {
+      return res.status(400).json({
+        error: "code is string."
+      });
+    }
+
+    if (typeof regNo !== 'string') {
+      return res.status(400).json({
+        error: "regNo is string."
+      });
+    }
+
+    // Query the database to get the marks based on department, code, and regNo
+    const marks = await prisma.marks.findMany({
+      where: {
+        student: {
+          regNo: regNo,
+          code: {
+            department: {
+              departmentCode: department,
+            },
+            code: code,
+          },
+        },
+      },
+    });
+
+    if(marks.length === 0) {
+      return res.status(200).json({
+        msg: "No data found for given details"
+    })
+  }
+
+    return res.status(200).json({
+      success: "Marks retrieved successfully",
+      marks: marks,
+    });
+  } catch (error) {
+    console.error(error);
+    return res.status(500).json({
+      error: "Internal server error",
+    });
+  }
+}
+//#endregion
