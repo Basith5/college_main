@@ -16,7 +16,8 @@ userRouter.get("/searchDepartment", searchDepartment);
 userRouter.get("/getMarkByCode", getMarkByCode);
 userRouter.put("/byCode", getMarksWithCode);
 userRouter.get("/searchCode", getCode);
-userRouter.post("/deleteMark", deleteMark)
+userRouter.delete("/deleteMark", deleteMark)
+userRouter.put("/getByStudent", studentAttain)
 
 
 //#region Add Marks
@@ -591,8 +592,6 @@ async function getMarks(req: Request, res: Response) {
       };
     });
 
-    // ...
-
     // Perform batch updates to update the TCO values in the marks table
     const updateresult = await Promise.all(
       updatedStudents.map(async (updatedStudent) => {
@@ -672,10 +671,9 @@ async function getMarks(req: Request, res: Response) {
       TCO5: above40TCO5.length,
     };
 
-    // Define a function to calculate ATTAINLEVEL based on percentage
     const calculateAttainLevel = (percentage: number) => {
-      return percentage < 40 ? 0 : percentage < 60 ? 1 : percentage < 75 ? 2 : 3;
-    }
+      return percentage >= 75 ? 3 : percentage >= 60 ? 2 : percentage >= 40 ? 1 : 0;
+    };
 
     const percentages = {
       TCO1: totalStudents > 0 ? ((countAbove40TCO1 / totalStudents) * 100).toFixed(2) : 0,
@@ -718,7 +716,6 @@ async function getMarks(req: Request, res: Response) {
       student.marks.some((mark) => mark.ESECO5 !== null && mark.ESECO5 >= 4)
     ).length;
 
-
     // Create an object to hold all above-40 ESECO values
     const above40ESECO = {
       ESECO1: countAbove12ESECO1,
@@ -759,7 +756,6 @@ async function getMarks(req: Request, res: Response) {
       ESECO3: attainLevelESECO3,
       ESECO4: attainLevelESECO4,
       ESECO5: attainLevelESECO5,
-
     };
 
     let overAll = {
@@ -768,84 +764,11 @@ async function getMarks(req: Request, res: Response) {
       CO3: (attainLevels.TCO3 + attainLevelsESECO.ESECO3) / 2,
       CO4: (attainLevels.TCO4 + attainLevelsESECO.ESECO4) / 2,
       CO5: (attainLevels.TCO5 + attainLevelsESECO.ESECO5) / 2,
-    }
+    };
 
-    let averageAttainLevel = (overAll.CO1 + overAll.CO2 + overAll.CO3 + overAll.CO4 + overAll.CO5) / 5
+    let averageAttainLevel = (overAll.CO1 + overAll.CO2 + overAll.CO3 + overAll.CO4 + overAll.CO5) / 5;
 
-    let direct80 = (80 * averageAttainLevel) / 100
-
-    // const psoRecord = await prisma.pSO.findFirst({
-    //   where: {
-    //     code: {
-    //       code: code,
-    //     },
-    //   },
-    // });
-
-    // if (!psoRecord) {
-    //   return "PSO not found for given course code";
-    // }
-
-    // // Extract PSO1CO1 to PSO1CO5 values from the PSO record
-    // const { PSO1CO1, PSO1CO2, PSO1CO3, PSO1CO4, PSO1CO5, PSO2CO1, PSO2CO2, PSO2CO3, PSO2CO4, PSO2CO5, PSO3CO1, PSO3CO2, PSO3CO3, PSO3CO4, PSO3CO5, PSO4CO1, PSO4CO2, PSO4CO3, PSO4CO4, PSO4CO5, PSO5CO1, PSO5CO2, PSO5CO3, PSO5CO4, PSO5CO5 } = psoRecord;
-
-    // // Calculate the denominator (PSOCO1 + PSOCO2 + PSOCO3 + PSOCO4 + PSOCO5)
-    // const denominator1 = PSO1CO1 + PSO1CO2 + PSO1CO3 + PSO1CO4 + PSO1CO5;
-    // const denominator2 = PSO2CO1 + PSO2CO2 + PSO2CO3 + PSO2CO4 + PSO2CO5;
-    // const denominator3 = PSO3CO1 + PSO3CO2 + PSO3CO3 + PSO3CO4 + PSO3CO5;
-    // const denominator4 = PSO4CO1 + PSO4CO2 + PSO4CO3 + PSO4CO4 + PSO4CO5;
-    // const denominator5 = PSO5CO1 + PSO5CO2 + PSO5CO3 + PSO5CO4 + PSO5CO5;
-
-    // // Calculate PSA using the provided formula
-    // const PSA1 =
-    //   (overAll.CO1 * PSO1CO1 +
-    //     overAll.CO2 * PSO1CO2 +
-    //     overAll.CO3 * PSO1CO3 +
-    //     overAll.CO4 * PSO1CO4 +
-    //     overAll.CO5 * PSO1CO5) /
-    //   denominator1;
-
-    // const PSA2 =
-    //   (overAll.CO1 * PSO2CO1 +
-    //     overAll.CO2 * PSO2CO2 +
-    //     overAll.CO3 * PSO2CO3 +
-    //     overAll.CO4 * PSO2CO4 +
-    //     overAll.CO5 * PSO2CO5) /
-    //   denominator2;
-
-    // const PSA3 =
-    //   (overAll.CO1 * PSO3CO1 +
-    //     overAll.CO2 * PSO3CO2 +
-    //     overAll.CO3 * PSO3CO3 +
-    //     overAll.CO4 * PSO3CO4 +
-    //     overAll.CO5 * PSO3CO5) /
-    //   denominator3;
-
-    // const PSA4 =
-    //   (overAll.CO1 * PSO3CO1 +
-    //     overAll.CO2 * PSO4CO2 +
-    //     overAll.CO3 * PSO4CO3 +
-    //     overAll.CO4 * PSO4CO4 +
-    //     overAll.CO5 * PSO4CO5) /
-    //   denominator4;
-
-    // const PSA5 =
-    //   (overAll.CO1 * PSO5CO1 +
-    //     overAll.CO2 * PSO5CO2 +
-    //     overAll.CO3 * PSO5CO3 +
-    //     overAll.CO4 * PSO5CO4 +
-    //     overAll.CO5 * PSO5CO5) /
-    //   denominator5;
-
-    // const PSA = {
-    //   PSA1: PSA1,
-    //   PSA2: PSA2,
-    //   PSA3: PSA3,
-    //   PSA4: PSA4,
-    //   PSA5: PSA5,
-    // }
-
-    // const PsaMean = (PSA.PSA1 + PSA.PSA2 + PSA.PSA3 + PSA.PSA4 + PSA.PSA5) / 5
+    let direct80 = (80 * averageAttainLevel) / 100;
 
     // Send the attainLevels, above40TCO, and above40ESECO as part of your JSON response
     return res.status(200).json({
@@ -859,8 +782,6 @@ async function getMarks(req: Request, res: Response) {
       overAll,
       averageAttainLevel,
       direct80,
-      // PSA,
-      // PsaMean
     });
   } catch (error) {
     console.error(error);
@@ -1300,4 +1221,1257 @@ async function getMarksWithCode(req: Request, res: Response) {
     });
   }
 }
+// async function getMarksWithCode(req: Request, res: Response) {
+//   try {
+//     const { code, regNo } = req.body;
+
+//     if (!code || !regNo) {
+//       return res.status(400).json({
+//         error: "Missing required parameters: code or regNo",
+//       });
+//     }
+
+//     if (typeof code !== 'string') {
+//       return res.status(400).json({
+//         error: "code is not a string."
+//       });
+//     }
+
+//     if (typeof regNo !== 'string') {
+//       return res.status(400).json({
+//         error: "regNo is not a string."
+//       });
+//     }
+
+//     console.log(code,regNo);
+
+//     const coder = await prisma.code.findFirst({
+//       where: {
+//         code: code
+//       }
+//     })
+
+//     const reg = await prisma.student.findFirst({
+//       where: {
+//         regNo: regNo
+//       }
+//     })
+
+//     if(!coder) {
+//       console.log("code is unavailabe")
+//     }
+
+//     if(!reg) {
+//       console.log("regNo is unavailabe")
+//     }
+
+    
+//     const marks = await prisma.marks.findMany({
+//       where: {
+//         student: {
+//           regNo: regNo,
+//           code: {
+//             code: code,
+//           },
+//         },
+//       },
+//     });
+
+//     if (marks.length === 0) {
+//       return res.status(200).json({
+//         msg: "No data found for given details"
+//       });
+//     }
+
+//     return res.status(200).json({
+//       success: "Marks retrieved successfully",
+//       marks: marks,
+//     });
+//   } catch (error) {
+//     console.error(error);
+//     return res.status(500).json({
+//       error: "Internal server error",
+//     });
+//   }
+// }
+//#endregion
+
+//#region get by student reg
+
+//get by student reg no
+// async function studentAttain(req: Request, res: Response) {
+//   try {
+//     const { regNo } = req.body;
+
+//     if (!regNo) {
+//       return res.status(400).json({ error: 'regNo is required.' });
+//     }
+
+//     const students = await prisma.student.findMany({
+//       where: {
+//         regNo: regNo,
+//       },
+//       include: {
+//         marks: true,
+//         code: {
+//           select: {
+//             name: true,
+//           },
+//         },
+//       },
+//     });
+
+//     if (students.length === 0) {
+//       return res.status(404).json({ error: 'No students found for the provided registration number.' });
+//     }
+
+//     let results: {
+//       codeName: string;
+//       percentageAbove40: number;
+//       attainLevel: number;
+//     }[] = [];
+
+//     return res.status(200).json({ results });
+//   } catch (error) {
+//     console.error(error);
+//     return res.status(500).json({ error: 'Internal server error.' });
+//   }
+// }
+
+//step-2
+// async function studentAttain(req: Request, res: Response) {
+//   try {
+//     const { regNo } = req.body;
+
+//     if (!regNo) {
+//       return res.status(400).json({ error: 'regNo is required.' });
+//     }
+
+//     const students = await prisma.student.findMany({
+//       where: {
+//         regNo: regNo,
+//       },
+//       include: {
+//         marks: true,
+//         code: {
+//           select: {
+//             name: true,
+//           },
+//         },
+//       },
+//     });
+
+//     if (students.length === 0) {
+//       return res.status(404).json({ error: 'No students found for the provided registration number.' });
+//     }
+
+//     const above40TCOByCourse: Record<string, { [key: string]: number }> = {};
+
+//     students.forEach((student) => {
+//       const { marks, code } = student;
+//       const courseName = code.name;
+//       if (!above40TCOByCourse[courseName]) {
+//         above40TCOByCourse[courseName] = { TCO1: 0, TCO2: 0, TCO3: 0, TCO4: 0, TCO5: 0 };
+//       }
+
+//       marks.forEach((mark) => {
+//         const TCO1 = mark.TCO1 || 0;
+//         const TCO2 = mark.TCO2 || 0;
+//         const TCO3 = mark.TCO3 || 0;
+//         const TCO4 = mark.TCO4 || 0;
+//         const TCO5 = mark.TCO5 || 0;
+
+//         if (TCO1 >= 12) {
+//           above40TCOByCourse[courseName].TCO1++;
+//         }
+
+//         if (TCO2 >= 16) {
+//           above40TCOByCourse[courseName].TCO2++;
+//         }
+
+//         if (TCO3 >= 14) {
+//           above40TCOByCourse[courseName].TCO3++;
+//         }
+
+//         if (TCO4 >= 14) {
+//           above40TCOByCourse[courseName].TCO4++;
+//         }
+
+//         if (TCO5 >= 8) {
+//           above40TCOByCourse[courseName].TCO5++;
+//         }
+//       });
+//     });
+
+//     return res.status(200).json({
+//       above40TCO: above40TCOByCourse,
+//     });
+//   } catch (error) {
+//     console.error(error);
+//     return res.status(500).json({ error: 'Internal server error.' });
+//   }
+// }
+
+//step-3
+// async function studentAttain(req: Request, res: Response) {
+//   try {
+//     const { regNo } = req.body;
+
+//     if (!regNo) {
+//       return res.status(400).json({ error: 'regNo is required.' });
+//     }
+
+//     const students = await prisma.student.findMany({
+//       where: {
+//         regNo: regNo,
+//       },
+//       include: {
+//         marks: true,
+//         code: {
+//           select: {
+//             name: true,
+//           },
+//         },
+//       },
+//     });
+
+//     if (students.length === 0) {
+//       return res.status(404).json({ error: 'No students found for the provided registration number.' });
+//     }
+
+//     const above40TCOByCourse: Record<string, { [key: string]: number }> = {};
+
+//     students.forEach((student) => {
+//       const { marks, code } = student;
+//       const courseName = code.name;
+//       if (!above40TCOByCourse[courseName]) {
+//         above40TCOByCourse[courseName] = { TCO1: 0, TCO2: 0, TCO3: 0, TCO4: 0, TCO5: 0 };
+//       }
+
+//       marks.forEach((mark) => {
+//         const TCO1 = mark.TCO1 || 0;
+//         const TCO2 = mark.TCO2 || 0;
+//         const TCO3 = mark.TCO3 || 0;
+//         const TCO4 = mark.TCO4 || 0;
+//         const TCO5 = mark.TCO5 || 0;
+
+//         if (TCO1 >= 12) {
+//           above40TCOByCourse[courseName].TCO1++;
+//         }
+
+//         if (TCO2 >= 16) {
+//           above40TCOByCourse[courseName].TCO2++;
+//         }
+
+//         if (TCO3 >= 14) {
+//           above40TCOByCourse[courseName].TCO3++;
+//         }
+
+//         if (TCO4 >= 14) {
+//           above40TCOByCourse[courseName].TCO4++;
+//         }
+
+//         if (TCO5 >= 8) {
+//           above40TCOByCourse[courseName].TCO5++;
+//         }
+//       });
+//     });
+
+//     // Calculate percentages for each TCO in each course
+//     const percentages: Record<string, { [key: string]: string }> = {};
+
+//     Object.keys(above40TCOByCourse).forEach((courseName) => {
+//       const courseData = above40TCOByCourse[courseName];
+//       const totalStudents = 1;
+
+//       percentages[courseName] = {
+//         TCO1: ((courseData.TCO1 / totalStudents) * 100).toFixed(2),
+//         TCO2: ((courseData.TCO2 / totalStudents) * 100).toFixed(2),
+//         TCO3: ((courseData.TCO3 / totalStudents) * 100).toFixed(2),
+//         TCO4: ((courseData.TCO4 / totalStudents) * 100).toFixed(2),
+//         TCO5: ((courseData.TCO5 / totalStudents) * 100).toFixed(2),
+//       };
+//     });
+
+//     return res.status(200).json({
+//       above40TCO: above40TCOByCourse,
+//       percentages,
+//     });
+//   } catch (error) {
+//     console.error(error);
+//     return res.status(500).json({ error: 'Internal server error.' });
+//   }
+// }
+
+//step-4
+// async function studentAttain(req: Request, res: Response) {
+//   try {
+//     const { regNo } = req.body;
+
+//     if (!regNo) {
+//       return res.status(400).json({ error: 'regNo is required.' });
+//     }
+
+//     const students = await prisma.student.findMany({
+//       where: {
+//         regNo: regNo,
+//       },
+//       include: {
+//         marks: true,
+//         code: {
+//           select: {
+//             code: true,
+//             name: true,
+//           },
+//         },
+//       },
+//     });
+
+//     if (students.length === 0) {
+//       return res.status(404).json({ error: 'No students found for the provided registration number.' });
+//     }
+
+//     function calculateAttainLevel(percentage: number): number {
+//       if (percentage <= 40) {
+//         return 0;
+//       } else if (percentage <= 60) {
+//         return 1;
+//       } else if (percentage <= 75) {
+//         return 2;
+//       } else {
+//         return 3;
+//       }
+//     }
+
+//     const above40TCOByCourse: Record<string, { [key: string]: number }> = {};
+
+//     students.forEach((student) => {
+//       const { marks, code } = student;
+//       const courseName = code.name;
+//       if (!above40TCOByCourse[courseName]) {
+//         above40TCOByCourse[courseName] = { TCO1: 0, TCO2: 0, TCO3: 0, TCO4: 0, TCO5: 0 };
+//       }
+
+//       marks.forEach((mark) => {
+//         const TCO1 = mark.TCO1 || 0;
+//         const TCO2 = mark.TCO2 || 0;
+//         const TCO3 = mark.TCO3 || 0;
+//         const TCO4 = mark.TCO4 || 0;
+//         const TCO5 = mark.TCO5 || 0;
+
+//         if (TCO1 >= 12) {
+//           above40TCOByCourse[courseName].TCO1++;
+//         }
+
+//         if (TCO2 >= 16) {
+//           above40TCOByCourse[courseName].TCO2++;
+//         }
+
+//         if (TCO3 >= 14) {
+//           above40TCOByCourse[courseName].TCO3++;
+//         }
+
+//         if (TCO4 >= 14) {
+//           above40TCOByCourse[courseName].TCO4++;
+//         }
+
+//         if (TCO5 >= 8) {
+//           above40TCOByCourse[courseName].TCO5++;
+//         }
+//       });
+//     });
+
+//     // Calculate percentages and attainLevelTCO for each TCO in each course
+//     const result: Record<string, { [key: string]: any }> = {};
+
+//     Object.keys(above40TCOByCourse).forEach((courseName) => {
+//       const courseData = above40TCOByCourse[courseName];
+//       const totalStudents = 1; // Assuming there is one student
+
+//       result[courseName] = {
+//         ...courseData,
+//         percentages: {
+//           TCO1: ((courseData.TCO1 / totalStudents) * 100).toFixed(2),
+//           TCO2: ((courseData.TCO2 / totalStudents) * 100).toFixed(2),
+//           TCO3: ((courseData.TCO3 / totalStudents) * 100).toFixed(2),
+//           TCO4: ((courseData.TCO4 / totalStudents) * 100).toFixed(2),
+//           TCO5: ((courseData.TCO5 / totalStudents) * 100).toFixed(2),
+//         },
+//         attainLevelTCO: {
+//           TCO1: calculateAttainLevel(parseFloat(((courseData.TCO1 / totalStudents) * 100).toFixed(2))),
+//           TCO2: calculateAttainLevel(parseFloat(((courseData.TCO2 / totalStudents) * 100).toFixed(2))),
+//           TCO3: calculateAttainLevel(parseFloat(((courseData.TCO3 / totalStudents) * 100).toFixed(2))),
+//           TCO4: calculateAttainLevel(parseFloat(((courseData.TCO4 / totalStudents) * 100).toFixed(2))),
+//           TCO5: calculateAttainLevel(parseFloat(((courseData.TCO5 / totalStudents) * 100).toFixed(2))),
+//         },
+//       };
+//     });
+
+//     return res.status(200).json(result);
+//   } catch (error) {
+//     console.error(error);
+//     return res.status(500).json({ error: 'Internal server error.' });
+//   }
+// }
+
+//step-5 cia complete---------------------------------------------
+// async function studentAttain(req: Request, res: Response) {
+//   try {
+//     const { regNo } = req.body;
+
+//     if (!regNo) {
+//       return res.status(400).json({ error: 'regNo is required.' });
+//     }
+
+//     const students = await prisma.student.findMany({
+//       where: {
+//         regNo: regNo,
+//       },
+//       include: {
+//         marks: true,
+//         code: {
+//           select: {
+//             code: true,
+//             name: true,
+//           },
+//         },
+//       },
+//     });
+
+//     if (students.length === 0) {
+//       return res.status(404).json({ error: 'No students found for the provided registration number.' });
+//     }
+
+//     function calculateAttainLevel(percentage: number): number {
+//       if (percentage <= 40) {
+//         return 0;
+//       } else if (percentage <= 60) {
+//         return 1;
+//       } else if (percentage <= 75) {
+//         return 2;
+//       } else {
+//         return 3;
+//       }
+//     }
+
+//     const above40TCOByCourse: Record<string, { [key: string]: number }> = {};
+
+//     students.forEach((student) => {
+//       const { marks, code } = student;
+//       const courseName = code.name;
+//       if (!above40TCOByCourse[courseName]) {
+//         above40TCOByCourse[courseName] = { TCO1: 0, TCO2: 0, TCO3: 0, TCO4: 0, TCO5: 0 };
+//       }
+
+//       marks.forEach((mark) => {
+//         const TCO1 = mark.TCO1 || 0;
+//         const TCO2 = mark.TCO2 || 0;
+//         const TCO3 = mark.TCO3 || 0;
+//         const TCO4 = mark.TCO4 || 0;
+//         const TCO5 = mark.TCO5 || 0;
+
+//         if (TCO1 >= 12) {
+//           above40TCOByCourse[courseName].TCO1++;
+//         }
+
+//         if (TCO2 >= 16) {
+//           above40TCOByCourse[courseName].TCO2++;
+//         }
+
+//         if (TCO3 >= 14) {
+//           above40TCOByCourse[courseName].TCO3++;
+//         }
+
+//         if (TCO4 >= 14) {
+//           above40TCOByCourse[courseName].TCO4++;
+//         }
+
+//         if (TCO5 >= 8) {
+//           above40TCOByCourse[courseName].TCO5++;
+//         }
+//       });
+//     });
+
+//     // Calculate percentages and attainLevelTCO for each TCO in each course
+//     const result: Record<string, { [key: string]: any }> = {};
+
+//     Object.keys(above40TCOByCourse).forEach((courseName) => {
+//       const courseData = above40TCOByCourse[courseName];
+//       const courseCode = students[0].code.code;
+
+//       const totalStudents = 1; // Assuming there is one student
+
+//       // Calculate the totalAttain by finding the average attain level across TCOs
+//       const attainLevelTCO = {
+//         TCO1: calculateAttainLevel(((courseData.TCO1 / totalStudents) * 100)),
+//         TCO2: calculateAttainLevel(((courseData.TCO2 / totalStudents) * 100)),
+//         TCO3: calculateAttainLevel(((courseData.TCO3 / totalStudents) * 100)),
+//         TCO4: calculateAttainLevel(((courseData.TCO4 / totalStudents) * 100)),
+//         TCO5: calculateAttainLevel(((courseData.TCO5 / totalStudents) * 100)),
+//       };
+
+//       // Calculate the FinalLevel by averaging the attain levels of TCO1 to TCO5
+//       const FinalLevel =
+//         (attainLevelTCO.TCO1 +
+//           attainLevelTCO.TCO2 +
+//           attainLevelTCO.TCO3 +
+//           attainLevelTCO.TCO4 +
+//           attainLevelTCO.TCO5) / 5;
+
+//       const percentages = {
+//         TCO1: ((courseData.TCO1 / totalStudents) * 100).toFixed(2),
+//         TCO2: ((courseData.TCO2 / totalStudents) * 100).toFixed(2),
+//         TCO3: ((courseData.TCO3 / totalStudents) * 100).toFixed(2),
+//         TCO4: ((courseData.TCO4 / totalStudents) * 100).toFixed(2),
+//         TCO5: ((courseData.TCO5 / totalStudents) * 100).toFixed(2),
+//       }
+
+//       const attainFinalLevel = (attainLevelTCO.TCO1 + attainLevelTCO.TCO2 + attainLevelTCO.TCO3 + attainLevelTCO.TCO4 + attainLevelTCO.TCO5) / 5 
+
+
+//       result[courseName] = {
+//         ...courseData,
+//         courseCode: courseCode,
+//         // percentages,
+//         // percentages: {
+//         //   TCO1: ((courseData.TCO1 / totalStudents) * 100).toFixed(2),
+//         //   TCO2: ((courseData.TCO2 / totalStudents) * 100).toFixed(2),
+//         //   TCO3: ((courseData.TCO3 / totalStudents) * 100).toFixed(2),
+//         //   TCO4: ((courseData.TCO4 / totalStudents) * 100).toFixed(2),
+//         //   TCO5: ((courseData.TCO5 / totalStudents) * 100).toFixed(2),
+//         // },
+//         // attainLevelTCO: attainLevelTCO,
+//         FinalLevel: attainFinalLevel
+//       };
+//     });
+
+//     return res.status(200).json(result);
+//   } catch (error) {
+//     console.error(error);
+   
+//   }
+// }
+//---------------------------------------------------------------
+
+//step-6
+// async function studentAttain(req: Request, res: Response) {
+//   try {
+//     const { regNo } = req.body;
+
+//     if (!regNo) {
+//       return res.status(400).json({ error: 'regNo is required.' });
+//     }
+
+//     const students = await prisma.student.findMany({
+//       where: {
+//         regNo: regNo,
+//       },
+//       include: {
+//         marks: true,
+//         code: {
+//           select: {
+//             code: true,
+//             name: true,
+//           },
+//         },
+//       },
+//     });
+
+//     if (students.length === 0) {
+//       return res.status(404).json({ error: 'No students found for the provided registration number.' });
+//     }
+
+//     function calculateAttainLevel(percentage: number): number {
+//       if (percentage <= 40) {
+//         return 0;
+//       } else if (percentage <= 60) {
+//         return 1;
+//       } else if (percentage <= 75) {
+//         return 2;
+//       } else {
+//         return 3;
+//       }
+//     }
+
+//     // Create an object to hold the above-40 TCO values for each course
+//     const above40TCOByCourse: Record<string, { [key: string]: number }> = {};
+
+//     // Create an object to hold the above-40 ESE values for each course
+//     const above40ESEByCourse: Record<string, { [key: string]: number }> = {};
+
+//     students.forEach((student) => {
+//       const { marks, code } = student;
+//       const courseName = code.name;
+
+//       if (!above40TCOByCourse[courseName]) {
+//         above40TCOByCourse[courseName] = {
+//           TCO1: 0,
+//           TCO2: 0,
+//           TCO3: 0,
+//           TCO4: 0,
+//           TCO5: 0,
+//         };
+
+//         above40ESEByCourse[courseName] = {
+//           ESECO1: 0,
+//           ESECO2: 0,
+//           ESECO3: 0,
+//           ESECO4: 0,
+//           ESECO5: 0,
+//         };
+//       }
+
+//       marks.forEach((mark) => {
+//         const TCO1 = mark.TCO1 || 0;
+//         const TCO2 = mark.TCO2 || 0;
+//         const TCO3 = mark.TCO3 || 0;
+//         const TCO4 = mark.TCO4 || 0;
+//         const TCO5 = mark.TCO5 || 0;
+
+//         const ESECO1 = mark.ESECO1 || 0;
+//         const ESECO2 = mark.ESECO2 || 0;
+//         const ESECO3 = mark.ESECO3 || 0;
+//         const ESECO4 = mark.ESECO4 || 0;
+//         const ESECO5 = mark.ESECO5 || 0;
+
+//         if (TCO1 >= 12) {
+//           above40TCOByCourse[courseName].TCO1++;
+//         }
+
+//         if (TCO2 >= 16) {
+//           above40TCOByCourse[courseName].TCO2++;
+//         }
+
+//         if (TCO3 >= 14) {
+//           above40TCOByCourse[courseName].TCO3++;
+//         }
+
+//         if (TCO4 >= 14) {
+//           above40TCOByCourse[courseName].TCO4++;
+//         }
+
+//         if (TCO5 >= 8) {
+//           above40TCOByCourse[courseName].TCO5++;
+//         }
+
+//         if (ESECO1 >= 5) {
+//           above40ESEByCourse[courseName].ESECO1++;
+//         }
+
+//         if (ESECO2 >= 7) {
+//           above40ESEByCourse[courseName].ESECO2++;
+//         }
+
+//         if (ESECO3 >= 7) {
+//           above40ESEByCourse[courseName].ESECO3++;
+//         }
+
+//         if (ESECO4 >= 7) {
+//           above40ESEByCourse[courseName].ESECO4++;
+//         }
+
+//         if (ESECO5 >= 4) {
+//           above40ESEByCourse[courseName].ESECO5++;
+//         }
+//       });
+//     });
+
+//     // Calculate attainLevel for each TCO and ESE in each course
+//     const result: Record<string, { [key: string]: any }> = {};
+
+//     Object.keys(above40TCOByCourse).forEach((courseName) => {
+//       const courseData = above40TCOByCourse[courseName];
+//       const courseCode = students[0].code.code;
+
+//       const totalStudents = 1; // Assuming there is one student
+
+//       // Calculate the attain level for TCOs
+//       const attainLevelTCO = {
+//         TCO1: calculateAttainLevel(((courseData.TCO1 / totalStudents) * 100)),
+//         TCO2: calculateAttainLevel(((courseData.TCO2 / totalStudents) * 100)),
+//         TCO3: calculateAttainLevel(((courseData.TCO3 / totalStudents) * 100)),
+//         TCO4: calculateAttainLevel(((courseData.TCO4 / totalStudents) * 100)),
+//         TCO5: calculateAttainLevel(((courseData.TCO5 / totalStudents) * 100)),
+//       };
+
+//       // Calculate the attain level for ESE
+//       const attainLevelESE = calculateAttainLevel(((above40ESEByCourse[courseName].ESECO1 / totalStudents) * 100));
+
+//       // Calculate the FinalLevel by averaging the attain levels of TCO1 to TCO5 and ESE
+//       const FinalLevel =
+//         (attainLevelTCO.TCO1 +
+//           attainLevelTCO.TCO2 +
+//           attainLevelTCO.TCO3 +
+//           attainLevelTCO.TCO4 +
+//           attainLevelTCO.TCO5 +
+//           attainLevelESE) /
+//         6;
+
+//       result[courseName] = {
+//         ...courseData,
+//         courseCode: courseCode,
+//         percentagesTCO: {
+//           TCO1: ((courseData.TCO1 / totalStudents) * 100).toFixed(2),
+//           TCO2: ((courseData.TCO2 / totalStudents) * 100).toFixed(2),
+//           TCO3: ((courseData.TCO3 / totalStudents) * 100).toFixed(2),
+//           TCO4: ((courseData.TCO4 / totalStudents) * 100).toFixed(2),
+//           TCO5: ((courseData.TCO5 / totalStudents) * 100).toFixed(2),
+//         },
+//         above40ESE: above40ESEByCourse[courseName], // Add this line
+//         attainLevelTCO: attainLevelTCO,
+//         FinalLevel: FinalLevel,
+//       };
+//     });
+
+//     return res.status(200).json(result);
+//   } catch (error) {
+//     console.error(error);
+//   }
+// }
+
+//step-7
+// async function studentAttain(req: Request, res: Response) {
+//   try {
+//     const { regNo } = req.body;
+
+//     if (!regNo) {
+//       return res.status(400).json({ error: 'regNo is required.' });
+//     }
+
+//     const students = await prisma.student.findMany({
+//       where: {
+//         regNo: regNo,
+//       },
+//       include: {
+//         marks: true,
+//         code: {
+//           select: {
+//             code: true,
+//             name: true,
+//           },
+//         },
+//       },
+//     });
+
+//     if (students.length === 0) {
+//       return res.status(404).json({ error: 'No students found for the provided registration number.' });
+//     }
+
+//     function calculateAttainLevel(percentage: number): number {
+//       if (percentage <= 40) {
+//         return 0;
+//       } else if (percentage <= 60) {
+//         return 1;
+//       } else if (percentage <= 75) {
+//         return 2;
+//       } else {
+//         return 3;
+//       }
+//     }
+
+//     // Create an object to hold the above-40 TCO values for each course
+//     const above40TCOByCourse: Record<string, { [key: string]: number }> = {};
+
+//     // Create an object to hold the above-40 ESE values for each course
+//     const above40ESEByCourse: Record<string, { [key: string]: number }> = {};
+
+//     students.forEach((student) => {
+//       const { marks, code } = student;
+//       const courseName = code.name;
+
+//       if (!above40TCOByCourse[courseName]) {
+//         above40TCOByCourse[courseName] = {
+//           TCO1: 0,
+//           TCO2: 0,
+//           TCO3: 0,
+//           TCO4: 0,
+//           TCO5: 0,
+//         };
+
+//         above40ESEByCourse[courseName] = {
+//           ESECO1: 0,
+//           ESECO2: 0,
+//           ESECO3: 0,
+//           ESECO4: 0,
+//           ESECO5: 0,
+//         };
+//       }
+
+//       marks.forEach((mark) => {
+//         const TCO1 = mark.TCO1 || 0;
+//         const TCO2 = mark.TCO2 || 0;
+//         const TCO3 = mark.TCO3 || 0;
+//         const TCO4 = mark.TCO4 || 0;
+//         const TCO5 = mark.TCO5 || 0;
+
+//         const ESECO1 = mark.ESECO1 || 0;
+//         const ESECO2 = mark.ESECO2 || 0;
+//         const ESECO3 = mark.ESECO3 || 0;
+//         const ESECO4 = mark.ESECO4 || 0;
+//         const ESECO5 = mark.ESECO5 || 0;
+
+//         if (TCO1 >= 12) {
+//           above40TCOByCourse[courseName].TCO1++;
+//         }
+
+//         if (TCO2 >= 16) {
+//           above40TCOByCourse[courseName].TCO2++;
+//         }
+
+//         if (TCO3 >= 14) {
+//           above40TCOByCourse[courseName].TCO3++;
+//         }
+
+//         if (TCO4 >= 14) {
+//           above40TCOByCourse[courseName].TCO4++;
+//         }
+
+//         if (TCO5 >= 8) {
+//           above40TCOByCourse[courseName].TCO5++;
+//         }
+
+//         if (ESECO1 >= 5) {
+//           above40ESEByCourse[courseName].ESECO1++;
+//         }
+
+//         if (ESECO2 >= 7) {
+//           above40ESEByCourse[courseName].ESECO2++;
+//         }
+
+//         if (ESECO3 >= 7) {
+//           above40ESEByCourse[courseName].ESECO3++;
+//         }
+
+//         if (ESECO4 >= 7) {
+//           above40ESEByCourse[courseName].ESECO4++;
+//         }
+
+//         if (ESECO5 >= 4) {
+//           above40ESEByCourse[courseName].ESECO5++;
+//         }
+//       });
+//     });
+
+//     // Calculate attainLevel for each TCO and ESE in each course
+//     const result: Record<string, { [key: string]: any }> = {};
+
+//     Object.keys(above40TCOByCourse).forEach((courseName) => {
+//       const courseData = above40TCOByCourse[courseName];
+//       const courseCode = students[0].code.code;
+
+//       const totalStudents = 1; // Assuming there is one student
+
+//       // Calculate the attain level for TCOs
+//       const attainLevelTCO = {
+//         TCO1: calculateAttainLevel(((courseData.TCO1 / totalStudents) * 100)),
+//         TCO2: calculateAttainLevel(((courseData.TCO2 / totalStudents) * 100)),
+//         TCO3: calculateAttainLevel(((courseData.TCO3 / totalStudents) * 100)),
+//         TCO4: calculateAttainLevel(((courseData.TCO4 / totalStudents) * 100)),
+//         TCO5: calculateAttainLevel(((courseData.TCO5 / totalStudents) * 100)),
+//       };
+
+//       // Calculate the attain level for ESE
+//       const above40ESEData = above40ESEByCourse[courseName]; // Get the above-40 ESE data
+
+//       const attainLevelESE = {
+//         ESECO1: calculateAttainLevel(((above40ESEData.ESECO1 / totalStudents) * 100)),
+//         ESECO2: calculateAttainLevel(((above40ESEData.ESESECO2 / totalStudents) * 100)),
+//         ESECO3: calculateAttainLevel(((above40ESEData.ESESECO3 / totalStudents) * 100)),
+//         ESECO4: calculateAttainLevel(((above40ESEData.ESESECO4 / totalStudents) * 100)),
+//         ESECO5: calculateAttainLevel(((above40ESEData.ESESECO5 / totalStudents) * 100)),
+//       };
+
+//       // Calculate the FinalLevel by averaging the attain levels of TCO1 to TCO5 and ESE
+//       const FinalLevel =
+//         (attainLevelTCO.TCO1 +
+//           attainLevelTCO.TCO2 +
+//           attainLevelTCO.TCO3 +
+//           attainLevelTCO.TCO4 +
+//           attainLevelTCO.TCO5 +
+//           attainLevelESE.ESECO1 + // Use attainLevelESE
+//           attainLevelESE.ESECO2 +
+//           attainLevelESE.ESECO3 +
+//           attainLevelESE.ESECO4 +
+//           attainLevelESE.ESECO5) /
+//         11; // Total number of elements in TCO and ESE
+
+//       result[courseName] = {
+//         ...courseData,
+//         courseCode: courseCode,
+//         percentagesTCO: {
+//           TCO1: ((courseData.TCO1 / totalStudents) * 100).toFixed(2),
+//           TCO2: ((courseData.TCO2 / totalStudents) * 100).toFixed(2),
+//           TCO3: ((courseData.TCO3 / totalStudents) * 100).toFixed(2),
+//           TCO4: ((courseData.TCO4 / totalStudents) * 100).toFixed(2),
+//           TCO5: ((courseData.TCO5 / totalStudents) * 100).toFixed(2),
+//         },
+//         above40ESE: above40ESEByCourse[courseName],
+//         attainLevelTCO: attainLevelTCO,
+//         attainLevelESE: attainLevelESE, // Add this line for attainESE
+//         FinalLevel: FinalLevel,
+//       };
+//     });
+
+//     return res.status(200).json(result);
+//   } catch (error) {
+//     console.error(error);
+//     return res.status(500).json({ error: 'Internal server error' });
+//   }
+// }
+
+//step-8
+// async function studentAttain(req: Request, res: Response) {
+//   try {
+//     const { regNo } = req.body;
+
+//     if (!regNo) {
+//       return res.status(400).json({ error: 'regNo is required.' });
+//     }
+
+//     const students = await prisma.student.findMany({
+//       where: {
+//         regNo: regNo,
+//       },
+//       include: {
+//         marks: true,
+//         code: {
+//           select: {
+//             code: true,
+//             name: true,
+//           },
+//         },
+//       },
+//     });
+
+//     if (students.length === 0) {
+//       return res.status(404).json({ error: 'No students found for the provided registration number.' });
+//     }
+
+//     function calculateAttainLevel(percentage: number): number {
+//       if (percentage <= 40) {
+//         return 0;
+//       } else if (percentage <= 60) {
+//         return 1;
+//       } else if (percentage <= 75) {
+//         return 2;
+//       } else {
+//         return 3;
+//       }
+//     }
+
+//     // Create an object to hold the above-40 TCO values for each course
+//     const above40TCOByCourse: Record<string, { [key: string]: number }> = {};
+
+//     // Create an object to hold the above-40 ESE values for each course
+//     const above40ESEByCourse: Record<string, { [key: string]: number }> = {};
+
+//     students.forEach((student) => {
+//       const { marks, code } = student;
+//       const courseName = code.name;
+
+//       if (!above40TCOByCourse[courseName]) {
+//         above40TCOByCourse[courseName] = {
+//           TCO1: 0,
+//           TCO2: 0,
+//           TCO3: 0,
+//           TCO4: 0,
+//           TCO5: 0,
+//         };
+
+//         above40ESEByCourse[courseName] = {
+//           ESECO1: 0,
+//           ESECO2: 0,
+//           ESECO3: 0,
+//           ESECO4: 0,
+//           ESECO5: 0,
+//         };
+//       }
+
+//       marks.forEach((mark) => {
+//         const TCO1 = mark.TCO1 || 0;
+//         const TCO2 = mark.TCO2 || 0;
+//         const TCO3 = mark.TCO3 || 0;
+//         const TCO4 = mark.TCO4 || 0;
+//         const TCO5 = mark.TCO5 || 0;
+
+//         const ESECO1 = mark.ESECO1 || 0;
+//         const ESECO2 = mark.ESECO2 || 0;
+//         const ESECO3 = mark.ESECO3 || 0;
+//         const ESECO4 = mark.ESECO4 || 0;
+//         const ESECO5 = mark.ESECO5 || 0;
+
+//         if (TCO1 >= 12) {
+//           above40TCOByCourse[courseName].TCO1++;
+//         }
+
+//         if (TCO2 >= 16) {
+//           above40TCOByCourse[courseName].TCO2++;
+//         }
+
+//         if (TCO3 >= 14) {
+//           above40TCOByCourse[courseName].TCO3++;
+//         }
+
+//         if (TCO4 >= 14) {
+//           above40TCOByCourse[courseName].TCO4++;
+//         }
+
+//         if (TCO5 >= 8) {
+//           above40TCOByCourse[courseName].TCO5++;
+//         }
+
+//         if (ESECO1 >= 5) {
+//           above40ESEByCourse[courseName].ESECO1++;
+//         }
+
+//         if (ESECO2 >= 7) {
+//           above40ESEByCourse[courseName].ESECO2++;
+//         }
+
+//         if (ESECO3 >= 7) {
+//           above40ESEByCourse[courseName].ESECO3++;
+//         }
+
+//         if (ESECO4 >= 7) {
+//           above40ESEByCourse[courseName].ESECO4++;
+//         }
+
+//         if (ESECO5 >= 4) {
+//           above40ESEByCourse[courseName].ESECO5++;
+//         }
+//       });
+//     });
+
+//     // Calculate attainLevel for each TCO and ESE in each course
+//     const result: Record<string, { [key: string]: any }> = {};
+
+//     Object.keys(above40TCOByCourse).forEach((courseName) => {
+//       const courseData = above40TCOByCourse[courseName];
+//       const courseCode = students[0].code.code;
+
+//       const totalStudents = 1; // Assuming there is one student
+
+//       // Calculate the attain level for TCOs
+//       const attainLevelTCO = {
+//         TCO1: calculateAttainLevel(((courseData.TCO1 / totalStudents) * 100)),
+//         TCO2: calculateAttainLevel(((courseData.TCO2 / totalStudents) * 100)),
+//         TCO3: calculateAttainLevel(((courseData.TCO3 / totalStudents) * 100)),
+//         TCO4: calculateAttainLevel(((courseData.TCO4 / totalStudents) * 100)),
+//         TCO5: calculateAttainLevel(((courseData.TCO5 / totalStudents) * 100)),
+//       };
+
+//       // Calculate the attain level for ESE
+//       const above40ESEData = above40ESEByCourse[courseName]; // Get the above-40 ESE data
+
+//       const attainLevelESE = {
+//         ESECO1: calculateAttainLevel(((above40ESEData.ESECO1 / totalStudents) * 100)),
+//         ESECO2: calculateAttainLevel(((above40ESEData.ESESECO2 / totalStudents) * 100)),
+//         ESECO3: calculateAttainLevel(((above40ESEData.ESESECO3 / totalStudents) * 100)),
+//         ESECO4: calculateAttainLevel(((above40ESEData.ESESECO4 / totalStudents) * 100)),
+//         ESECO5: calculateAttainLevel(((above40ESEData.ESESECO5 / totalStudents) * 100)),
+//       };
+
+//       // Calculate the FinalLevel by averaging the attain levels of TCO1 to TCO5 and ESE
+//       const FinalLevel =
+//         (attainLevelTCO.TCO1 +
+//           attainLevelTCO.TCO2 +
+//           attainLevelTCO.TCO3 +
+//           attainLevelTCO.TCO4 +
+//           attainLevelTCO.TCO5 
+//           ) / 5; 
+//         const finaESELevel = 
+//         (attainLevelESE.ESECO1 + 
+//           attainLevelESE.ESECO2 + 
+//           attainLevelESE.ESECO3 + 
+//           attainLevelESE.ESECO4 + 
+//           attainLevelESE.ESECO5) / 5;
+
+//         const overAll = FinalLevel + finaESELevel;
+
+//       result[courseName] = {
+//         ...courseData,
+//         courseCode: courseCode,
+//         courseName: courseName,
+//         FinalLevel: FinalLevel,
+//         finaESELevel: finaESELevel,
+//         overAll: overAll
+//       };
+//     });
+
+//     return res.status(200).json(result);
+//   } catch (error) {
+//     console.error(error);
+//     return res.status(500).json({ error: 'Internal server error' });
+//   }
+// }
+
+async function studentAttain(req: Request, res: Response) {
+  try {
+    const { regNo } = req.body;
+
+    if (!regNo) {
+      return res.status(400).json({ error: 'regNo is required.' });
+    }
+
+    const students = await prisma.student.findMany({
+      where: {
+        regNo: regNo,
+      },
+      include: {
+        marks: true,
+        code: {
+          select: {
+            code: true,
+            name: true,
+          },
+        },
+      },
+    });
+
+    if (students.length === 0) {
+      return res.status(404).json({ error: 'No students found for the provided registration number.' });
+    }
+
+    function calculateAttainLevel(percentage: number): number {
+      if (percentage <= 40) {
+        return 0;
+      } else if (percentage <= 60) {
+        return 1;
+      } else if (percentage <= 75) {
+        return 2;
+      } else {
+        return 3;
+      }
+    }
+
+    const above40TCOByCourse: Record<string, { [key: string]: number }> = {};
+    const above40ESEByCourse: Record<string, { [key: string]: number }> = {};
+
+    students.forEach((student) => {
+      const { marks, code } = student;
+      const courseName = code.name;
+
+      if (!above40TCOByCourse[courseName]) {
+        above40TCOByCourse[courseName] = {
+          TCO1: 0,
+          TCO2: 0,
+          TCO3: 0,
+          TCO4: 0,
+          TCO5: 0,
+        };
+
+        above40ESEByCourse[courseName] = {
+          ESECO1: 0,
+          ESECO2: 0,
+          ESECO3: 0,
+          ESECO4: 0,
+          ESECO5: 0,
+        };
+      }
+
+      marks.forEach((mark) => {
+        const TCO1 = mark.TCO1 || 0;
+        const TCO2 = mark.TCO2 || 0;
+        const TCO3 = mark.TCO3 || 0;
+        const TCO4 = mark.TCO4 || 0;
+        const TCO5 = mark.TCO5 || 0;
+
+        const ESECO1 = mark.ESECO1 || 0;
+        const ESECO2 = mark.ESECO2 || 0;
+        const ESECO3 = mark.ESECO3 || 0;
+        const ESECO4 = mark.ESECO4 || 0;
+        const ESECO5 = mark.ESECO5 || 0;
+
+        if (TCO1 >= 12) {
+          above40TCOByCourse[courseName].TCO1++;
+        }
+
+        if (TCO2 >= 16) {
+          above40TCOByCourse[courseName].TCO2++;
+        }
+
+        if (TCO3 >= 14) {
+          above40TCOByCourse[courseName].TCO3++;
+        }
+
+        if (TCO4 >= 14) {
+          above40TCOByCourse[courseName].TCO4++;
+        }
+
+        if (TCO5 >= 8) {
+          above40TCOByCourse[courseName].TCO5++;
+        }
+
+        if (ESECO1 >= 5) {
+          above40ESEByCourse[courseName].ESECO1++;
+        }
+
+        if (ESECO2 >= 7) {
+          above40ESEByCourse[courseName].ESECO2++;
+        }
+
+        if (ESECO3 >= 7) {
+          above40ESEByCourse[courseName].ESECO3++;
+        }
+
+        if (ESECO4 >= 7) {
+          above40ESEByCourse[courseName].ESECO4++;
+        }
+
+        if (ESECO5 >= 4) {
+          above40ESEByCourse[courseName].ESECO5++;
+        }
+      });
+    });
+
+    const result: Record<string, { [key: string]: any }> = {};
+
+    Object.keys(above40TCOByCourse).forEach((courseName) => {
+      const courseData = above40TCOByCourse[courseName];
+      const courseCode = students[0].code.code;
+      const totalStudents = 1;
+
+      const attainLevelTCO = {
+        TCO1: calculateAttainLevel((courseData.TCO1 / totalStudents) * 100),
+        TCO2: calculateAttainLevel((courseData.TCO2 / totalStudents) * 100),
+        TCO3: calculateAttainLevel((courseData.TCO3 / totalStudents) * 100),
+        TCO4: calculateAttainLevel((courseData.TCO4 / totalStudents) * 100),
+        TCO5: calculateAttainLevel((courseData.TCO5 / totalStudents) * 100),
+      };
+
+      const above40ESEData = above40ESEByCourse[courseName];
+
+      const attainLevelESE = {
+        ESECO1: calculateAttainLevel((above40ESEData.ESECO1 / totalStudents) * 100),
+        ESECO2: calculateAttainLevel((above40ESEData.ESECO2 / totalStudents) * 100),
+        ESECO3: calculateAttainLevel((above40ESEData.ESECO3 / totalStudents) * 100),
+        ESECO4: calculateAttainLevel((above40ESEData.ESECO4 / totalStudents) * 100),
+        ESECO5: calculateAttainLevel((above40ESEData.ESECO5 / totalStudents) * 100),
+      };
+
+      const FinalLevel =
+        (attainLevelTCO.TCO1 + attainLevelTCO.TCO2 + attainLevelTCO.TCO3 + attainLevelTCO.TCO4 + attainLevelTCO.TCO5) / 5;
+      const finalESELevel =
+        (attainLevelESE.ESECO1 + attainLevelESE.ESECO2 + attainLevelESE.ESECO3 + attainLevelESE.ESECO4 + attainLevelESE.ESECO5) / 5;
+
+      const overAll = (FinalLevel + finalESELevel) / 2;
+
+      result[courseName] = {
+        ...courseData,
+        courseCode: courseCode,
+        courseName: courseName,
+        FinalLevel: FinalLevel,
+        finalESELevel: finalESELevel,
+        overAll: overAll,
+      };
+    });
+
+    return res.status(200).json(result);
+  } catch (error) {
+    console.error(error);
+    return res.status(500).json({ error: 'Internal server error' });
+  }
+}
+
+
 //#endregion
