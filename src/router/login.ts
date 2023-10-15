@@ -17,208 +17,210 @@ loginRouter.post("/signup", createUser);
 
 //#region
 export function encrypt(password: string, key: string): string {
-    const hmac = crypto.createHmac('sha256', key);
-    hmac.update(password);
-    return hmac.digest('hex');
+  const hmac = crypto.createHmac('sha256', key);
+  hmac.update(password);
+  return hmac.digest('hex');
 }
 
-export function generateSignInToken(data: any, secret: string):string {
-    return jwt.sign(data, secret, { expiresIn: '1d' });
+export function generateSignInToken(data: any, secret: string): string {
+  return jwt.sign(data, secret, { expiresIn: '1d' });
 }
 
 export function allowAdminOnly(req: Request, res: Response, next: NextFunction) {
 
-    const xLoginToken = req.headers['token'];
-    
-        if(!xLoginToken) {
-            return res.status(401).json({
-                error: {
-                    message: "The request was missing a login token",
-                }
-            })
-        }
-
-        if (typeof xLoginToken !== "string") {
-            return res.status(401).json({
-                error: {
-                    message: "The TOKEN header must be a string",
-                },
-            });
-        }
-
-    try {
-
-      var tokenData = jwt.verify(xLoginToken, secretKey) as loginTokenType
-
-      if (tokenData && (tokenData.role == "Admin" )) {
-          req.user = tokenData
-          next()
-      } else {
-        return res.status(403).json({
-            error: {
-              message: "You are Staff not authorized to access this request",
-            },
-        });
-      }
-    } catch (e) {
-        return res.status(403).json({
-            error: {
-              message: "You are not authorized to access this request",
-            },
-        });
-    }
-} 
-
-export function allowStaffOnly(req: Request, res: Response, next: NextFunction) {
-
   const xLoginToken = req.headers['token'];
-  
-      if(!xLoginToken) {
-          return res.status(401).json({
-              error: {
-                  message: "The request was missing a login token",
-              }
-          })
-      }
 
-      if (typeof xLoginToken !== "string") {
-          return res.status(401).json({
-              error: {
-                  message: "The TOKEN header must be a string",
-              },
-          });
+  if (!xLoginToken) {
+    return res.status(401).json({
+      error: {
+        message: "The request was missing a login token",
       }
+    })
+  }
+
+  if (typeof xLoginToken !== "string") {
+    return res.status(401).json({
+      error: {
+        message: "The TOKEN header must be a string",
+      },
+    });
+  }
 
   try {
 
     var tokenData = jwt.verify(xLoginToken, secretKey) as loginTokenType
 
-    if (tokenData && (tokenData.role == "Admin" || tokenData.role == "Staff" )) {
-        req.user = tokenData
-        next()
+    if (tokenData && (tokenData.role == "Admin")) {
+      req.user = tokenData
+      next()
     } else {
       return res.status(403).json({
-          error: {
-            message: "You are Staff not authorized to access this request",
-          },
+        error: {
+          message: "You are Staff not authorized to access this request",
+        },
       });
     }
   } catch (e) {
-      return res.status(403).json({
-          error: {
-            message: "You are not authorized to access this request",
-          },
-      });
+    return res.status(403).json({
+      error: {
+        message: "You are not authorized to access this request",
+      },
+    });
   }
-} 
+}
+
+export function allowStaffOnly(req: Request, res: Response, next: NextFunction) {
+
+  const xLoginToken = req.headers['token'];
+
+  if (!xLoginToken) {
+    return res.status(401).json({
+      error: {
+        message: "The request was missing a login token",
+      }
+    })
+  }
+
+  if (typeof xLoginToken !== "string") {
+    return res.status(401).json({
+      error: {
+        message: "The TOKEN header must be a string",
+      },
+    });
+  }
+
+  try {
+
+    var tokenData = jwt.verify(xLoginToken, secretKey) as loginTokenType
+
+    if (tokenData && (tokenData.role == "Admin" || tokenData.role == "Staff")) {
+      req.user = tokenData
+      next()
+    } else {
+      return res.status(403).json({
+        error: {
+          message: "You are Staff not authorized to access this request",
+        },
+      });
+    }
+  } catch (e) {
+    return res.status(403).json({
+      error: {
+        message: "You are not authorized to access this request",
+      },
+    });
+  }
+}
 
 async function login(req: Request, res: Response) {
-    
-    const validationResult = loginSchema.safeParse(req.body);
 
-    if (!validationResult.success) {
-        return res.status(400).json({
-            error: {
-                message: "The request was missing required parameters ",
-            }
-        });
-    }
+  const validationResult = loginSchema.safeParse(req.body);
 
-    const requestBody: loginType = validationResult.data;
-
-    const encryptedPassword: string = encrypt(requestBody.password, encryptKey);
-
-    const user = await prisma.user.findFirst({
-        where: {
-            email: requestBody.email,
-            password: requestBody.password,
-        },
-        select: {
-            id: true,
-            email: true,
-            role: true
-        }
+  if (!validationResult.success) {
+    return res.status(400).json({
+      error: {
+        message: "The request was missing required parameters ",
+      }
     });
+  }
 
-    if (!user) {
-        return res.status(409).json({
-            warning: {
-                message: "Invalid username or password"
-            }
-        });
+  const requestBody: loginType = validationResult.data;
+
+  const encryptedPassword: string = encrypt(requestBody.password, encryptKey);
+
+  const user = await prisma.user.findFirst({
+    where: {
+      email: requestBody.email,
+      password: requestBody.password,
+    },
+    select: {
+      id: true,
+      email: true,
+      role: true,
+      name: true,
+      uname: true
     }
+  });
 
-    const loginTokenData: loginTokenType = { ...user, role: user.role };
-    const loginToken = generateSignInToken(loginTokenData, secretKey);
-
-    return res.status(200).json({
-        success: {
-            message: "Logged in successfully",
-            data: {
-                token: loginToken,
-                expiry: '1d'
-            }
-        }
+  if (!user) {
+    return res.status(409).json({
+      warning: {
+        message: "Invalid username or password"
+      }
     });
+  }
+
+  const loginTokenData: loginTokenType = { ...user, role: user.role };
+  const loginToken = generateSignInToken(loginTokenData, secretKey);
+
+  return res.status(200).json({
+    success: {
+      message: "Logged in successfully",
+      data: {
+        token: loginToken,
+        expiry: '1d'
+      }
+    }
+  });
 }
 
 async function createUser(req: Request, res: Response) {
-    const userRegistrationData: UserRegistrationType = userRegistrationSchema.parse(req.body);
-  
-    const { email, password, role } = userRegistrationData; 
+  const userRegistrationData: UserRegistrationType = userRegistrationSchema.parse(req.body);
 
-    if(!userRegistrationData) {
-        return res.status(400).json({
-            error: {
-                message: "The request was missing required parameters ",
-            }
-        });
-    }
-  
-    const existingUser = await prisma.user.findFirst({
-      where: {
-        email: email
+  const { email, password, role } = userRegistrationData;
+
+  if (!userRegistrationData) {
+    return res.status(400).json({
+      error: {
+        message: "The request was missing required parameters ",
       }
     });
-  
-    if (existingUser) {
-      return res.status(409).json({
-        error: {
-          message: "Email already exists",
-        }
-      });
+  }
+
+  const existingUser = await prisma.user.findFirst({
+    where: {
+      email: email
     }
-  
-    try {
-      const encryptedPassword = encrypt(password, encryptKey);
-  
-      await prisma.user.create({
-        data: {
-          email: email,
-          password: password,
-          role: role as Role, 
-        }
-      });
-  
-      return res.status(201).json({
-        success: {
-          message: "User created successfully"
-        }
-      });
-    } catch (error) {
-      if (error instanceof ValidationError) {
-        return res.status(400).json({
-          error: {
-            message: "Validation error",
-          }
-        });
+  });
+
+  if (existingUser) {
+    return res.status(409).json({
+      error: {
+        message: "Email already exists",
       }
-      
-      return res.status(500).json({
+    });
+  }
+
+  try {
+    const encryptedPassword = encrypt(password, encryptKey);
+
+    await prisma.user.create({
+      data: {
+        email: email,
+        password: password,
+        role: role as Role,
+      }
+    });
+
+    return res.status(201).json({
+      success: {
+        message: "User created successfully"
+      }
+    });
+  } catch (error) {
+    if (error instanceof ValidationError) {
+      return res.status(400).json({
         error: {
-          message: "An error occurred while creating the user",
+          message: "Validation error",
         }
       });
     }
+
+    return res.status(500).json({
+      error: {
+        message: "An error occurred while creating the user",
+      }
+    });
+  }
 }
 //#endregion

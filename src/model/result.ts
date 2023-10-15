@@ -69,6 +69,8 @@ export const cia2Schema = z.object({
 export const assignmentSchema = z.object({
     ASG1: z.number({required_error: "ASG-1 mark is required", }).max(3).optional(),
     ASG2: z.number({required_error: "ASG-2 mark is required", }).max(3).optional(),
+    ASG1STAFF: z.string({required_error: "ASG-1 Staff is required", }).optional(),
+    ASG2STAFF: z.string({required_error: "ASG-2 Staff is required", }).optional()
 })
 
 export const ESESchema = z.object({

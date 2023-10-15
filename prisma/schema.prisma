@@ -10,34 +10,35 @@ datasource db {
 }
 
 model department {
-  id              Int       @id @default(autoincrement())
-  departmentCode  String    @unique
-  name            String
-  codes           code[]
+  id             Int    @id @default(autoincrement())
+  departmentCode String @unique
+  name           String
+  codes          code[]
 }
 
 model code {
-  id              Int       @id @default(autoincrement())
-  code            String 
-  name            String
-  depCode         String    
-  department      department @relation(fields: [depCode], references: [departmentCode])
-  students        student[]
-  pso             PSO[]
+  id         Int        @id @default(autoincrement())
+  code       String
+  name       String
+  depCode    String
+  uname      String     @default("Staffid")
+  department department @relation(fields: [depCode], references: [departmentCode])
+  students   student[]
+  pso        PSO[]
 }
 
 model student {
-  id              Int       @id @default(autoincrement())
-  regNo           String
-  claass           String
-  section         String
-  marks           marks[]   
-  codeId          Int
-  code            code    @relation(fields: [codeId], references: [id]) 
+  id      Int     @id @default(autoincrement())
+  regNo   String
+  claass  String
+  section String
+  marks   marks[]
+  codeId  Int
+  code    code    @relation(fields: [codeId], references: [id])
 }
 
 model marks {
-  id              Int       @id @default(autoincrement())
+  id        Int     @id @default(autoincrement())
   C1Q1      Float?
   C1Q2      Float?
   C1Q3      Float?
@@ -94,107 +95,111 @@ model marks {
   C2Q26     Float?
   C2Q27     Float?
   C2Q28     Float?
-  ESEQ1      Float?
-  ESEQ2      Float?
-  ESEQ3      Float?
-  ESEQ4      Float?
-  ESEQ5      Float?
-  ESEQ6      Float?
-  ESEQ7      Float?
-  ESEQ8      Float?
-  ESEQ9      Float?
-  ESEQ10     Float?
-  ESEQ11     Float?
-  ESEQ12     Float?
-  ESEQ13     Float?
-  ESEQ14     Float?
-  ESEQ15     Float?
-  ESEQ16     Float?
-  ESEQ17     Float?
-  ESEQ18     Float?
-  ESEQ19     Float?
-  ESEQ20     Float?
-  ESEQ21     Float?
-  ESEQ22     Float?
-  ESEQ23     Float?
-  ESEQ24     Float?
-  ESEQ25     Float?
-  ESEQ26     Float?
-  ESEQ27     Float?
-  ESEQ28     Float?
-  ASG1       Float?
-  ASG2       Float?
-  ASGCO1     Float?
-  ASGCO2     Float?
-  C1CO1      Float?
-  C1CO2      Float?
-  C1CO3      Float?
-  C1CO4      Float?
-  C1CO5      Float?
-  C2CO1      Float?
-  C2CO2      Float?
-  C2CO3      Float?
-  C2CO4      Float?
-  C2CO5      Float?
-  ESECO1      Float?
-  ESECO2      Float?
-  ESECO3      Float?
-  ESECO4      Float?
-  ESECO5      Float?
+  ESEQ1     Float?
+  ESEQ2     Float?
+  ESEQ3     Float?
+  ESEQ4     Float?
+  ESEQ5     Float?
+  ESEQ6     Float?
+  ESEQ7     Float?
+  ESEQ8     Float?
+  ESEQ9     Float?
+  ESEQ10    Float?
+  ESEQ11    Float?
+  ESEQ12    Float?
+  ESEQ13    Float?
+  ESEQ14    Float?
+  ESEQ15    Float?
+  ESEQ16    Float?
+  ESEQ17    Float?
+  ESEQ18    Float?
+  ESEQ19    Float?
+  ESEQ20    Float?
+  ESEQ21    Float?
+  ESEQ22    Float?
+  ESEQ23    Float?
+  ESEQ24    Float?
+  ESEQ25    Float?
+  ESEQ26    Float?
+  ESEQ27    Float?
+  ESEQ28    Float?
+  ASG1      Float?
+  ASG2      Float?
+  ASGCO1    Float?
+  ASGCO2    Float?
+  C1CO1     Float?
+  C1CO2     Float?
+  C1CO3     Float?
+  C1CO4     Float?
+  C1CO5     Float?
+  C2CO1     Float?
+  C2CO2     Float?
+  C2CO3     Float?
+  C2CO4     Float?
+  C2CO5     Float?
+  ESECO1    Float?
+  ESECO2    Float?
+  ESECO3    Float?
+  ESECO4    Float?
+  ESECO5    Float?
   TCO1      Float?
   TCO2      Float?
   TCO3      Float?
   TCO4      Float?
   TCO5      Float?
-  C1STATUS    String?
-  C2STATUS    String?
-  ESESTATUS   String?
-  C1STAFF           String?
-  C2STAFF           String?
-  ESESTAFF           String?
-  studentId       Int
-  student         student   @relation(fields: [studentId], references: [id])
+  C1STATUS  String?
+  C2STATUS  String?
+  ESESTATUS String?
+  C1STAFF   String?
+  C2STAFF   String?
+  ESESTAFF  String?
+  ASG1STAFF String?
+  ASG2STAFF String?
+  studentId Int
+  student   student @relation(fields: [studentId], references: [id])
 }
 
 model PSO {
-  id              Int       @id @default(autoincrement())
-  PSO1CO1         Int
-  PSO1CO2         Int
-  PSO1CO3         Int
-  PSO1CO4         Int
-  PSO1CO5         Int
-  PSO2CO1         Int
-  PSO2CO2         Int
-  PSO2CO3         Int
-  PSO2CO4         Int
-  PSO2CO5         Int
-  PSO3CO1         Int
-  PSO3CO2         Int
-  PSO3CO3         Int
-  PSO3CO4         Int
-  PSO3CO5         Int
-  PSO4CO1         Int
-  PSO4CO2         Int
-  PSO4CO3         Int
-  PSO4CO4         Int
-  PSO4CO5         Int
-  PSO5CO1         Int
-  PSO5CO2         Int
-  PSO5CO3         Int
-  PSO5CO4         Int
-  PSO5CO5         Int
-  codeId          Int
-  code            code    @relation(fields: [codeId], references: [id]) 
+  id      Int  @id @default(autoincrement())
+  PSO1CO1 Int
+  PSO1CO2 Int
+  PSO1CO3 Int
+  PSO1CO4 Int
+  PSO1CO5 Int
+  PSO2CO1 Int
+  PSO2CO2 Int
+  PSO2CO3 Int
+  PSO2CO4 Int
+  PSO2CO5 Int
+  PSO3CO1 Int
+  PSO3CO2 Int
+  PSO3CO3 Int
+  PSO3CO4 Int
+  PSO3CO5 Int
+  PSO4CO1 Int
+  PSO4CO2 Int
+  PSO4CO3 Int
+  PSO4CO4 Int
+  PSO4CO5 Int
+  PSO5CO1 Int
+  PSO5CO2 Int
+  PSO5CO3 Int
+  PSO5CO4 Int
+  PSO5CO5 Int
+  codeId  Int
+  code    code @relation(fields: [codeId], references: [id])
 }
 
 model User {
-  id          Int      @id @default(autoincrement())
-  email       String   @unique
-  password    String
-  role        Role     @default(Staff)
+  id       Int    @id @default(autoincrement())
+  email    String @unique
+  password String
+  role     Role   @default(Staff)
+  name     String @default("none")
+  uname    String @default("Staffid")
 }
 
-enum Role{
+enum Role {
   Admin
   Staff
 }

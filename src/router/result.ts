@@ -16,7 +16,7 @@ userRouter.get("/searchDepartment", searchDepartment);
 userRouter.get("/getMarkByCode", getMarkByCode);
 userRouter.put("/byCode", getMarksWithCode);
 userRouter.get("/searchCode", getCode);
-userRouter.delete("/deleteMark", deleteMark)
+userRouter.post("/deleteMark", deleteMark)
 
 
 //#region Add Marks
@@ -349,15 +349,25 @@ async function addMark(req: Request, res: Response) {
       // Prepare the data for update
       const updateData: any = {};
 
-      if (resultData.ASG1 !== undefined) {
+      if (resultData.ASG1 !== undefined && resultData.ASG1STAFF !== undefined) {
         updateData.ASG1 = resultData.ASG1;
         updateData.ASGCO1 = (resultData.ASG1 || 0) * (5 / 3);
+        updateData.ASG1STAFF = resultData.ASG1STAFF;
       }
 
-      if (resultData.ASG2 !== undefined) {
+      if (resultData.ASG2 !== undefined && resultData.ASG2STAFF !== undefined) {
         updateData.ASG2 = resultData.ASG2;
         updateData.ASGCO2 = (resultData.ASG2 || 0) * (5 / 3);
+        updateData.ASG2STAFF = resultData.ASG2STAFF;
       }
+
+      // if (resultData.ASG1STAFF !== undefined) {
+      //   updateData.ASG1STAFF = resultData.ASG1STAFF;
+      // }
+
+      // if (resultData.ASG2STAFF !== undefined) {
+      //   updateData.ASG2STAFF = resultData.ASG2STAFF;
+      // }
 
       // Update the assignment marks
       const updateAssignment = await prisma.marks.update({
@@ -541,6 +551,10 @@ async function getMarks(req: Request, res: Response) {
         const ASGCO1 = mark.ASGCO1 || 0;
         return total + C1CO1 + C2CO1 + ASGCO1;
       }, 0);
+
+
+      console.log(TCO1)
+
 
       const TCO2 = student.marks.reduce((total, mark) => {
         const C1CO2 = mark.C1CO2 || 0;
@@ -970,14 +984,21 @@ async function searchDepartment(req: Request, res: Response) {
 
 //#region getCode
 async function getCode(req: Request, res: Response) {
-  const { question } = req.query;
+  const { question, uname } = req.query;
 
   try {
     if (question) {
+
+      const where: { depCode: string; uname?: string } = {
+        depCode: question as string,
+      };
+
+      if (uname !== "all") { 
+        where.uname = uname as string;
+      } 
+
       const Courses = await prisma.code.findMany({
-        where: {
-          depCode: question as string,
-        },
+        where: where,
       });
 
       return res.status(200).json({
@@ -1075,6 +1096,7 @@ async function getMarkByCode(req: Request, res: Response) {
 //#region deleteMark
 //delete the mark
 async function deleteMark(req: Request, res: Response) {
+  console.log(req.body)
   try {
     const { id, exam } = req.body;
 
@@ -1102,10 +1124,10 @@ async function deleteMark(req: Request, res: Response) {
       });
     }
 
-     // Check if specific fields (e.g., C1Q1, C2Q1, ESEQ1) are null
-     if (
-      (exam === "C1" && mark.C1Q1 === null) ||
-      (exam === "C2" && mark.C2Q1 === null) ||
+    // Check if specific fields (e.g., C1Q1, C2Q1, ESEQ1) are null
+    if (
+      (exam === "C1" && mark.C1Q1 === null) &&
+      (exam === "C2" && mark.C2Q1 === null) &&
       (exam === "ESE" && mark.ESEQ1 === null)
     ) {
       // Delete the record
@@ -1114,6 +1136,13 @@ async function deleteMark(req: Request, res: Response) {
           id: id
         }
       });
+
+      await prisma.student.delete({
+        where: {
+          id: mark.studentId
+        }
+      });
+
 
       return res.status(200).json({
         success: "Mark deleted successfully",
@@ -1165,7 +1194,7 @@ async function deleteMark(req: Request, res: Response) {
         error: "Invalid exam type"
       });
     }
-    
+
 
     // Update the specified fields in the marks table
     await prisma.marks.update({
@@ -1215,6 +1244,30 @@ async function getMarksWithCode(req: Request, res: Response) {
       });
     }
 
+    const dep = await prisma.code.findFirst({
+      where: {
+        depCode: {
+          contains: department.toUpperCase()
+        }
+      }
+    })
+
+    const coder = await prisma.code.findFirst({
+      where: {
+        code: code,
+      }
+    })
+
+    const reg1 = await prisma.student.findFirst({
+      where: {
+        regNo: regNo,
+      }
+    })
+
+    // return res.json({
+    //   msg : {reg1,coder,dep}
+    // })
+
     // Query the database to get the marks based on department, code, and regNo
     const marks = await prisma.marks.findMany({
       where: {
@@ -1230,11 +1283,11 @@ async function getMarksWithCode(req: Request, res: Response) {
       },
     });
 
-    if(marks.length === 0) {
+    if (marks.length === 0) {
       return res.status(200).json({
         msg: "No data found for given details"
-    })
-  }
+      })
+    }
 
     return res.status(200).json({
       success: "Marks retrieved successfully",
