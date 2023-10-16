@@ -13,6 +13,7 @@ model department {
   id             Int    @id @default(autoincrement())
   departmentCode String @unique
   name           String
+  catagory       String @default("Arts")
   codes          code[]
 }
 
@@ -21,7 +22,7 @@ model code {
   code       String
   name       String
   depCode    String
-  uname      String     @default("Staffid")
+  uname      String
   department department @relation(fields: [depCode], references: [departmentCode])
   students   student[]
   pso        PSO[]
