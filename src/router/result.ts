@@ -16,7 +16,7 @@ userRouter.get("/searchDepartment", searchDepartment);
 userRouter.get("/getMarkByCode", getMarkByCode);
 userRouter.put("/byCode", getMarksWithCode);
 userRouter.get("/searchCode", getCode);
-userRouter.delete("/deleteMark", deleteMark)
+userRouter.put("/deleteMark", deleteMark)
 userRouter.put("/getByStudent", studentAttain)
 userRouter.put("/getByDepartment", getByDepartment)
 userRouter.put("/getByCategory", getByCategory)
@@ -2771,7 +2771,6 @@ async function getByDepartment(req: Request, res: Response) {
     }))
 
     return res.status(200).json({
-      message: 'Marks updated successfully.',
       returnData
     });
   } catch (error) {
@@ -3073,7 +3072,6 @@ async function getByCategory(req: Request, res: Response) {
     }))
 
     return res.status(200).json({
-      message: 'Marks updated successfully.',
       returnDepData
     });
   } catch (error) {
