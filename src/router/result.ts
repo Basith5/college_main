@@ -9,6 +9,7 @@ const prisma = new PrismaClient();
 
 export const userRouter = express.Router();
 
+//Routes
 userRouter.post("/addMarks", addMark);
 userRouter.put("/getMarks", getMarks);
 userRouter.post("/addPso", addPso);
@@ -20,6 +21,7 @@ userRouter.delete("/deleteMark", deleteMark)
 userRouter.put("/getByStudent", studentAttain)
 userRouter.put("/getByDepartment", getByDepartment)
 userRouter.put("/getByCategory", getByCategory)
+userRouter.get("/getStaff", getStaff)
 
 
 //#region Add Marks
@@ -556,7 +558,7 @@ async function getMarks(req: Request, res: Response) {
       }, 0);
 
 
-      console.log(TCO1)
+      //console.log(TCO1)
 
 
       const TCO2 = student.marks.reduce((total, mark) => {
@@ -636,19 +638,19 @@ async function getMarks(req: Request, res: Response) {
     const totalStudents = updatedMarks.length;
 
     // Check TCO1 against the condition
-    const above40TCO1 = updatedMarks.filter((student) => student.TCO1 >= 12);
+    const above40TCO1 = updatedMarks.filter((student) => student.TCO1 >= 18);
 
     // Check TCO2 against the condition
-    const above40TCO2 = updatedMarks.filter((student) => student.TCO2 >= 16);
+    const above40TCO2 = updatedMarks.filter((student) => student.TCO2 >= 24);
 
     // Check TCO3 against the condition
-    const above40TCO3 = updatedMarks.filter((student) => student.TCO3 >= 14);
+    const above40TCO3 = updatedMarks.filter((student) => student.TCO3 >= 21);
 
     // Check TCO4 against the condition
-    const above40TCO4 = updatedMarks.filter((student) => student.TCO4 >= 14);
+    const above40TCO4 = updatedMarks.filter((student) => student.TCO4 >= 21);
 
     // Check TCO5 against the condition
-    const above40TCO5 = updatedMarks.filter((student) => student.TCO5 >= 8);
+    const above40TCO5 = updatedMarks.filter((student) => student.TCO5 >= 12);
 
     // Calculate the count of students meeting the above-40 condition for each TCO
     const countAbove40TCO1 = above40TCO1.length;
@@ -703,19 +705,19 @@ async function getMarks(req: Request, res: Response) {
 
     // Create an object to hold the count of students meeting the condition for each ESECO field
     const countAbove12ESECO1 = students.filter((student) =>
-      student.marks.some((mark) => mark.ESECO1 !== null && mark.ESECO1 >= 5)
+      student.marks.some((mark) => mark.ESECO1 !== null && mark.ESECO1 >= 8) //7.5
     ).length;
     const countAbove16ESECO2 = students.filter((student) =>
-      student.marks.some((mark) => mark.ESECO2 !== null && mark.ESECO2 >= 6)
+      student.marks.some((mark) => mark.ESECO2 !== null &&  mark.ESECO2 >= 9)
     ).length;
     const countAbove14ESECO3 = students.filter((student) =>
-      student.marks.some((mark) => mark.ESECO3 !== null && mark.ESECO3 >= 7)
+      student.marks.some((mark) => mark.ESECO3 !== null && mark.ESECO3 >= 11) //10.5
     ).length;
     const countAbove14ESECO4 = students.filter((student) =>
-      student.marks.some((mark) => mark.ESECO4 !== null && mark.ESECO4 >= 7)
+      student.marks.some((mark) => mark.ESECO4 !== null && mark.ESECO4 >= 11) //10.5
     ).length;
     const countAbove8ESECO5 = students.filter((student) =>
-      student.marks.some((mark) => mark.ESECO5 !== null && mark.ESECO5 >= 4)
+      student.marks.some((mark) => mark.ESECO5 !== null && mark.ESECO5 >= 6)
     ).length;
 
     // Create an object to hold all above-40 ESECO values
@@ -2478,6 +2480,8 @@ async function studentAttain(req: Request, res: Response) {
 
 //#endregion
 
+//#region get by department
+//getbydepartment
 async function getByDepartment(req: Request, res: Response) {
   const { department } = req.body;
 
@@ -2543,7 +2547,7 @@ async function getByDepartment(req: Request, res: Response) {
         }, 0);
 
 
-        console.log(TCO1)
+        // console.log(TCO1)
 
 
         const TCO2 = student.marks.reduce((total, mark) => {
@@ -2623,19 +2627,19 @@ async function getByDepartment(req: Request, res: Response) {
       const totalStudents = updatedMarks.length;
 
       // Check TCO1 against the condition
-      const above40TCO1 = updatedMarks.filter((student) => student.TCO1 >= 12);
+      const above40TCO1 = updatedMarks.filter((student) => student.TCO1 >= 18);
 
       // Check TCO2 against the condition
-      const above40TCO2 = updatedMarks.filter((student) => student.TCO2 >= 16);
+      const above40TCO2 = updatedMarks.filter((student) => student.TCO2 >= 24);
 
       // Check TCO3 against the condition
-      const above40TCO3 = updatedMarks.filter((student) => student.TCO3 >= 14);
+      const above40TCO3 = updatedMarks.filter((student) => student.TCO3 >= 21);
 
       // Check TCO4 against the condition
-      const above40TCO4 = updatedMarks.filter((student) => student.TCO4 >= 14);
+      const above40TCO4 = updatedMarks.filter((student) => student.TCO4 >= 21);
 
       // Check TCO5 against the condition
-      const above40TCO5 = updatedMarks.filter((student) => student.TCO5 >= 8);
+      const above40TCO5 = updatedMarks.filter((student) => student.TCO5 >= 12);
 
       // Calculate the count of students meeting the above-40 condition for each TCO
       const countAbove40TCO1 = above40TCO1.length;
@@ -2690,19 +2694,19 @@ async function getByDepartment(req: Request, res: Response) {
 
       // Create an object to hold the count of students meeting the condition for each ESECO field
       const countAbove12ESECO1 = students.filter((student) =>
-        student.marks.some((mark) => mark.ESECO1 !== null && mark.ESECO1 >= 5)
+        student.marks.some((mark) => mark.ESECO1 !== null && mark.ESECO1 >= 8) //7.5
       ).length;
       const countAbove16ESECO2 = students.filter((student) =>
-        student.marks.some((mark) => mark.ESECO2 !== null && mark.ESECO2 >= 6)
+        student.marks.some((mark) => mark.ESECO2 !== null &&  mark.ESECO2 >= 9)
       ).length;
       const countAbove14ESECO3 = students.filter((student) =>
-        student.marks.some((mark) => mark.ESECO3 !== null && mark.ESECO3 >= 7)
+        student.marks.some((mark) => mark.ESECO3 !== null && mark.ESECO3 >= 11) //10.5
       ).length;
       const countAbove14ESECO4 = students.filter((student) =>
-        student.marks.some((mark) => mark.ESECO4 !== null && mark.ESECO4 >= 7)
+        student.marks.some((mark) => mark.ESECO4 !== null && mark.ESECO4 >= 11) //10.5
       ).length;
       const countAbove8ESECO5 = students.filter((student) =>
-        student.marks.some((mark) => mark.ESECO5 !== null && mark.ESECO5 >= 4)
+        student.marks.some((mark) => mark.ESECO5 !== null && mark.ESECO5 >= 6)
       ).length;
 
       // Create an object to hold all above-40 ESECO values
@@ -2779,7 +2783,10 @@ async function getByDepartment(req: Request, res: Response) {
     res.status(500).json({ error: 'Internal server error.' });
   }
 }
+//#endregion
 
+//#region get by category
+//getbycategory
 async function getByCategory(req: Request, res: Response) {
   const { catagory } = req.body;
 
@@ -2838,7 +2845,7 @@ async function getByCategory(req: Request, res: Response) {
           }, 0);
 
 
-          console.log(TCO1)
+          //console.log(TCO1)
 
 
           const TCO2 = student.marks.reduce((total, mark) => {
@@ -2918,19 +2925,19 @@ async function getByCategory(req: Request, res: Response) {
         const totalStudents = updatedMarks.length;
 
         // Check TCO1 against the condition
-        const above40TCO1 = updatedMarks.filter((student) => student.TCO1 >= 12);
+        const above40TCO1 = updatedMarks.filter((student) => student.TCO1 >= 18);
 
         // Check TCO2 against the condition
-        const above40TCO2 = updatedMarks.filter((student) => student.TCO2 >= 16);
+        const above40TCO2 = updatedMarks.filter((student) => student.TCO2 >= 24);
 
         // Check TCO3 against the condition
-        const above40TCO3 = updatedMarks.filter((student) => student.TCO3 >= 14);
+        const above40TCO3 = updatedMarks.filter((student) => student.TCO3 >= 21);
 
         // Check TCO4 against the condition
-        const above40TCO4 = updatedMarks.filter((student) => student.TCO4 >= 14);
+        const above40TCO4 = updatedMarks.filter((student) => student.TCO4 >= 21);
 
         // Check TCO5 against the condition
-        const above40TCO5 = updatedMarks.filter((student) => student.TCO5 >= 8);
+        const above40TCO5 = updatedMarks.filter((student) => student.TCO5 >= 12);
 
         // Calculate the count of students meeting the above-40 condition for each TCO
         const countAbove40TCO1 = above40TCO1.length;
@@ -2985,19 +2992,19 @@ async function getByCategory(req: Request, res: Response) {
 
         // Create an object to hold the count of students meeting the condition for each ESECO field
         const countAbove12ESECO1 = students.filter((student) =>
-          student.marks.some((mark) => mark.ESECO1 !== null && mark.ESECO1 >= 5)
+          student.marks.some((mark) => mark.ESECO1 !== null && mark.ESECO1 >= 8) //7.5
         ).length;
         const countAbove16ESECO2 = students.filter((student) =>
-          student.marks.some((mark) => mark.ESECO2 !== null && mark.ESECO2 >= 6)
+          student.marks.some((mark) => mark.ESECO2 !== null &&  mark.ESECO2 >= 9)
         ).length;
         const countAbove14ESECO3 = students.filter((student) =>
-          student.marks.some((mark) => mark.ESECO3 !== null && mark.ESECO3 >= 7)
+          student.marks.some((mark) => mark.ESECO3 !== null && mark.ESECO3 >= 11) //10.5
         ).length;
         const countAbove14ESECO4 = students.filter((student) =>
-          student.marks.some((mark) => mark.ESECO4 !== null && mark.ESECO4 >= 7)
+          student.marks.some((mark) => mark.ESECO4 !== null && mark.ESECO4 >=11) //10.5
         ).length;
         const countAbove8ESECO5 = students.filter((student) =>
-          student.marks.some((mark) => mark.ESECO5 !== null && mark.ESECO5 >= 4)
+          student.marks.some((mark) => mark.ESECO5 !== null && mark.ESECO5 >= 6)
         ).length;
 
         // Create an object to hold all above-40 ESECO values
@@ -3082,3 +3089,80 @@ async function getByCategory(req: Request, res: Response) {
   }
 
 }
+//#endregion
+
+//#region get the staff
+//get the staff
+// async function getStaff(req: Request, res: Response) {
+//   try {
+//     const uname = req.query.uname as string;
+//     const department = req.query.department as string;
+
+//     if (!uname || !department) {
+//       return res.status(400).json({ error: "'uname' and 'department' query parameters are required." });
+//     }
+
+//     const staffRecords = await prisma.staff.findMany({
+//       where: { uname: uname },
+//       select: {
+//         code: true,
+//       },
+//     });
+
+//     if (!staffRecords || staffRecords.length === 0) {
+//       return res.status(404).json({ error: "No staff records found for the provided uname and department." });
+//     }
+
+//     const codeNames = staffRecords
+//       .filter((record) => record.code.depCode === department)
+//       .map((record) => record.code.name);
+
+//     res.status(200).json({ codeNames: codeNames });
+//   } catch (error) {
+//     console.error(error);
+//     res.status(500).json({ error: "Internal server error." });
+//   }
+// }
+
+async function getStaff(req: Request, res: Response) {
+  try {
+    const uname = req.query.uname as string;
+    const department = req.query.department as string;
+
+    if (!uname || !department) {
+      return res.status(400).json({ error: "'uname' and 'department' query parameters are required." });
+    }
+
+    const staffRecords = await prisma.staff.findMany({
+      where: { uname: uname },
+      select: {
+        code: {
+          select: { name: true, depCode: true, code: true }, // Include code in the selection
+        },
+      },
+    });
+
+    if (!staffRecords || staffRecords.length === 0) {
+      return res.status(404).json({ error: "No staff records found for the provided uname and department." });
+    }
+
+    const codeInfo = staffRecords
+      .filter((record) => record.code.depCode === department)
+      .map((record) => {
+        return {
+          name: record.code.name,
+          depCode: record.code.depCode,
+          courseCode: record.code.code, // Include course code in the response
+        };
+      });
+
+    res.status(200).json({ codeInfo: codeInfo });
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ error: "Internal server error." });
+  }
+}
+
+
+
+//#endregion

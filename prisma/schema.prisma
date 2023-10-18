@@ -25,7 +25,17 @@ model code {
   uname      String
   department department @relation(fields: [depCode], references: [departmentCode])
   students   student[]
+  staff      staff[]
   pso        PSO[]
+}
+
+model staff {
+  id            Int @id @default(autoincrement())
+  uname         String
+  staffName     String
+  staffInitial  String
+  codeId        Int
+  code    code    @relation(fields: [codeId], references: [id])
 }
 
 model student {
