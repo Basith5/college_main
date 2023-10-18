@@ -777,6 +777,7 @@ async function getMarks(req: Request, res: Response) {
     // Send the attainLevels, above40TCO, and above40ESECO as part of your JSON response
     return res.status(200).json({
       message: 'Marks updated successfully.',
+      totalStudents,
       above40TCO,
       percentages,
       attainLevels,
