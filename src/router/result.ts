@@ -17,7 +17,7 @@ userRouter.get("/searchDepartment", searchDepartment);
 userRouter.get("/getMarkByCode", getMarkByCode);
 userRouter.put("/byCode", getMarksWithCode);
 userRouter.get("/searchCode", getCode);
-userRouter.delete("/deleteMark", deleteMark)
+userRouter.put("/deleteMark", deleteMark)
 userRouter.put("/getByStudent", studentAttain)
 userRouter.put("/getByDepartment", getByDepartment)
 userRouter.put("/getByCategory", getByCategory)
@@ -1052,23 +1052,25 @@ async function deleteMark(req: Request, res: Response) {
 
     // Check if specific fields (e.g., C1Q1, C2Q1, ESEQ1) are null
     if (
-      (exam === "C1" && mark.C1Q1 === null) &&
-      (exam === "C2" && mark.C2Q1 === null) &&
-      (exam === "ESE" && mark.ESEQ1 === null)
+      (mark.C1Q1 === null && mark.C2Q1 === null) ||
+      (mark.C2Q1 === null && mark.ESEQ1 === null) ||
+      (mark.ESEQ1 === null && mark.C1Q1 === null)
     ) {
-      // Delete the record
+      const studentId = mark.studentId;
+
+      // Delete the record from the marks table
       await prisma.marks.delete({
         where: {
           id: id
         }
       });
 
+      // Delete the corresponding record from the student table
       await prisma.student.delete({
         where: {
-          id: mark.studentId
+          id: studentId
         }
       });
-
 
       return res.status(200).json({
         success: "Mark deleted successfully",
@@ -2776,7 +2778,6 @@ async function getByDepartment(req: Request, res: Response) {
     }))
 
     return res.status(200).json({
-      message: 'Marks updated successfully.',
       returnData
     });
   } catch (error) {
@@ -3073,15 +3074,14 @@ async function getByCategory(req: Request, res: Response) {
       });
 
       returnDepData.push({
-        depTitle:eachDep.name.toString(),
-        depCode:eachDep.departmentCode.toString(),
-        overAtain:(i/returnData.length).toString()
+        depTitle: eachDep.name.toString(),
+        depCode: eachDep.departmentCode.toString(),
+        overAtain: (i / returnData.length).toString()
       })
 
     }))
 
     return res.status(200).json({
-      message: 'Marks updated successfully.',
       returnDepData
     });
   } catch (error) {
