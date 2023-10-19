@@ -3,6 +3,7 @@ import { PrismaClient, Prisma } from '@prisma/client';
 import { fromZodError } from "zod-validation-error"
 import { ESEData, ESESchema, assignmentData, assignmentSchema, cia1Data, cia1Schema, cia2Data, cia2Schema, psoData, psoSchema } from '../model/result';
 import { ZodError, object } from 'zod';
+import { dd } from './c';
 
 const prisma = new PrismaClient();
 
@@ -22,6 +23,8 @@ userRouter.put("/getByStudent", studentAttain)
 userRouter.put("/getByDepartment", getByDepartment)
 userRouter.put("/getByCategory", getByCategory)
 userRouter.get("/getStaff", getStaff)
+// userRouter.put("/addDep", addDep)
+userRouter.put("/addCourse", addCourseAutomate)
 
 
 //#region Add Marks
@@ -638,16 +641,16 @@ async function getMarks(req: Request, res: Response) {
     const totalStudents = updatedMarks.length;
 
     // Check TCO1 against the condition
-    const above40TCO1 = updatedMarks.filter((student) => student.TCO1 >= 18);
+    const above40TCO1 = updatedMarks.filter((student) => student.TCO1 >= 17);
 
     // Check TCO2 against the condition
-    const above40TCO2 = updatedMarks.filter((student) => student.TCO2 >= 24);
+    const above40TCO2 = updatedMarks.filter((student) => student.TCO2 >= 23);
 
     // Check TCO3 against the condition
-    const above40TCO3 = updatedMarks.filter((student) => student.TCO3 >= 21);
+    const above40TCO3 = updatedMarks.filter((student) => student.TCO3 >= 22);
 
     // Check TCO4 against the condition
-    const above40TCO4 = updatedMarks.filter((student) => student.TCO4 >= 21);
+    const above40TCO4 = updatedMarks.filter((student) => student.TCO4 >= 22);
 
     // Check TCO5 against the condition
     const above40TCO5 = updatedMarks.filter((student) => student.TCO5 >= 12);
@@ -705,16 +708,16 @@ async function getMarks(req: Request, res: Response) {
 
     // Create an object to hold the count of students meeting the condition for each ESECO field
     const countAbove12ESECO1 = students.filter((student) =>
-      student.marks.some((mark) => mark.ESECO1 !== null && mark.ESECO1 >= 8) //7.5
+      student.marks.some((mark) => mark.ESECO1 !== null && mark.ESECO1 >= 7)
     ).length;
     const countAbove16ESECO2 = students.filter((student) =>
-      student.marks.some((mark) => mark.ESECO2 !== null &&  mark.ESECO2 >= 9)
+      student.marks.some((mark) => mark.ESECO2 !== null && mark.ESECO2 >= 10)
     ).length;
     const countAbove14ESECO3 = students.filter((student) =>
-      student.marks.some((mark) => mark.ESECO3 !== null && mark.ESECO3 >= 11) //10.5
+      student.marks.some((mark) => mark.ESECO3 !== null && mark.ESECO3 >= 10)
     ).length;
     const countAbove14ESECO4 = students.filter((student) =>
-      student.marks.some((mark) => mark.ESECO4 !== null && mark.ESECO4 >= 11) //10.5
+      student.marks.some((mark) => mark.ESECO4 !== null && mark.ESECO4 >= 10)
     ).length;
     const countAbove8ESECO5 = students.filter((student) =>
       student.marks.some((mark) => mark.ESECO5 !== null && mark.ESECO5 >= 6)
@@ -964,6 +967,7 @@ async function getMarkByCode(req: Request, res: Response) {
     const existingCode = await prisma.code.findFirst({
       where: {
         code: code?.toString(),
+        depCode: existingDepartment.departmentCode
       },
     });
 
@@ -981,9 +985,6 @@ async function getMarkByCode(req: Request, res: Response) {
     // Retrieve students associated with the department and code, including their marks
     const students = await prisma.student.findMany({
       where: {
-        code: {
-          code: code?.toString(),
-        },
         codeId: existingCode.id,
       },
       include: {
@@ -995,6 +996,8 @@ async function getMarkByCode(req: Request, res: Response) {
       skip, // Skip records based on the page number
       take: pageSizeNumber, // Limit the number of records per page
     });
+
+    console.log(students)
 
     // Calculate the total number of students that match the query
     const totalStudentsCount = await prisma.student.count({
@@ -2630,16 +2633,16 @@ async function getByDepartment(req: Request, res: Response) {
       const totalStudents = updatedMarks.length;
 
       // Check TCO1 against the condition
-      const above40TCO1 = updatedMarks.filter((student) => student.TCO1 >= 18);
+      const above40TCO1 = updatedMarks.filter((student) => student.TCO1 >= 17);
 
       // Check TCO2 against the condition
-      const above40TCO2 = updatedMarks.filter((student) => student.TCO2 >= 24);
+      const above40TCO2 = updatedMarks.filter((student) => student.TCO2 >= 23);
 
       // Check TCO3 against the condition
-      const above40TCO3 = updatedMarks.filter((student) => student.TCO3 >= 21);
+      const above40TCO3 = updatedMarks.filter((student) => student.TCO3 >= 22);
 
       // Check TCO4 against the condition
-      const above40TCO4 = updatedMarks.filter((student) => student.TCO4 >= 21);
+      const above40TCO4 = updatedMarks.filter((student) => student.TCO4 >= 22);
 
       // Check TCO5 against the condition
       const above40TCO5 = updatedMarks.filter((student) => student.TCO5 >= 12);
@@ -2659,25 +2662,25 @@ async function getByDepartment(req: Request, res: Response) {
       const percentageTCO5 = (countAbove40TCO5 / totalStudents) * 100;
 
       // Create an object to hold all above-40 TCO values
-      const above40TCO = {
-        TCO1: above40TCO1.length,
-        TCO2: above40TCO2.length,
-        TCO3: above40TCO3.length,
-        TCO4: above40TCO4.length,
-        TCO5: above40TCO5.length,
-      };
+      // const above40TCO = {
+      //   TCO1: above40TCO1.length,
+      //   TCO2: above40TCO2.length,
+      //   TCO3: above40TCO3.length,
+      //   TCO4: above40TCO4.length,
+      //   TCO5: above40TCO5.length,
+      // };
 
       const calculateAttainLevel = (percentage: number) => {
         return percentage >= 75 ? 3 : percentage >= 60 ? 2 : percentage >= 40 ? 1 : 0;
       };
 
-      const percentages = {
-        TCO1: totalStudents > 0 ? ((countAbove40TCO1 / totalStudents) * 100).toFixed(2) : 0,
-        TCO2: totalStudents > 0 ? ((countAbove40TCO2 / totalStudents) * 100).toFixed(2) : 0,
-        TCO3: totalStudents > 0 ? ((countAbove40TCO3 / totalStudents) * 100).toFixed(2) : 0,
-        TCO4: totalStudents > 0 ? ((countAbove40TCO4 / totalStudents) * 100).toFixed(2) : 0,
-        TCO5: totalStudents > 0 ? ((countAbove40TCO5 / totalStudents) * 100).toFixed(2) : 0,
-      };
+      // const percentages = {
+      //   TCO1: totalStudents > 0 ? ((countAbove40TCO1 / totalStudents) * 100).toFixed(2) : 0,
+      //   TCO2: totalStudents > 0 ? ((countAbove40TCO2 / totalStudents) * 100).toFixed(2) : 0,
+      //   TCO3: totalStudents > 0 ? ((countAbove40TCO3 / totalStudents) * 100).toFixed(2) : 0,
+      //   TCO4: totalStudents > 0 ? ((countAbove40TCO4 / totalStudents) * 100).toFixed(2) : 0,
+      //   TCO5: totalStudents > 0 ? ((countAbove40TCO5 / totalStudents) * 100).toFixed(2) : 0,
+      // };
 
       // Calculate ATTAINLEVEL for each TCO
       const attainLevelTCO1 = calculateAttainLevel(percentageTCO1);
@@ -2697,16 +2700,16 @@ async function getByDepartment(req: Request, res: Response) {
 
       // Create an object to hold the count of students meeting the condition for each ESECO field
       const countAbove12ESECO1 = students.filter((student) =>
-        student.marks.some((mark) => mark.ESECO1 !== null && mark.ESECO1 >= 8) //7.5
+        student.marks.some((mark) => mark.ESECO1 !== null && mark.ESECO1 >= 7)
       ).length;
       const countAbove16ESECO2 = students.filter((student) =>
-        student.marks.some((mark) => mark.ESECO2 !== null &&  mark.ESECO2 >= 9)
+        student.marks.some((mark) => mark.ESECO2 !== null && mark.ESECO2 >= 10)
       ).length;
       const countAbove14ESECO3 = students.filter((student) =>
-        student.marks.some((mark) => mark.ESECO3 !== null && mark.ESECO3 >= 11) //10.5
+        student.marks.some((mark) => mark.ESECO3 !== null && mark.ESECO3 >= 10)
       ).length;
       const countAbove14ESECO4 = students.filter((student) =>
-        student.marks.some((mark) => mark.ESECO4 !== null && mark.ESECO4 >= 11) //10.5
+        student.marks.some((mark) => mark.ESECO4 !== null && mark.ESECO4 >= 10)
       ).length;
       const countAbove8ESECO5 = students.filter((student) =>
         student.marks.some((mark) => mark.ESECO5 !== null && mark.ESECO5 >= 6)
@@ -2763,6 +2766,7 @@ async function getByDepartment(req: Request, res: Response) {
       };
 
       let averageCIAAttainLevel = (attainLevels.TCO1 + attainLevels.TCO2 + attainLevels.TCO3 + attainLevels.TCO4 + attainLevels.TCO5) / 5;
+      console.log(attainLevels.TCO1 ,attainLevels.TCO2 , attainLevels.TCO3 , attainLevels.TCO4 , attainLevels.TCO5) 
       let averageESEAttainLevel = (attainLevelsESECO.ESECO1 + attainLevelsESECO.ESECO2 + attainLevelsESECO.ESECO3 + attainLevelsESECO.ESECO4 + attainLevelsESECO.ESECO5) / 5;
       let averageAttainLevel = (overAll.CO1 + overAll.CO2 + overAll.CO3 + overAll.CO4 + overAll.CO5) / 5;
 
@@ -3067,11 +3071,13 @@ async function getByCategory(req: Request, res: Response) {
 
       }))
 
-      let i = 0.00;
+      let i = 0;
 
       returnData.map((item) => {
         i += parseFloat(item.overAtain);
       });
+
+      i = parseFloat(i.toFixed(2));
 
       returnDepData.push({
         depTitle: eachDep.name.toString(),
@@ -3167,3 +3173,90 @@ async function getStaff(req: Request, res: Response) {
 
 
 //#endregion
+
+// async function addDep() {
+
+//   let results = [
+
+//     // { depCode: "UEC", name: "ECONOMICS" },
+//     // { depCode: "UEN", name: "ENGLISH" },
+//     // { depCode: "UFT", name: "FASHION TECHNOLOGY AND COSTUME DESIGNING" },
+//     // { depCode: "UHS", name: "HISTORY" },
+//     // { depCode: "UHM", name: "HOTEL MANAGEMENT AND CATERING SCIENCE" },
+//     // { depCode: "UMA", name: "MATHEMATICS" },
+//     // { depCode: "UTA", name: "TAMIL" },
+//     // { depCode: "UVC", name: "VISUAL COMMUNICATION" },
+//     // { depCode: "PAR", name: "ARABIC" },
+//     // { depCode: "PCO", name: "COMMERCE" },
+//     // { depCode: "PEC", name: "ECONOMICS" },
+//     // { depCode: "PEN", name: "ENGLISH" },
+//     // { depCode: "PFT", name: "FASHION TECHNOLOGY" },
+//     // { depCode: "PHS", name: "HISTORY" },
+//     // { depCode: "PMA", name: "MATHEMATICS" },
+//     // { depCode: "PTA", name: "TAMIL" },
+//     // { depCode: "MBA", name: "BUSINESS ADMINISTRATION" },
+//     {depCode: "UCH",name: "CHEMISTRY"},
+//     {depCode: "UCA",name: "COMPUTER APPLICAIONS"},
+//     {depCode: "UCS",name: "COMPUTER SCIENCE"},
+//     {depCode: "UIT",name: "INFORMATION TECHNOLOGY"},
+//     {depCode: "UMB",name: "MICROBIOLOGY"},
+//     {depCode: "UND",name: "NUTRITION AND DIETICS"},
+//     {depCode: "UPH",name: "PHYSICS"},
+//     {depCode: "UZO", name: "ZOOLOGY"},
+//     { depCode: "PBO", name: "BOTANY" },
+//     { depCode: "PBT", name: "BIOTECHNOLOGY" },
+//     { depCode: "PCH", name: "CHEMISTRY" },
+//     { depCode: "PCS", name: "COMPUTER SCIENCE" },
+//     { depCode: "PIT", name: "INFORMATION TECHNOLOGY" },
+//     { depCode: "PMB", name: "MICROBIOLOGY" },
+//     { depCode: "PND", name: "NUTRITION AND DIETICS" },
+//     { depCode: "PPH", name: "PHYSICS" },
+//     { depCode: "PZO", name: "ZOOLOGY" },
+//     { depCode: "MCA", name: "COMPUTER APPLICAIONS" }
+
+//   ];
+
+//   // Process and insert data into the Prisma database
+//   for (const row of results) {
+//     await prisma.department.create({
+//       data: {
+//         departmentCode: row.depCode,
+//         name: row.name,
+//         catagory: "Science"
+//         // Map other CSV columns to your Prisma model fields
+//       },
+//     });
+//   }
+
+//   console.log('CSV data uploaded successfully');
+//   await prisma.$disconnect();
+// }
+
+
+async function addCourseAutomate() {
+
+
+  // Process and insert data into the Prisma database
+  for (const row of dd) {
+
+    try {
+      await prisma.code.create({
+        data: {
+          code: row.Sub_Code,
+          name: row.Title,
+          depCode: row.course_id,
+          uname: "check"
+          // Map other CSV columns to your Prisma model fields
+        },
+      });
+    }
+    catch (e) {
+      console.log(row.course_id)
+    }
+
+  }
+
+  console.log('Course data uploaded successfully');
+  await prisma.$disconnect();
+}
+
