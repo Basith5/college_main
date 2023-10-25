@@ -25,6 +25,7 @@ userRouter.put("/getByCategory", getByCategory)
 userRouter.get("/getStaff", getStaff)
 // userRouter.put("/addDep", addDep)
 userRouter.put("/addCourse", addCourseAutomate)
+userRouter.put("/addMarksAutomates", addMarksAutomate)
 
 
 //#region Add Marks
@@ -2766,7 +2767,7 @@ async function getByDepartment(req: Request, res: Response) {
       };
 
       let averageCIAAttainLevel = (attainLevels.TCO1 + attainLevels.TCO2 + attainLevels.TCO3 + attainLevels.TCO4 + attainLevels.TCO5) / 5;
-      console.log(attainLevels.TCO1 ,attainLevels.TCO2 , attainLevels.TCO3 , attainLevels.TCO4 , attainLevels.TCO5) 
+      console.log(attainLevels.TCO1, attainLevels.TCO2, attainLevels.TCO3, attainLevels.TCO4, attainLevels.TCO5)
       let averageESEAttainLevel = (attainLevelsESECO.ESECO1 + attainLevelsESECO.ESECO2 + attainLevelsESECO.ESECO3 + attainLevelsESECO.ESECO4 + attainLevelsESECO.ESECO5) / 5;
       let averageAttainLevel = (overAll.CO1 + overAll.CO2 + overAll.CO3 + overAll.CO4 + overAll.CO5) / 5;
 
@@ -3001,13 +3002,13 @@ async function getByCategory(req: Request, res: Response) {
           student.marks.some((mark) => mark.ESECO1 !== null && mark.ESECO1 >= 8) //7.5
         ).length;
         const countAbove16ESECO2 = students.filter((student) =>
-          student.marks.some((mark) => mark.ESECO2 !== null &&  mark.ESECO2 >= 9)
+          student.marks.some((mark) => mark.ESECO2 !== null && mark.ESECO2 >= 9)
         ).length;
         const countAbove14ESECO3 = students.filter((student) =>
           student.marks.some((mark) => mark.ESECO3 !== null && mark.ESECO3 >= 11) //10.5
         ).length;
         const countAbove14ESECO4 = students.filter((student) =>
-          student.marks.some((mark) => mark.ESECO4 !== null && mark.ESECO4 >=11) //10.5
+          student.marks.some((mark) => mark.ESECO4 !== null && mark.ESECO4 >= 11) //10.5
         ).length;
         const countAbove8ESECO5 = students.filter((student) =>
           student.marks.some((mark) => mark.ESECO5 !== null && mark.ESECO5 >= 6)
@@ -3245,7 +3246,7 @@ async function addCourseAutomate() {
           code: row.Sub_Code,
           name: row.Title,
           depCode: row.course_id,
-          uname: "check"
+          uname: "none"
           // Map other CSV columns to your Prisma model fields
         },
       });
@@ -3260,3 +3261,377 @@ async function addCourseAutomate() {
   await prisma.$disconnect();
 }
 
+//#region Add Marks
+async function addMarksAutomate(req: Request, res: Response) {
+
+  let exam: string = 'ASG';
+  const code = '23PMA1CC4';
+  const department = 'PMA';
+  const claass = 'PMA';
+  const section = 'a';
+  const staff = 'Prasanna A';
+
+
+
+
+  try {
+
+
+    for (let i = 1; i < 11; i++) {
+
+      let regNo = '23' + department + String(i).padStart(3, '0')
+
+      let Markdata = {
+        "Q1": Math.round(Math.random()),
+        "Q2": Math.round(Math.random()),
+        "Q3": Math.round(Math.random()),
+        "Q4": Math.round(Math.random()),
+        "Q5": Math.round(Math.random()),
+        "Q6": Math.round(Math.random()),
+        "Q7": Math.round(Math.random()),
+        "Q8": Math.round(Math.random()),
+        "Q9": Math.round(Math.random()),
+        "Q10": Math.round(Math.random()),
+        "Q11": Math.round(Math.random()),
+        "Q12": Math.round(Math.random()),
+        "Q13": Math.round(Math.random()),
+        "Q14": Math.round(Math.random()),
+        "Q15": Math.round(Math.random()),
+        "Q16": Math.round(Math.random() * 2),
+        "Q17": Math.round(Math.random() * 2),
+        "Q18": Math.round(Math.random() * 2),
+        "Q19": Math.round(Math.random() * 2),
+        "Q20": Math.round(Math.random() * 2),
+        "Q21": Math.round(Math.random() * 4),
+        "Q22": Math.round(Math.random() * 4),
+        "Q23": Math.round(Math.random() * 4),
+        "Q24": Math.round(Math.random() * 4),
+        "Q25": Math.round(Math.random() * 4),
+        "Q26": Math.round(Math.random() * 10),
+        "Q27": Math.round(Math.random() * 10),
+        "Q28": Math.round(Math.random() * 10),
+        "STATUS": "present",
+        "STAFF": staff,
+      }
+
+      let MarkdataAss = {
+        "ASG1": Math.round(Math.random() * 3),
+        "ASG2": Math.round(Math.random() * 3),
+      }
+
+      const check = await prisma.code.findFirst({
+        where: {
+          depCode: department,
+          code: code,
+        },
+      });
+
+      if (!check) {
+        return res.status(404).json({
+          error: {
+            message: "Department code not found",
+          },
+        });
+      }
+
+      // Check if the student exists
+      let student = await prisma.student.findFirst({
+        where: {
+          codeId: check.id,
+          regNo: regNo,
+        },
+      });
+
+      if (!student) {
+        student = await prisma.student.create({
+          data: {
+            regNo: regNo,
+            claass: claass,
+            section: section,
+            codeId: check.id,
+          },
+        });
+
+        if (!student) {
+          return res.json({
+            error: {
+              message: "Error occurred while creating the student",
+            },
+          });
+        }
+      }
+
+   
+      // Now, create the marks
+      if (exam === "C1") {
+
+
+        let marks = await prisma.marks.findFirst({
+          where: {
+            studentId: student ? student.id : 0,
+          },
+        });
+
+        if (marks) {
+          // Marks already exist, update them
+          const updatedMark = await prisma.marks.update({
+            where: { id: marks.id }, // Assuming there's an ID for the existing mark
+            data: {
+              C1Q1: Markdata.Q1,
+              C1Q2: Markdata.Q2,
+              C1Q3: Markdata.Q3,
+              C1Q4: Markdata.Q4,
+              C1Q5: Markdata.Q5,
+              C1Q6: Markdata.Q6,
+              C1Q7: Markdata.Q7,
+              C1Q8: Markdata.Q8,
+              C1Q9: Markdata.Q9,
+              C1Q10: Markdata.Q10,
+              C1Q11: Markdata.Q11,
+              C1Q12: Markdata.Q12,
+              C1Q13: Markdata.Q13,
+              C1Q14: Markdata.Q14,
+              C1Q15: Markdata.Q15,
+              C1Q16: Markdata.Q16,
+              C1Q17: Markdata.Q17,
+              C1Q18: Markdata.Q18,
+              C1Q19: Markdata.Q19,
+              C1Q20: Markdata.Q20,
+              C1Q21: Markdata.Q21,
+              C1Q22: Markdata.Q22,
+              C1Q23: Markdata.Q23,
+              C1Q24: Markdata.Q24,
+              C1Q25: Markdata.Q25,
+              C1Q26: Markdata.Q26,
+              C1Q27: Markdata.Q27,
+              C1Q28: Markdata.Q28,
+              C1STATUS: Markdata.STATUS,
+              C1STAFF: Markdata.STAFF,
+              studentId: student ? student.id : 0,
+
+              C1CO1: Markdata.Q1 + Markdata.Q2 + Markdata.Q5 + Markdata.Q6 + Markdata.Q9 + Markdata.Q10 + Markdata.Q13 + Markdata.Q14 + Markdata.Q17 + Markdata.Q18,
+              C1CO2: Markdata.Q3 + Markdata.Q4 + Markdata.Q7 + Markdata.Q8 + Markdata.Q11 + Markdata.Q12 + Markdata.Q15 + Markdata.Q16 + Markdata.Q19 + Markdata.Q20 + Markdata.Q21,
+              C1CO3: Markdata.Q22 + Markdata.Q23 + Markdata.Q26,
+              C1CO4: Markdata.Q24 + Markdata.Q25 + Markdata.Q27,
+              C1CO5: Markdata.Q28,
+            },
+          });
+
+          return res.json({
+            success: "CIA-1 marks are updated successfully",
+          });
+        }
+
+        // If marks do not exist, create them
+        const mark = await prisma.marks.create({
+          data: {
+            C1Q1: Markdata.Q1,
+            C1Q2: Markdata.Q2,
+            C1Q3: Markdata.Q3,
+            C1Q4: Markdata.Q4,
+            C1Q5: Markdata.Q5,
+            C1Q6: Markdata.Q6,
+            C1Q7: Markdata.Q7,
+            C1Q8: Markdata.Q8,
+            C1Q9: Markdata.Q9,
+            C1Q10: Markdata.Q10,
+            C1Q11: Markdata.Q11,
+            C1Q12: Markdata.Q12,
+            C1Q13: Markdata.Q13,
+            C1Q14: Markdata.Q14,
+            C1Q15: Markdata.Q15,
+            C1Q16: Markdata.Q16,
+            C1Q17: Markdata.Q17,
+            C1Q18: Markdata.Q18,
+            C1Q19: Markdata.Q19,
+            C1Q20: Markdata.Q20,
+            C1Q21: Markdata.Q21,
+            C1Q22: Markdata.Q22,
+            C1Q23: Markdata.Q23,
+            C1Q24: Markdata.Q24,
+            C1Q25: Markdata.Q25,
+            C1Q26: Markdata.Q26,
+            C1Q27: Markdata.Q27,
+            C1Q28: Markdata.Q28,
+            C1STATUS: Markdata.STATUS,
+            C1STAFF: Markdata.STAFF,
+            studentId: student ? student.id : 0,
+
+            C1CO1: Markdata.Q1 + Markdata.Q2 + Markdata.Q5 + Markdata.Q6 + Markdata.Q9 + Markdata.Q10 + Markdata.Q13 + Markdata.Q14 + Markdata.Q17 + Markdata.Q18,
+            C1CO2: Markdata.Q3 + Markdata.Q4 + Markdata.Q7 + Markdata.Q8 + Markdata.Q11 + Markdata.Q12 + Markdata.Q15 + Markdata.Q16 + Markdata.Q19 + Markdata.Q20 + Markdata.Q21,
+            C1CO3: Markdata.Q22 + Markdata.Q23 + Markdata.Q26,
+            C1CO4: Markdata.Q24 + Markdata.Q25 + Markdata.Q27,
+            C1CO5: Markdata.Q28,
+          },
+        });
+
+
+      }
+
+      else if (exam === "C2") {
+        let marks = await prisma.marks.findFirst({
+          where: {
+            studentId: student ? student.id : 0,
+          },
+        });
+
+        if (marks) {
+          // Marks already exist, update them
+          const updatedMark = await prisma.marks.update({
+            where: { id: marks.id }, // Assuming there's an ID for the existing mark
+            data: {
+              C2Q1: Markdata.Q1,
+              C2Q2: Markdata.Q2,
+              C2Q3: Markdata.Q3,
+              C2Q4: Markdata.Q4,
+              C2Q5: Markdata.Q5,
+              C2Q6: Markdata.Q6,
+              C2Q7: Markdata.Q7,
+              C2Q8: Markdata.Q8,
+              C2Q9: Markdata.Q9,
+              C2Q10: Markdata.Q10,
+              C2Q11: Markdata.Q11,
+              C2Q12: Markdata.Q12,
+              C2Q13: Markdata.Q13,
+              C2Q14: Markdata.Q14,
+              C2Q15: Markdata.Q15,
+              C2Q16: Markdata.Q16,
+              C2Q17: Markdata.Q17,
+              C2Q18: Markdata.Q18,
+              C2Q19: Markdata.Q19,
+              C2Q20: Markdata.Q20,
+              C2Q21: Markdata.Q21,
+              C2Q22: Markdata.Q22,
+              C2Q23: Markdata.Q23,
+              C2Q24: Markdata.Q24,
+              C2Q25: Markdata.Q25,
+              C2Q26: Markdata.Q26,
+              C2Q27: Markdata.Q27,
+              C2Q28: Markdata.Q28,
+              C2STATUS: Markdata.STATUS,
+              C2STAFF: Markdata.STAFF,
+              studentId: student ? student.id : 0,
+
+              C2CO1: Markdata.Q1 + Markdata.Q2 + Markdata.Q5 + Markdata.Q6 + Markdata.Q9 + Markdata.Q10 + Markdata.Q13 + Markdata.Q14 + Markdata.Q17 + Markdata.Q18,
+              C2CO2: Markdata.Q3 + Markdata.Q4 + Markdata.Q7 + Markdata.Q8 + Markdata.Q11 + Markdata.Q12 + Markdata.Q15 + Markdata.Q16 + Markdata.Q19 + Markdata.Q20 + Markdata.Q21,
+              C2CO3: Markdata.Q22 + Markdata.Q23 + Markdata.Q26,
+              C2CO4: Markdata.Q24 + Markdata.Q25 + Markdata.Q27,
+              C2CO5: Markdata.Q28,
+            },
+          });
+          console.log('seuces')
+        }
+        else{
+          console.log('no')
+        }
+      }
+
+      else if (exam === "ASG") {
+
+        // Update the assignment marks
+        let marks = await prisma.marks.findFirst({
+          where: {
+            studentId: student ? student.id : 0,
+          },
+        });
+
+        if (marks) {
+          const updateAssignment = await prisma.marks.update({
+            where: {
+              id: marks.id,
+            },
+            data: {
+              ASG1: MarkdataAss.ASG1,
+              ASGCO1: Math.round((MarkdataAss.ASG1 || 0) * (5 / 3)),
+              ASG1STAFF: staff,
+              ASG2: MarkdataAss.ASG2,
+              ASGCO2: Math.round((MarkdataAss.ASG2 || 0) * (5 / 3)),
+              ASG2STAFF: staff,
+            },
+          });
+        }
+        else{
+          console.log('no')
+        }
+
+      }
+
+      else if (exam === "ESE") {
+        let marks = await prisma.marks.findFirst({
+          where: {
+            studentId: student ? student.id : 0,
+          },
+        });
+
+        if (marks) {
+          // Marks already exist, update them
+          const updatedMark = await prisma.marks.update({
+            where: { id: marks.id }, // Assuming there's an ID for the existing mark
+            data: {
+              ESEQ1: Markdata.Q1,
+              ESEQ2: Markdata.Q2,
+              ESEQ3: Markdata.Q3,
+              ESEQ4: Markdata.Q4,
+              ESEQ5: Markdata.Q5,
+              ESEQ6: Markdata.Q6,
+              ESEQ7: Markdata.Q7,
+              ESEQ8: Markdata.Q8,
+              ESEQ9: Markdata.Q9,
+              ESEQ10: Markdata.Q10,
+              ESEQ11: Markdata.Q11,
+              ESEQ12: Markdata.Q12,
+              ESEQ13: Markdata.Q13,
+              ESEQ14: Markdata.Q14,
+              ESEQ15: Markdata.Q15,
+              ESEQ16: Markdata.Q16,
+              ESEQ17: Markdata.Q17,
+              ESEQ18: Markdata.Q18,
+              ESEQ19: Markdata.Q19,
+              ESEQ20: Markdata.Q20,
+              ESEQ21: Markdata.Q21,
+              ESEQ22: Markdata.Q22,
+              ESEQ23: Markdata.Q23,
+              ESEQ24: Markdata.Q24,
+              ESEQ25: Markdata.Q25,
+              ESEQ26: Markdata.Q26,
+              ESEQ27: Markdata.Q27,
+              ESEQ28: Markdata.Q28,
+              ESESTATUS: Markdata.STATUS,
+              ESESTAFF: Markdata.STAFF,
+              studentId: student ? student.id : 0,
+
+              ESECO1: Markdata.Q1 + Markdata.Q2 + Markdata.Q5 + Markdata.Q6 + Markdata.Q9 + Markdata.Q10 + Markdata.Q13 + Markdata.Q14 + Markdata.Q17 + Markdata.Q18,
+              ESECO2: Markdata.Q3 + Markdata.Q4 + Markdata.Q7 + Markdata.Q8 + Markdata.Q11 + Markdata.Q12 + Markdata.Q15 + Markdata.Q16 + Markdata.Q19 + Markdata.Q20 + Markdata.Q21,
+              ESECO3: Markdata.Q22 + Markdata.Q23 + Markdata.Q26,
+              ESECO4: Markdata.Q24 + Markdata.Q25 + Markdata.Q27,
+              ESECO5: Markdata.Q28,
+            },
+          });
+        }
+        else{
+          console.log('no')
+        }
+
+        
+      } else {
+        return res.status(404).json({
+          error: {
+            message: "Invalid Exam type",
+          },
+        });
+      }
+    }
+    console.log('sad')
+
+
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({
+      error: {
+        message: "Internal server error",
+      },
+    });
+  }
+
+}
+//#endregion
