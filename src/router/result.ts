@@ -3265,11 +3265,11 @@ async function addCourseAutomate() {
 async function addMarksAutomate(req: Request, res: Response) {
 
   let exam: string = 'ASG';
-  const code = '23PMA1CC4';
+  const code = '23PMA1CC1';
   const department = 'PMA';
   const claass = 'PMA';
   const section = 'a';
-  const staff = 'Prasanna A';
+  const staff = 'Mohamed Thoiyab N';
 
 
 
