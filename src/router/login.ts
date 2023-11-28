@@ -3,7 +3,7 @@ import { PrismaClient, Role } from '@prisma/client';
 import { ValidationError } from "zod-validation-error";
 import jwt from 'jsonwebtoken';
 import crypto from 'crypto';
-import { UserRegistrationType, loginSchema, loginTokenType, loginType, userRegistrationSchema } from '../model/login';
+import { userChangePasswordSchemaType, loginSchema, loginTokenType, loginType, userChangePasswordSchema } from '../model/login';
 
 const secretKey = 'basith@jayaprakash_salman-siraj';
 const encryptKey = '"9y/B?E(H+MbQeThWmZq4t7w!z%C&F)J@NcRfUjXn2r5u8x/A?D(G-KaPdSgVkYp3"';
@@ -13,7 +13,7 @@ const prisma = new PrismaClient();
 export const loginRouter = express.Router();
 
 loginRouter.post("/login", login);
-loginRouter.post("/signup", createUser);
+loginRouter.get("/changePassword", changePass);
 
 //#region
 export function encrypt(password: string, key: string): string {
@@ -164,49 +164,54 @@ async function login(req: Request, res: Response) {
   });
 }
 
-async function createUser(req: Request, res: Response) {
-  const userRegistrationData: UserRegistrationType = userRegistrationSchema.parse(req.body);
+async function changePass(req: Request, res: Response) {
 
-  const { email, password, role } = userRegistrationData;
 
-  if (!userRegistrationData) {
-    return res.status(400).json({
-      error: {
-        message: "The request was missing required parameters ",
-      }
-    });
-  }
+  const { email, password } = req.query;
 
-  const existingUser = await prisma.user.findFirst({
-    where: {
-      email: email
-    }
-  });
-
-  if (existingUser) {
-    return res.status(409).json({
-      error: {
-        message: "Email already exists",
-      }
-    });
-  }
 
   try {
-    const encryptedPassword = encrypt(password, encryptKey);
 
-    await prisma.user.create({
-      data: {
-        email: email,
-        password: password,
-        role: role as Role,
-      }
-    });
+    if (email && password) {
+      const existingUser = await prisma.user.findFirst({
+        where: {
+          email: String(email)
+        }
+      });
 
-    return res.status(201).json({
-      success: {
-        message: "User created successfully"
+      if (existingUser) {
+        const updatePass = await prisma.user.update({
+          data: {
+            password: String(password)
+          },
+          where: {
+            id: existingUser.id
+          }
+        })
+
+        return res.status(200).json({
+          success: {
+            message: "Password changed successfully"
+          }
+        });
+
       }
-    });
+
+      return res.status(200).json({
+        error: {
+          message: `${email} Not Found`
+        }
+      });
+    }
+    else {
+      return res.status(400).json({
+        error: {
+          message: "Validation error",
+        }
+      });
+    }
+
+
   } catch (error) {
     if (error instanceof ValidationError) {
       return res.status(400).json({

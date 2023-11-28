@@ -26,6 +26,11 @@ userRouter.get("/getStaff", getStaff)
 // userRouter.put("/addDep", addDep)
 userRouter.put("/addCourse", addCourseAutomate)
 userRouter.put("/addMarksAutomates", addMarksAutomate)
+userRouter.get("/getStaffsDetails", getByCourseStaffTaken)
+
+userRouter.get("/getAllCourses", getAllCourses)
+userRouter.post("/AddNewCourse", addNewCourse)
+userRouter.delete("/deleteCourse", deleteCourse)
 
 
 //#region Add Marks
@@ -948,7 +953,7 @@ async function getCode(req: Request, res: Response) {
 
 //#region get Marks by code
 async function getMarkByCode(req: Request, res: Response) {
-  const { code, department, page, pageSize } = req.query;
+  const { code, department, page, pageSize, sortby } = req.query;
 
   try {
     // Check if the department exists
@@ -992,7 +997,7 @@ async function getMarkByCode(req: Request, res: Response) {
         marks: true,
       },
       orderBy: {
-        id: "desc",
+        id: sortby == 'true' ? "asc" : "desc",
       },
       skip, // Skip records based on the page number
       take: pageSizeNumber, // Limit the number of records per page
@@ -3099,6 +3104,220 @@ async function getByCategory(req: Request, res: Response) {
 }
 //#endregion
 
+
+//#region getby CourseStaffTaken
+async function getByCourseStaffTaken(req: Request, res: Response) {
+  const { uname } = req.query
+
+  if (!uname) {
+    return res.status(400).json({
+      error: {
+        message: "Id missing",
+      }
+    });
+  }
+
+  try {
+
+    const getDetails = await prisma.staff.findMany({
+      where: {
+        uname: String(uname)
+      },
+      include: {
+        code: true
+      }
+    })
+
+    if (getDetails) {
+      return res.status(200).json({
+        data: getDetails
+      });
+    }
+
+    return res.status(500).json({
+      error: {
+        message: "An error occurred while fetching data",
+      }
+    });
+
+
+  } catch (error) {
+
+    return res.status(500).json({
+      error: {
+        message: "An error occurred while fetching data",
+      }
+    });
+  }
+
+
+
+}
+
+//#endregion
+
+//#region getAllCourses
+async function getAllCourses(req: Request, res: Response) {
+  const { page } = req.query
+
+  try {
+
+    const pageNumber = parseInt(page?.toString() || '1', 10);
+    const pageSizeNumber = parseInt('10', 10);
+    const skip = (pageNumber - 1) * pageSizeNumber;
+
+    const getData = await prisma.code.findMany({
+      skip, // Skip records based on the page number
+      take: pageSizeNumber,
+      orderBy: {
+        depCode: "asc",
+      },
+
+    })
+
+    const getDataCount = await prisma.code.count()
+
+    const totalPages = Math.ceil(getDataCount / pageSizeNumber);
+
+    if (!getData) {
+      return res.status(500).json({
+        error: {
+          message: "No data",
+        }
+      });
+    }
+
+    return res.status(200).json({
+      data: getData,
+      totalPages
+    });
+
+
+
+  } catch (error) {
+
+    return res.status(500).json({
+      error: {
+        message: "An error occurred while fetching data",
+      }
+    });
+  }
+
+
+
+}
+//#endregion
+
+//#region addNewCourse
+async function addNewCourse(req: Request, res: Response) {
+  const { code, depCode, name } = req.body
+
+  if (!code || !depCode || !name) {
+    return res.status(500).json({
+      error: {
+        message: "",
+      }
+    });
+  }
+
+  try {
+    const checkExisting = await prisma.code.findFirst({
+      where: {
+        code: String(code),
+        depCode: String(depCode)
+      }
+    })
+
+    if (checkExisting) {
+      return res.status(500).json({
+        error: {
+          message: "Already Exist",
+        }
+      });
+    }
+
+
+    await prisma.code.create({
+      data: {
+        code: String(code),
+        name: String(name),
+        depCode: String(depCode),
+        uname: "none"
+        // Map other CSV columns to your Prisma model fields
+      },
+    });
+
+    return res.status(200).json({
+      success: "Successfully Added"
+    });
+  }
+  catch (e) {
+    return res.status(500).json({
+      error: {
+        message: e,
+      }
+    });
+  }
+
+}
+//#endregion
+
+//#region addNewCourse
+async function deleteCourse(req: Request, res: Response) {
+  const { id } = req.query
+
+  if (!id) {
+    return res.status(500).json({
+      error: {
+        message: "id not found",
+      }
+    });
+  }
+
+  try {
+    const checkExisting = await prisma.code.findFirst({
+      where: {
+        id: Number(id)
+      }
+    })
+
+    if (checkExisting) {
+      const deleteCourse = await prisma.code.delete({
+        where: {
+          id: Number(id)
+        },
+        include: {
+          students: true,
+        }
+      })
+
+      return res.status(200).json({
+        success: 'Deleted'
+      })
+    }
+    else {
+      return res.status(500).json({
+        error: {
+          message: 'Not Found'
+        }
+      });
+    }
+
+  }
+  catch (e) {
+    return res.status(500).json({
+      error: {
+        message: e,
+      }
+    });
+  }
+
+}
+//#endregion
+
+
+
+//automation part
 //#region get the staff
 //get the staff
 // async function getStaff(req: Request, res: Response) {
@@ -3141,14 +3360,28 @@ async function getStaff(req: Request, res: Response) {
       return res.status(400).json({ error: "'uname' and 'department' query parameters are required." });
     }
 
-    const staffRecords = await prisma.staff.findMany({
-      where: { uname: uname },
-      select: {
-        code: {
-          select: { name: true, depCode: true, code: true }, // Include code in the selection
+    let staffRecords;
+
+    if (uname !== 'admin') {
+      staffRecords = await prisma.staff.findMany({
+        where: { uname: uname },
+        select: {
+          code: {
+            select: { name: true, depCode: true, code: true }, // Include code in the selection
+          },
         },
-      },
-    });
+      });
+    }
+    else {
+      staffRecords = await prisma.staff.findMany({
+        select: {
+          code: {
+            select: { name: true, depCode: true, code: true }, // Include code in the selection
+          },
+        },
+      });
+    }
+
 
     if (!staffRecords || staffRecords.length === 0) {
       return res.status(404).json({ error: "No staff records found for the provided uname and department." });
@@ -3232,7 +3465,6 @@ async function getStaff(req: Request, res: Response) {
 //   console.log('CSV data uploaded successfully');
 //   await prisma.$disconnect();
 // }
-
 
 async function addCourseAutomate() {
 
@@ -3361,7 +3593,7 @@ async function addMarksAutomate(req: Request, res: Response) {
         }
       }
 
-   
+
       // Now, create the marks
       if (exam === "C1") {
 
@@ -3521,7 +3753,7 @@ async function addMarksAutomate(req: Request, res: Response) {
           });
           console.log('seuces')
         }
-        else{
+        else {
           console.log('no')
         }
       }
@@ -3550,7 +3782,7 @@ async function addMarksAutomate(req: Request, res: Response) {
             },
           });
         }
-        else{
+        else {
           console.log('no')
         }
 
@@ -3608,11 +3840,11 @@ async function addMarksAutomate(req: Request, res: Response) {
             },
           });
         }
-        else{
+        else {
           console.log('no')
         }
 
-        
+
       } else {
         return res.status(404).json({
           error: {
