@@ -3,7 +3,7 @@ import express, { Request, Response, response } from 'express';
 
 const prisma = new PrismaClient();
 
-//#region get Course
+//#region get student
 async function StudentOutcome(req: Request, res: Response) {
   const { RegNO } = req.body;
 
@@ -20,16 +20,16 @@ async function StudentOutcome(req: Request, res: Response) {
     const student = await prisma.student.findMany({
       where: {
         regNo: {
-          equals:RegNO
+          equals: RegNO
         }
       },
       include: {
         code: true,
-        marks:true
+        marks: true
       }
     })
 
-    if(!student){
+    if (!student) {
       return res.status(500).json({
         error: {
           message: "No Student Record found",
@@ -48,7 +48,6 @@ async function StudentOutcome(req: Request, res: Response) {
   }
 }
 //#endregion
-
 
 //#region course reusable
 async function Course(code: string) {
@@ -123,9 +122,9 @@ async function Course(code: string) {
 
     const totalStudents = updatedMarks.length;
 
-    const above40TCO1 = updatedMarks.filter((student) => student.TCO1 >= 42.5);
-    const above40TCO2 = updatedMarks.filter((student) => student.TCO2 >= 45.0);
-    const above40TCO3 = updatedMarks.filter((student) => student.TCO3 >= 12.5);
+    const above40TCO1 = updatedMarks.filter((student) => student.TCO1 >= 40.8);
+    const above40TCO2 = updatedMarks.filter((student) => student.TCO2 >= 43.2);
+    const above40TCO3 = updatedMarks.filter((student) => student.TCO3 >= 12);
 
     const countAbove40TCO1 = above40TCO1.length;
     const countAbove40TCO2 = above40TCO2.length;
@@ -164,13 +163,13 @@ async function Course(code: string) {
 
 
     const countAbove12ESECO1 = students.filter((student) =>
-      student.marks.some((mark) => mark.ELOT !== null && mark.ELOT >= 38.66)
+      student.marks.some((mark) => mark.ESELOT !== null && mark.ESELOT >= 17.4)
     ).length;
     const countAbove16ESECO2 = students.filter((student) =>
-      student.marks.some((mark) => mark.EMOT !== null && mark.EMOT >= 48.00)
+      student.marks.some((mark) => mark.ESEMOT !== null && mark.ESEMOT >= 21.6)
     ).length;
     const countAbove14ESECO3 = students.filter((student) =>
-      student.marks.some((mark) => mark.EHOT !== null && mark.EHOT >= 13.33)
+      student.marks.some((mark) => mark.ESEHOT !== null && mark.ESEHOT >= 6)
     ).length;
 
 
@@ -426,191 +425,11 @@ async function ProgramOutcome(req: Request, res: Response) {
 
       // Calculate outcome for each course code
       const outcomeResults = await Promise.all(courseCodes.map(async (courseCode) => {
-        // Retrieve students associated with the department and course code, including their marks
-        const students = await prisma.student.findMany({
-          where: {
-            code: {
-              code: courseCode.code,
-            },
-          },
-          include: {
-            marks: true,
-          },
-        });
 
-        // Calculate TCO values for each student
-        const updatedStudents = students.map((student) => {
-          // Calculate TCO values for each student
-          const TLOT = student.marks.reduce((total, mark) => {
-            const C1LOT = mark.C1LOT || 0;
-            const C2LOT = mark.C2LOT || 0;
-            const ASGCO1 = mark.ASGCO1 || 0;
-            return total + C1LOT + C2LOT + ASGCO1;
-          }, 0);
-
-          const TMOT = student.marks.reduce((total, mark) => {
-            const C1MOT = mark.C1MOT || 0;
-            const C2MOT = mark.C2MOT || 0;
-            const ASGCO2 = mark.ASGCO2 || 0;
-            return total + C1MOT + C2MOT + ASGCO2;
-          }, 0);
-
-          const THOT = student.marks.reduce((total, mark) => {
-            const C1HOT = mark.C1HOT || 0;
-            const C2HOT = mark.C2HOT || 0;
-
-            return total + C1HOT + C2HOT;
-          }, 0);
-
-          return {
-            id: student.id,
-            TLOT: TLOT,
-            TMOT: TMOT,
-            THOT: THOT,
-          };
-        });
-
-        // Perform batch updates to update the TCO values in the marks table
-        const updateresult = await Promise.all(
-          updatedStudents.map(async (updatedStudent) => {
-            await prisma.marks.updateMany({
-              where: {
-                studentId: updatedStudent.id,
-              },
-              data: {
-                TLOT: updatedStudent.TLOT,
-                TMOT: updatedStudent.TMOT,
-                THOT: updatedStudent.THOT,
-              },
-            });
-          })
-        );
-
-        if (!updateresult) {
-          return res.status(400).json({
-            error: {
-              message: "TCO's not updated",
-            },
-          });
-        }
-
-        // Create an object to hold updated marks data
-        const updatedMarks = updatedStudents.map((updatedStudent) => {
-          return {
-            id: updatedStudent.id,
-            TLOT: updatedStudent.TLOT,
-            TMOT: updatedStudent.TMOT,
-            THOT: updatedStudent.THOT,
-          };
-        });
-
-        // Calculate the total number of students
-        const totalStudents = updatedMarks.length;
-
-        // Check TCO1 against the condition
-        const above40TCO1 = updatedMarks.filter((student) => student.TLOT >= 18);
-
-        // Check TCO2 against the condition
-        const above40TCO2 = updatedMarks.filter((student) => student.TMOT >= 24);
-
-        // Check TCO3 against the condition
-        const above40TCO3 = updatedMarks.filter((student) => student.THOT >= 21);
-
-
-        // Calculate the count of students meeting the above-40 condition for each TCO
-        const countAbove40TCO1 = above40TCO1.length;
-        const countAbove40TCO2 = above40TCO2.length;
-        const countAbove40TCO3 = above40TCO3.length;
-
-        // Calculate the percentage for each TCO
-        const percentageTCO1 = (countAbove40TCO1 / totalStudents) * 100;
-        const percentageTCO2 = (countAbove40TCO2 / totalStudents) * 100;
-        const percentageTCO3 = (countAbove40TCO3 / totalStudents) * 100;
-
-        // Create an object to hold all above-40 TCO values
-        const above40TCO = {
-          TCO1: above40TCO1.length,
-          TCO2: above40TCO2.length,
-          TCO3: above40TCO3.length,
-        };
-
-        const calculateAttainLevel = (percentage: number) => {
-          return percentage >= 75 ? 3 : percentage >= 60 ? 2 : percentage >= 40 ? 1 : 0;
-        };
-
-        const percentages = {
-          TCO1: totalStudents > 0 ? ((countAbove40TCO1 / totalStudents) * 100).toFixed(2) : 0,
-          TCO2: totalStudents > 0 ? ((countAbove40TCO2 / totalStudents) * 100).toFixed(2) : 0,
-          TCO3: totalStudents > 0 ? ((countAbove40TCO3 / totalStudents) * 100).toFixed(2) : 0,
-        };
-
-        // Calculate ATTAINLEVEL for each TCO
-        const attainLevelTCO1 = calculateAttainLevel(percentageTCO1);
-        const attainLevelTCO2 = calculateAttainLevel(percentageTCO2);
-        const attainLevelTCO3 = calculateAttainLevel(percentageTCO3);
-
-        // Create an object to hold ATTAINLEVEL for each TCO
-        const attainLevels = {
-          TCO1: attainLevelTCO1,
-          TCO2: attainLevelTCO2,
-          TCO3: attainLevelTCO3,
-        };
-
-        // Create an object to hold the count of students meeting the condition for each ESECO field
-        const countAbove12ESECO1 = students.filter((student) =>
-          student.marks.some((mark) => mark.ELOT !== null && mark.ELOT >= 8) //7.5
-        ).length;
-
-        const countAbove16ESECO2 = students.filter((student) =>
-          student.marks.some((mark) => mark.EMOT !== null && mark.EMOT >= 9)
-        ).length;
-
-        const countAbove14ESECO3 = students.filter((student) =>
-          student.marks.some((mark) => mark.EHOT !== null && mark.EHOT >= 11) //10.5
-        ).length;
-
-        // Create an object to hold all above-40 ESECO values
-        const above40ESECO = {
-          ESECO1: countAbove12ESECO1,
-          ESECO2: countAbove16ESECO2,
-          ESECO3: countAbove14ESECO3,
-        };
-
-        const percentagesESECO = {
-          ESECO1: 0,
-          ESECO2: 0,
-          ESECO3: 0,
-        };
-
-        // Calculate the percentage for each ESECO if there are students meeting the condition
-        if (totalStudents > 0) {
-          percentagesESECO.ESECO1 = parseFloat(((countAbove12ESECO1 / totalStudents) * 100).toFixed(2));
-          percentagesESECO.ESECO2 = parseFloat(((countAbove16ESECO2 / totalStudents) * 100).toFixed(2));
-          percentagesESECO.ESECO3 = parseFloat(((countAbove14ESECO3 / totalStudents) * 100).toFixed(2));
-        }
-
-        // Calculate ATTAINLEVEL for each ESECO
-        const attainLevelESECO1 = calculateAttainLevel(percentagesESECO.ESECO1);
-        const attainLevelESECO2 = calculateAttainLevel(percentagesESECO.ESECO2);
-        const attainLevelESECO3 = calculateAttainLevel(percentagesESECO.ESECO3);
-
-        // Create an object to hold ATTAINLEVEL for each ESECO
-        const attainLevelsESECO = {
-          ESECO1: attainLevelESECO1,
-          ESECO2: attainLevelESECO2,
-          ESECO3: attainLevelESECO3,
-        };
-
-        let overAll = {
-          CO1: (attainLevels.TCO1 + attainLevelsESECO.ESECO1) / 2,
-          CO2: (attainLevels.TCO2 + attainLevelsESECO.ESECO2) / 2,
-          CO3: (attainLevels.TCO3 + attainLevelsESECO.ESECO3) / 2,
-        };
-
-        let averageAttainLevel = (overAll.CO1 + overAll.CO2 + overAll.CO3) / 3;
+        const DataOfCourse = await Course(courseCode.code)
 
         returnData.push({
-          overAtain: averageAttainLevel.toString(),
+          overAtain: DataOfCourse?.averageAttainLevel.toString() || '-',
         });
 
       }))
@@ -642,6 +461,4 @@ async function ProgramOutcome(req: Request, res: Response) {
 }
 //#endregion
 
-
-
-export {StudentOutcome, CourseOutCome, DepartmentOutcome, ProgramOutcome }
+export { StudentOutcome, CourseOutCome, DepartmentOutcome, ProgramOutcome }

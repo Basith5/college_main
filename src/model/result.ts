@@ -27,9 +27,9 @@ export const assignmentSchema = z.object({
 export const ESESchema = z.object({
     ESESTATUS: z.string({required_error: "status of ESE is required", }),
     ESESTAFF: z.string({required_error: "Staff initial is required", }),
-    ELOT: z.number({required_error: "ELOT is required", }),
-    EMOT: z.number({required_error: "EMOT is required", }),
-    EHOT: z.number({required_error: "EHOT is required", }),
+    ESELOT: z.number({required_error: "ESELOT is required", }),
+    ESEMOT: z.number({required_error: "ESEMOT is required", }),
+    ESEHOT: z.number({required_error: "ESEHOT is required", }),
 })
 
 export const psoSchema = z.object({
@@ -60,6 +60,10 @@ export const psoSchema = z.object({
     PSO5CO4: z.number({required_error: "PSO5CO4 is required", }).max(3),
     PSO5CO5: z.number({required_error: "PSO5CO5 is required", }).max(3),
 })
+
+export const exelCourseSchema = z.object({
+    image: z.string().optional(),
+});
 
 export type cia1Data = z.infer<typeof cia1Schema>
 export type cia2Data = z.infer<typeof cia2Schema>

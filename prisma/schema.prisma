@@ -60,18 +60,18 @@ model marks {
   ASG2      Float?
   ASGCO1    Float?
   ASGCO2    Float?
-  ELOT      Float?
-  EMOT      Float?
-  EHOT      Float?
+  ESELOT    Float?
+  ESEMOT    Float?
+  ESEHOT    Float?
   TLOT      Float?
   TMOT      Float?
   THOT      Float?
   C1STATUS  String?
   C2STATUS  String?
-  ESTATUS   String?
+  ESESTATUS String?
   C1STAFF   String?
   C2STAFF   String?
-  ESTAFF    String?
+  ESESTAFF  String?
   ASG1STAFF String?
   ASG2STAFF String?
   studentId Int
