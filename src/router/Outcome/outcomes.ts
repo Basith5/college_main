@@ -9,9 +9,8 @@ async function StudentOutcome(req: Request, res: Response) {
 
   if (!RegNO) {
     return res.status(400).json({
-      error: {
-        message: "Required  Register No.",
-      },
+      msg: "Required  Register No.",
+
     });
   }
 
@@ -31,20 +30,16 @@ async function StudentOutcome(req: Request, res: Response) {
 
     if (!student) {
       return res.status(500).json({
-        error: {
-          message: "No Student Record found",
-        },
+        msg: "No Student Record found",
       })
     }
-
 
     return res.status(200).json({
       student
     });
 
   } catch (error) {
-    console.error(error);
-    res.status(500).json({ error: 'Internal server error.' });
+    res.status(500).json({ msg: 'Internal server error.' });
   }
 }
 //#endregion
@@ -276,9 +271,8 @@ async function CourseOutCome(req: Request, res: Response) {
 
   if (!code || !department) {
     return res.status(400).json({
-      error: {
-        message: "Missing required fields code or department.",
-      },
+      msg: "Missing required fields code or department.",
+
     });
   }
 
@@ -296,7 +290,7 @@ async function CourseOutCome(req: Request, res: Response) {
     });
 
     if (!departmentWithCode) {
-      return res.status(400).json({ error: 'Department not found for the given code.' });
+      return res.status(400).json({ msg: 'Department not found for the given code.' });
     }
 
     const DataOfCourse = await Course(code)
@@ -317,7 +311,7 @@ async function CourseOutCome(req: Request, res: Response) {
     });
   } catch (error) {
     console.error(error);
-    res.status(500).json({ error: 'Internal server error.' });
+    res.status(500).json({ msg: 'Internal server error.' });
   }
 }
 //#endregion
@@ -328,9 +322,8 @@ async function DepartmentOutcome(req: Request, res: Response) {
 
   if (!department) {
     return res.status(400).json({
-      error: {
-        message: "Missing required field department.",
-      },
+      msg: "Missing required field department.",
+
     });
   }
 
@@ -343,7 +336,7 @@ async function DepartmentOutcome(req: Request, res: Response) {
     });
 
     if (!existingDepartment) {
-      return res.status(400).json({ error: 'Department not found.' });
+      return res.status(400).json({ msg: 'Department not found.' });
     }
 
     // Retrieve all course codes under the given department
@@ -384,7 +377,7 @@ async function DepartmentOutcome(req: Request, res: Response) {
     });
   } catch (error) {
     console.error(error);
-    res.status(500).json({ error: 'Internal server error.' });
+    res.status(500).json({ msg: 'Internal server error.' });
   }
 }
 //#endregion
@@ -455,7 +448,7 @@ async function ProgramOutcome(req: Request, res: Response) {
     });
   } catch (error) {
     console.error(error);
-    res.status(500).json({ error: 'Internal server error.' });
+    res.status(500).json({ msg: 'Internal server error.' });
   }
 
 }

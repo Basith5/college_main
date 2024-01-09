@@ -1,6 +1,35 @@
 import express, { Request, Response, response } from 'express';
 import { PrismaClient, Prisma } from '@prisma/client';
+import * as fs from 'fs';
+import csv from 'csv-parser';
+import { getFilePath } from '../common';
+
 const prisma = new PrismaClient();
+
+async function excelDepInsert(tempdata: { category: string; depCode: string; name: string; }) {
+
+    let isUG = tempdata.depCode[0] === 'U' ? 'UG' : 'PG'
+    try {
+        const check = await prisma.department.findFirst({
+            where: {
+                departmentCode: tempdata.depCode,
+            },
+        });
+
+        if (!check) {
+            await prisma.department.create({
+                data: {
+                    departmentCode: tempdata.depCode,
+                    name: tempdata.name + '-' + isUG,
+                    catagory: tempdata.category
+                }
+            })
+
+        }
+
+    } catch (error) {
+    }
+}
 
 //#region getAllDepartment
 async function getAllDepartment(req: Request, res: Response) {
@@ -32,9 +61,8 @@ async function getAllDepartment(req: Request, res: Response) {
 
         if (!getData) {
             return res.status(500).json({
-                error: {
-                    message: "No data",
-                }
+                msg: "No data",
+
             });
         }
 
@@ -48,9 +76,8 @@ async function getAllDepartment(req: Request, res: Response) {
     } catch (error) {
 
         return res.status(500).json({
-            error: {
-                message: "An error occurred while fetching data",
-            }
+            msg: "An error occurred while fetching data",
+
         });
     }
 
@@ -65,9 +92,8 @@ async function addNewDepartment(req: Request, res: Response) {
 
     if (!depCode || !name || !cat) {
         return res.status(500).json({
-            error: {
-                message: "Fill details",
-            }
+            msg: "Fill details",
+
         });
     }
 
@@ -110,9 +136,8 @@ async function addNewDepartment(req: Request, res: Response) {
     }
     catch (e) {
         return res.status(500).json({
-            error: {
-                message: e,
-            }
+            msg: e,
+
         });
     }
 
@@ -125,9 +150,8 @@ async function deleteDepartment(req: Request, res: Response) {
 
     if (!id) {
         return res.status(500).json({
-            error: {
-                message: "id not found",
-            }
+            msg: "id not found",
+
         });
     }
 
@@ -137,12 +161,31 @@ async function deleteDepartment(req: Request, res: Response) {
                 id: Number(id)
             }
         })
+        console.log(checkExisting)
 
         if (checkExisting) {
-            const deleteCourse = await prisma.department.delete({
+            await prisma.code.deleteMany({
                 where: {
-                    id: Number(id)
+                    depCode: checkExisting.departmentCode
                 },
+            })
+
+            await prisma.department.deleteMany({
+                where: {
+                    id: checkExisting?.id
+                },
+                // include:{
+                //     codes:{
+                //         include:{
+                //             students:{
+                //                 include:{
+                //                     marks:true
+                //                 }
+                //             },
+                //             staff:true
+                //         }
+                //     }
+                // }
             })
 
             return res.status(200).json({
@@ -151,22 +194,66 @@ async function deleteDepartment(req: Request, res: Response) {
         }
         else {
             return res.status(500).json({
-                error: {
-                    message: 'Not Found'
-                }
+                msg: 'Not Found'
+
             });
         }
 
     }
     catch (e) {
         return res.status(500).json({
-            error: {
-                message: e,
-            }
+            msg: e,
         });
     }
 
 }
 //#endregion
 
-export { getAllDepartment, addNewDepartment, deleteDepartment }
+//#region excelCourse
+async function excelDepartment(req: Request, res: Response) {
+    const files = req.file as Express.Multer.File;
+
+    const dest = await getFilePath(files);
+    if (!dest) {
+        return res.status(500).json({
+            success: 'Failed with file name'
+        });
+    }
+
+    if (!files) {
+        return res.status(500).json({
+            success: 'please upload file'
+        });
+    }
+
+    let totalCourse = 1
+    let tempdata: { category: string, name: string, depCode: string }[] = [];
+
+    fs.createReadStream(dest)
+        .pipe(csv())
+        .on('data', async (row) => {
+            if ('depCode' in row) {
+                tempdata.push({
+                    category: row.category.trim(),
+                    name: row.name,
+                    depCode: row.depCode.trim(),
+                })
+                totalCourse = totalCourse + 1
+            }
+        })
+        .on('end', async () => {
+            for (let i = 0; i < tempdata.length; i++) {
+                await excelDepInsert(tempdata[i])
+            }
+
+            console.log('CSV file successfully processed');
+        });
+
+    return res.status(200).json({
+        success: totalCourse + ' Program updated successfully'
+    });
+
+}
+//#endregion
+
+export { getAllDepartment, addNewDepartment, deleteDepartment, excelDepartment }

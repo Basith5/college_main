@@ -14,7 +14,7 @@ model department {
   departmentCode String @unique
   name           String
   catagory       String @default("Arts")
-  codes          code[]
+  codes          code[] 
 }
 
 model code {

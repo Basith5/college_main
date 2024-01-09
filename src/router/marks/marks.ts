@@ -18,9 +18,7 @@ async function addMark(req: Request, res: Response) {
     // Check for missing required fields
     if (!regNo || !exam || !code || !department || !claass || !section) {
         return res.status(400).json({
-            error: {
-                message: "Missing required fields regNo or exam or code or department or claass or section",
-            },
+            msg: "Missing required fields",
         });
     }
 
@@ -35,9 +33,7 @@ async function addMark(req: Request, res: Response) {
 
         if (!check) {
             return res.status(404).json({
-                error: {
-                    message: "Department code not found",
-                },
+                msg: "Department code not found",
             });
         }
 
@@ -60,10 +56,8 @@ async function addMark(req: Request, res: Response) {
             });
 
             if (!student) {
-                return res.json({
-                    error: {
-                        message: "Error occurred while creating the student",
-                    },
+                return res.status(400).json({
+                    msg: "Error occurred while creating the student",
                 });
             }
         }
@@ -75,9 +69,7 @@ async function addMark(req: Request, res: Response) {
             if (!data1.success) {
                 let errMessage: string = fromZodError(data1.error).message;
                 return res.status(400).json({
-                    error: {
-                        message: errMessage,
-                    },
+                    msg: errMessage,
                 });
             }
 
@@ -85,9 +77,8 @@ async function addMark(req: Request, res: Response) {
 
             if (!resultData) {
                 return res.status(409).json({
-                    error: {
-                        message: "Invalid params",
-                    },
+                    msg: "Invalid params",
+
                 });
             }
 
@@ -111,7 +102,7 @@ async function addMark(req: Request, res: Response) {
                     },
                 });
 
-                return res.json({
+                return res.status(200).json({
                     success: "CIA-1 marks are updated successfully",
                 });
             }
@@ -128,7 +119,7 @@ async function addMark(req: Request, res: Response) {
                 },
             });
 
-            return res.json({
+            return res.status(200).json({
                 success: "CIA-1 marks are added successfully",
             });
         }
@@ -139,9 +130,7 @@ async function addMark(req: Request, res: Response) {
             if (!data2.success) {
                 let errMessage: string = fromZodError(data2.error).message;
                 return res.status(400).json({
-                    error: {
-                        message: errMessage,
-                    },
+                    msg: errMessage,
                 });
             }
 
@@ -149,9 +138,7 @@ async function addMark(req: Request, res: Response) {
 
             if (!resultData) {
                 return res.status(409).json({
-                    error: {
-                        message: "Invalid params",
-                    },
+                    msg: "Invalid params",
                 });
             }
 
@@ -164,9 +151,7 @@ async function addMark(req: Request, res: Response) {
 
             if (!existingCIA1Marks || existingCIA1Marks.C1LOT === null) {
                 return res.status(409).json({
-                    error: {
-                        message: "CIA-1 marks do not exist for this student",
-                    },
+                    msg: "CIA-1 marks do not exist for this student",
                 });
             }
 
@@ -179,9 +164,7 @@ async function addMark(req: Request, res: Response) {
 
             if (!existingCIA2Marks) {
                 return res.status(409).json({
-                    error: {
-                        message: "CIA-2 marks do not exist for this student",
-                    },
+                    msg: "CIA-2 marks do not exist for this student",
                 });
             }
 
@@ -210,9 +193,7 @@ async function addMark(req: Request, res: Response) {
             if (!data3.success) {
                 let errMessage: string = fromZodError(data3.error).message;
                 return res.status(400).json({
-                    error: {
-                        message: errMessage,
-                    },
+                    msg: errMessage,
                 });
             }
 
@@ -227,18 +208,16 @@ async function addMark(req: Request, res: Response) {
 
             if (!existingAssignmentMarks) {
                 return res.status(409).json({
-                    error: {
-                        message: "Assignment marks do not exist for this student",
-                    },
+                    msg: "Assignment marks do not exist for this student",
+
                 });
             }
 
             // Check if there is anything to update
             if (!resultData.ASG1 && !resultData.ASG2) {
                 return res.status(400).json({
-                    error: {
-                        message: "Nothing to update",
-                    },
+                    msg: "Nothing to update",
+
                 });
             }
 
@@ -279,9 +258,8 @@ async function addMark(req: Request, res: Response) {
             if (!data4.success) {
                 let errMessage: string = fromZodError(data4.error).message;
                 return res.status(400).json({
-                    error: {
-                        message: errMessage,
-                    },
+                    msg: errMessage,
+
                 });
             }
 
@@ -289,9 +267,8 @@ async function addMark(req: Request, res: Response) {
 
             if (!resultData) {
                 return res.status(409).json({
-                    error: {
-                        message: "Invalid params",
-                    },
+                    msg: "Invalid params",
+
                 });
             }
 
@@ -304,9 +281,8 @@ async function addMark(req: Request, res: Response) {
 
             if (!existingESEMarks || existingESEMarks.C2LOT === null) {
                 return res.status(409).json({
-                    error: {
-                        message: "CIA-2 marks do not exist for this student",
-                    },
+                    msg: "CIA-2 marks do not exist for this student",
+
                 });
             }
 
@@ -331,26 +307,16 @@ async function addMark(req: Request, res: Response) {
 
         } else {
             return res.status(404).json({
-                error: {
-                    message: "Invalid Exam type",
-                },
+                msg: "Invalid Exam type",
+
             });
         }
-
-        // Return a success response
-        res.status(201).json({
-            success: {
-                message: "Student record added successfully",
-                student,
-            },
-        });
 
     } catch (error) {
         console.error(error);
         res.status(500).json({
-            error: {
-                message: "Internal server error",
-            },
+            msg: "Internal server error",
+
         });
     }
 }
@@ -370,7 +336,7 @@ async function getMarkByCode(req: Request, res: Response) {
 
         if (!existingDepartment) {
             return res.status(400).json({
-                error: 'Department not found for the given code.',
+                msg: 'Department not found for the given code.',
             });
         }
 
@@ -384,7 +350,7 @@ async function getMarkByCode(req: Request, res: Response) {
 
         if (!existingCode) {
             return res.status(400).json({
-                error: 'Code not found.',
+                msg: 'Code not found.',
             });
         }
 
@@ -408,8 +374,6 @@ async function getMarkByCode(req: Request, res: Response) {
             take: pageSizeNumber, // Limit the number of records per page
         });
 
-        console.log(students)
-
         // Calculate the total number of students that match the query
         const totalStudentsCount = await prisma.student.count({
             where: {
@@ -427,7 +391,7 @@ async function getMarkByCode(req: Request, res: Response) {
         res.status(200).json({ data: students, totalPages });
     } catch (error) {
         console.error(error);
-        res.status(500).json({ error: 'Internal server error.' });
+        res.status(500).json({ msg: 'Internal server error.' });
     }
 }
 
@@ -441,13 +405,13 @@ async function deleteMark(req: Request, res: Response) {
 
         if (!id || !exam) {
             return res.status(400).json({
-                error: "Params missing id or exam"
+                msg: "Params missing id or exam"
             });
         }
 
         if (typeof id !== 'number') {
             return res.status(400).json({
-                error: "Invalid ID. ID must be a number."
+                msg: "Invalid ID. ID must be a number."
             });
         }
 
@@ -459,7 +423,7 @@ async function deleteMark(req: Request, res: Response) {
 
         if (!mark) {
             return res.status(404).json({
-                error: "Mark not found"
+                msg: "Mark not found"
             });
         }
 
@@ -528,7 +492,7 @@ async function deleteMark(req: Request, res: Response) {
 
         } else {
             return res.status(404).json({
-                error: "Invalid exam type"
+                msg: "Invalid exam type"
             });
         }
 
@@ -546,12 +510,12 @@ async function deleteMark(req: Request, res: Response) {
         });
     } catch (error) {
         console.error(error);
-        res.status(500).json({ error: 'Internal server error.' });
+        res.status(500).json({ msg: 'Internal server error.' });
     }
 }
 //#endregion
 
-async function excelMarksInsert(row: {RegNo: string, Exam: string; LOT: string; MOT: string; HOT: string; },  courseCode: string, depCode: string) {
+async function excelMarksInsert(row: { RegNo: string, Exam: string; LOT: string; MOT: string; HOT: string; }, courseCode: string, depCode: string) {
     let exam: string = row.Exam;
     const code = courseCode;
     const department = depCode;
@@ -726,7 +690,7 @@ async function excelMarksInsert(row: {RegNo: string, Exam: string; LOT: string; 
                 const updatedMark = await prisma.marks.update({
                     where: { id: marks.id }, // Assuming there's an ID for the existing mark
                     data: {
-                        ESELOT: Number(row.LOT) || null ,
+                        ESELOT: Number(row.LOT) || null,
                         ESEMOT: Number(row.MOT) || null,
                         ESEHOT: Number(row.HOT) || null,
                         ESESTATUS: 'present',
@@ -763,20 +727,20 @@ async function excelMarks(req: Request, res: Response) {
 
     if (!courseCode || !depCode) {
         return res.status(500).json({
-            success: 'please fill all details'
+            msg: 'please fill all details'
         });
     }
 
     const dest = await getFilePath(files);
     if (!dest) {
         return res.status(500).json({
-            success: 'Failed with file name'
+            msg: 'Failed with file name'
         });
     }
 
     if (!files) {
         return res.status(500).json({
-            success: 'please upload file'
+            msg: 'please upload file'
         });
     }
 
@@ -785,7 +749,7 @@ async function excelMarks(req: Request, res: Response) {
     let totalStudent = 1
 
     let tempdata: { RegNo: string, Exam: string, LOT: string, MOT: string, HOT: string }[] = [];
-   
+
     fs.createReadStream(dest)
         .pipe(csv())
         .on('data', async (row) => {
@@ -811,10 +775,10 @@ async function excelMarks(req: Request, res: Response) {
 
             }
         })
-        .on('end',async () => {
+        .on('end', async () => {
             for (let i = 0; i < tempdata.length; i++) {
                 if (tempdata[i]['RegNo'] !== '') {
-                    await  excelMarksInsert(tempdata[i],courseCode,depCode)
+                    await excelMarksInsert(tempdata[i], courseCode, depCode)
                 }
                 else {
                     break;

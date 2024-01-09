@@ -32,17 +32,15 @@ export function allowAdminOnly(req: Request, res: Response, next: NextFunction) 
 
   if (!xLoginToken) {
     return res.status(401).json({
-      error: {
-        message: "The request was missing a login token",
-      }
+      msg: "The request was missing a login token",
+    
     })
   }
 
   if (typeof xLoginToken !== "string") {
     return res.status(401).json({
-      error: {
-        message: "The TOKEN header must be a string",
-      },
+      msg: "The TOKEN header must be a string",
+      
     });
   }
 
@@ -55,16 +53,14 @@ export function allowAdminOnly(req: Request, res: Response, next: NextFunction) 
       next()
     } else {
       return res.status(403).json({
-        error: {
-          message: "You are Staff not authorized to access this request",
-        },
+        msg: "You are Staff not authorized to access this request",
+    
       });
     }
   } catch (e) {
     return res.status(403).json({
-      error: {
-        message: "You are not authorized to access this request",
-      },
+      msg: "You are not authorized to access this request",
+      
     });
   }
 }
@@ -75,17 +71,15 @@ export function allowStaffOnly(req: Request, res: Response, next: NextFunction) 
 
   if (!xLoginToken) {
     return res.status(401).json({
-      error: {
-        message: "The request was missing a login token",
-      }
+      msg: "The request was missing a login token",
+    
     })
   }
 
   if (typeof xLoginToken !== "string") {
     return res.status(401).json({
-      error: {
-        message: "The TOKEN header must be a string",
-      },
+      msg: "The TOKEN header must be a string",
+      
     });
   }
 
@@ -98,16 +92,14 @@ export function allowStaffOnly(req: Request, res: Response, next: NextFunction) 
       next()
     } else {
       return res.status(403).json({
-        error: {
-          message: "You are Staff not authorized to access this request",
-        },
+        msg: "You are Staff not authorized to access this request",
+    
       });
     }
   } catch (e) {
     return res.status(403).json({
-      error: {
-        message: "You are not authorized to access this request",
-      },
+      msg: "You are not authorized to access this request",
+      
     });
   }
 }
@@ -118,9 +110,8 @@ async function login(req: Request, res: Response) {
 
   if (!validationResult.success) {
     return res.status(400).json({
-      error: {
-        message: "The request was missing required parameters ",
-      }
+      msg: "The request was missing required parameters ",
+    
     });
   }
 
@@ -144,9 +135,8 @@ async function login(req: Request, res: Response) {
 
   if (!user) {
     return res.status(409).json({
-      warning: {
-        message: "Invalid username or password"
-      }
+      msg: "Invalid username or password"
+      
     });
   }
 
@@ -198,16 +188,14 @@ async function changePass(req: Request, res: Response) {
       }
 
       return res.status(200).json({
-        error: {
-          message: `${email} Not Found`
-        }
+        msg: `${email} Not Found`
+  
       });
     }
     else {
       return res.status(400).json({
-        error: {
-          message: "Validation error",
-        }
+        msg: "Validation error",
+  
       });
     }
 
@@ -215,16 +203,14 @@ async function changePass(req: Request, res: Response) {
   } catch (error) {
     if (error instanceof ValidationError) {
       return res.status(400).json({
-        error: {
-          message: "Validation error",
-        }
+        msg: "Validation error",
+  
       });
     }
 
     return res.status(500).json({
-      error: {
-        message: "An error occurred while creating the user",
-      }
+      msg: "An error occurred while creating the user",
+    
     });
   }
 }

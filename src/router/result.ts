@@ -6,8 +6,8 @@ import { CourseOutCome, DepartmentOutcome, ProgramOutcome, StudentOutcome } from
 import { addNewCourse, deleteCourse, excelCourse, getAllCourses } from './Course/course';
 import { upload } from './common';
 import { addMark, deleteMark, excelMarks, getMarkByCode } from './marks/marks';
-import { addNewDepartment, deleteDepartment, getAllDepartment } from './department/department';
-import { getAllStaff, getByCourseStaffTaken, getStaff } from './Staff/staff';
+import { addNewDepartment, deleteDepartment, excelDepartment, getAllDepartment } from './department/department';
+import { addStaff, addStaffCourse, deleteStaff, deleteStaffCourse, excelStaff, getAllStaff, getByCourseStaffTaken, getStaff, searchCourse } from './Staff/staff';
 
 const prisma = new PrismaClient();
 export const userRouter = express.Router();
@@ -31,10 +31,17 @@ userRouter.delete("/deleteCourse", deleteCourse)
 userRouter.get("/getAllDepartment", getAllDepartment)
 userRouter.post("/AddNewDepartment", addNewDepartment)
 userRouter.delete("/deleteDepartment", deleteDepartment)
+userRouter.post('/addDepartmentByExcel', upload.single('Excel'), excelDepartment)
 //staff
 userRouter.get("/getStaffsDetails", getByCourseStaffTaken)
 userRouter.get("/getAllStaff", getAllStaff)
 userRouter.get("/getStaff", getStaff)
+userRouter.post('/addStaff', addStaff)
+userRouter.post('/staffCourseAssign', addStaffCourse)
+userRouter.delete("/deleteStaff", deleteStaff)
+userRouter.delete("/deleteStaffCourse", deleteStaffCourse)
+userRouter.get("/searchCourse", searchCourse);
+userRouter.post('/addStaffByExcel', upload.single('Excel'), excelStaff)
 //others
 userRouter.post("/addPso", addPso);
 userRouter.get("/searchDepartment", searchDepartment);
@@ -57,9 +64,8 @@ async function addPso(req: Request, res: Response) {
   if (!data.success) {
     let errMessage = fromZodError(data.error).message;
     return res.status(400).json({
-      error: {
-        message: errMessage,
-      },
+      msg: errMessage,
+      
     });
   }
 
@@ -68,9 +74,8 @@ async function addPso(req: Request, res: Response) {
 
     if (!resultData) {
       return res.status(409).json({
-        error: {
-          message: "Invalid params",
-        },
+        msg: "Invalid params",
+        
       });
     }
 
@@ -156,24 +161,20 @@ async function addPso(req: Request, res: Response) {
         });
       }
 
-      return res.status(201).json({
-        success: {
-          message: "PSO added successfully",
-        },
+      return res.status(200).json({
+        success: "PSO added successfully",
       });
     } else {
       return res.status(404).json({
-        error: {
-          message: "Course code does not exist",
-        },
+        msg: "Course code does not exist",
+        
       });
     }
   } catch (error) {
     console.log(error);
     return res.status(500).json({
-      error: {
-        message: "Internal server error",
-      },
+      msg: "Internal server error",
+      
     });
   }
 }
@@ -198,9 +199,7 @@ async function searchDepartment(req: Request, res: Response) {
     }
   } catch (error) {
     return res.status(500).json({
-      error: {
-        message: "Internal server error",
-      },
+      msg: "Internal server error",
     });
   }
 }
@@ -232,9 +231,8 @@ async function getCode(req: Request, res: Response) {
   } catch (error) {
     console.error(error);
     return res.status(500).json({
-      error: {
-        message: "Internal server error",
-      },
+      msg: "Internal server error",
+      
     });
   }
 }
@@ -247,25 +245,25 @@ async function getMarksWithCode(req: Request, res: Response) {
 
     if (!department || !code || !regNo) {
       return res.status(400).json({
-        error: "Missing required parameters: department, code, or regNo",
+        msg: "Missing required parameters: department, code, or regNo",
       });
     }
 
     if (typeof department !== 'string') {
       return res.status(400).json({
-        error: "department is string."
+        msg: "department is string."
       });
     }
 
     if (typeof code !== 'string') {
       return res.status(400).json({
-        error: "code is string."
+        msg: "code is string."
       });
     }
 
     if (typeof regNo !== 'string') {
       return res.status(400).json({
-        error: "regNo is string."
+        msg: "regNo is string."
       });
     }
 
@@ -321,7 +319,7 @@ async function getMarksWithCode(req: Request, res: Response) {
   } catch (error) {
     console.error(error);
     return res.status(500).json({
-      error: "Internal server error",
+      msg: "Internal server error",
     });
   }
 }
@@ -339,7 +337,7 @@ async function getMarksWithCode(req: Request, res: Response) {
 //     const department = req.query.department as string;
 
 //     if (!uname || !department) {
-//       return res.status(400).json({ error: "'uname' and 'department' query parameters are required." });
+//       return res.status(400).json({ msg: "'uname' and 'department' query parameters are required." });
 //     }
 
 //     const staffRecords = await prisma.staff.findMany({
@@ -350,7 +348,7 @@ async function getMarksWithCode(req: Request, res: Response) {
 //     });
 
 //     if (!staffRecords || staffRecords.length === 0) {
-//       return res.status(404).json({ error: "No staff records found for the provided uname and department." });
+//       return res.status(404).json({ msg: "No staff records found for the provided uname and department." });
 //     }
 
 //     const codeNames = staffRecords
@@ -360,7 +358,7 @@ async function getMarksWithCode(req: Request, res: Response) {
 //     res.status(200).json({ codeNames: codeNames });
 //   } catch (error) {
 //     console.error(error);
-//     res.status(500).json({ error: "Internal server error." });
+//     res.status(500).json({ msg: "Internal server error." });
 //   }
 // }
 
@@ -495,9 +493,8 @@ async function addMarksAutomate(req: Request, res: Response) {
 
       if (!check) {
         return res.status(404).json({
-          error: {
-            message: "Department code not found",
-          },
+          msg: "Department code not found",
+        
         });
       }
 
@@ -521,9 +518,8 @@ async function addMarksAutomate(req: Request, res: Response) {
 
         if (!student) {
           return res.json({
-            error: {
-              message: "Error occurred while creating the student",
-            },
+            msg: "Error occurred while creating the student",
+            
           });
         }
       }
@@ -665,9 +661,8 @@ async function addMarksAutomate(req: Request, res: Response) {
 
       } else {
         return res.status(404).json({
-          error: {
-            message: "Invalid Exam type",
-          },
+          msg: "Invalid Exam type",
+        
         });
       }
     }
@@ -677,9 +672,8 @@ async function addMarksAutomate(req: Request, res: Response) {
   } catch (error) {
     console.error(error);
     res.status(500).json({
-      error: {
-        message: "Internal server error",
-      },
+      msg: "Internal server error",
+      
     });
   }
 

@@ -64,9 +64,7 @@ async function getAllCourses(req: Request, res: Response) {
 
         if (!getData) {
             return res.status(500).json({
-                error: {
-                    message: "No data",
-                }
+                msg: "No data",
             });
         }
 
@@ -80,14 +78,10 @@ async function getAllCourses(req: Request, res: Response) {
     } catch (error) {
 
         return res.status(500).json({
-            error: {
-                message: "An error occurred while fetching data",
-            }
+            msg: "An error occurred while fetching data",
+
         });
     }
-
-
-
 }
 //#endregion
 
@@ -97,7 +91,7 @@ async function addNewCourse(req: Request, res: Response) {
 
     if (!depCode || !name || !code) {
         return res.status(500).json({
-            success: "please fill all field"
+            msg: "please fill all field"
         });
     }
 
@@ -161,9 +155,7 @@ async function addNewCourse(req: Request, res: Response) {
     }
     catch (e) {
         return res.status(500).json({
-            error: {
-                message: e,
-            }
+            msg: e,
         });
     }
 
@@ -176,9 +168,8 @@ async function deleteCourse(req: Request, res: Response) {
 
     if (!id) {
         return res.status(500).json({
-            error: {
-                message: "id not found",
-            }
+            msg: "id not found",
+            
         });
     }
 
@@ -202,18 +193,14 @@ async function deleteCourse(req: Request, res: Response) {
         }
         else {
             return res.status(500).json({
-                error: {
-                    message: 'Not Found'
-                }
+                msg: 'Code not found'
             });
         }
 
     }
     catch (e) {
         return res.status(500).json({
-            error: {
-                message: e,
-            }
+            msg: e,
         });
     }
 
@@ -223,7 +210,6 @@ async function deleteCourse(req: Request, res: Response) {
 //#region excelCourse
 async function excelCourse(req: Request, res: Response) {
     const files = req.file as Express.Multer.File;
-
 
     const dest = await getFilePath(files);
     if (!dest) {
@@ -252,7 +238,6 @@ async function excelCourse(req: Request, res: Response) {
                         depCode: row.course_id.trim(),
                     })
                     totalCourse = totalCourse + 1
-                    // console.log(row.Sub_Code)
                 }
             }
 
