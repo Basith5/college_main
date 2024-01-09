@@ -181,11 +181,44 @@ async function deleteCourse(req: Request, res: Response) {
         })
 
         if (checkExisting) {
-            const deleteCourse = await prisma.code.delete({
+            await prisma.marks.deleteMany({
                 where: {
-                    id: Number(id)
+                    studentId: {
+                        in: await prisma.student.findMany({
+                            where: {
+                                codeId: checkExisting.id,
+                            },
+                            select: {
+                                id: true
+                            }
+                        }).then(students => students.map(student => student.id))
+                    }
+                }
+            });
+            
+            await prisma.student.deleteMany({
+                where: {
+                    codeId: checkExisting.id,
                 },
-            })
+            });
+
+            await prisma.staff.deleteMany({
+                where: {
+                    codeId: checkExisting.id,
+                },
+            });
+
+            await prisma.pSO.deleteMany({
+                where: {
+                    codeId: checkExisting.id,
+                },
+            });
+
+            await prisma.code.delete({
+                where: {
+                    id: checkExisting.id,
+                },
+            });
 
             return res.status(200).json({
                 success: 'Deleted'

@@ -487,10 +487,23 @@ async function deleteMark(req: Request, res: Response) {
             updateFields[`ESEMOT`] = null;
             updateFields[`ESEHOT`] = null;
 
-            updateFields["ESTATUS"] = null;
-            updateFields["ESTAFF"] = null;
+            updateFields["ESESTATUS"] = null;
+            updateFields["ESESTAFF"] = null;
 
-        } else {
+        } else if (exam === 'ASG1') {
+            updateFields[`ASG1`] = null;
+            updateFields[`ASGCO1`] = null;
+
+            updateFields["ASG1STAFF"] = null;
+        } else if (exam === 'ASG2') {
+            updateFields[`ASG2`] = null;
+            updateFields[`ASGCO2`] = null;
+
+
+            updateFields["ASG2STAFF"] = null;
+            console.log('asd')
+        }
+        else {
             return res.status(404).json({
                 msg: "Invalid exam type"
             });

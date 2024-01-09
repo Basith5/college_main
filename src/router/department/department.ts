@@ -161,44 +161,83 @@ async function deleteDepartment(req: Request, res: Response) {
                 id: Number(id)
             }
         })
-        console.log(checkExisting)
 
-        if (checkExisting) {
-            await prisma.code.deleteMany({
-                where: {
-                    depCode: checkExisting.departmentCode
-                },
-            })
-
-            await prisma.department.deleteMany({
-                where: {
-                    id: checkExisting?.id
-                },
-                // include:{
-                //     codes:{
-                //         include:{
-                //             students:{
-                //                 include:{
-                //                     marks:true
-                //                 }
-                //             },
-                //             staff:true
-                //         }
-                //     }
-                // }
-            })
-
-            return res.status(200).json({
-                success: 'Deleted'
-            })
-        }
-        else {
-            return res.status(500).json({
-                msg: 'Not Found'
-
+        if (!checkExisting) {
+            return res.status(404).json({
+                error: 'Department not found',
             });
         }
 
+        const codes = await prisma.code.findMany({
+            where: {
+                depCode: checkExisting.departmentCode,
+            },
+            select: {
+                id: true
+            }
+        });
+
+        const codeIds = codes.map(code => code.id);
+
+        const students = await prisma.student.findMany({
+            where: {
+                codeId: {
+                    in: codeIds
+                }
+            },
+            select: {
+                id: true
+            }
+        });
+
+        const studentIds = students.map(student => student.id);
+
+        await prisma.$transaction([
+            prisma.marks.deleteMany({
+                where: {
+                    studentId: {
+                        in: studentIds
+                    }
+                }
+            }),
+            prisma.student.deleteMany({
+                where: {
+                    codeId: {
+                        in: codeIds
+                    }
+                }
+            }),
+            prisma.staff.deleteMany({
+                where: {
+                    codeId: {
+                        in: codeIds
+                    }
+                }
+            }),
+            prisma.pSO.deleteMany({
+                where: {
+                    codeId: {
+                        in: codeIds
+                    }
+                }
+            }),
+            prisma.code.deleteMany({
+                where: {
+                    id: {
+                        in: codeIds
+                    }
+                }
+            }),
+            prisma.department.delete({
+                where: {
+                    id: checkExisting.id,
+                },
+            })
+        ]);
+
+        return res.status(200).json({
+            success: 'Deleted successfully',
+        });
     }
     catch (e) {
         return res.status(500).json({
