@@ -6,28 +6,36 @@ import { getFilePath } from '../common';
 
 const prisma = new PrismaClient();
 
-async function excelCourseInsert(tempdata: { code: string; depCode: string; name: string; }) {
+async function excelCourseInsert(tempdata: { code: string; depCode: string; name: string; }, year: number) {
 
     try {
-        const check = await prisma.code.findFirst({
+        const getDepId = await prisma.department.findFirst({
             where: {
-                depCode: tempdata.depCode,
-                code: tempdata.code,
-            },
-        });
+                departmentCode: tempdata.depCode,
+                year: year
+            }
+        })
 
-        if (!check) {
-            await prisma.code.create({
-                data: {
-                    depCode: tempdata.depCode,
+        if (getDepId) {
+            const check = await prisma.code.findFirst({
+                where: {
+                    depID: getDepId.id,
                     code: tempdata.code,
-                    name: tempdata.name,
-                    uname: 'none'
-                }
-            })
+                },
+            });
 
+            if (!check) {
+
+                await prisma.code.create({
+                    data: {
+                        depID:getDepId.id,
+                        code: tempdata.code,
+                        name: tempdata.name,
+                    }
+                })
+
+            }
         }
-        console.log(check?.code)
 
     } catch (error) {
         console.error(error);
@@ -36,7 +44,7 @@ async function excelCourseInsert(tempdata: { code: string; depCode: string; name
 
 //#region getAllCourses
 async function getAllCourses(req: Request, res: Response) {
-    const { page, question } = req.query
+    const { page, question, year } = req.query
 
     try {
 
@@ -48,12 +56,28 @@ async function getAllCourses(req: Request, res: Response) {
             skip, // Skip records based on the page number
             take: pageSizeNumber,
             orderBy: {
-                depCode: "asc",
+                department: {
+                    departmentCode: 'asc'
+                }
             },
             where: {
                 name: {
                     contains: question as string
+                },
+                department: {
+                    year: Number(year) || 2023
                 }
+            },
+            select:{
+                department:{
+                    select:{
+                        departmentCode:true
+                    }
+                },
+                name:true,
+                code:true,
+                id:true
+
             }
 
         })
@@ -87,9 +111,9 @@ async function getAllCourses(req: Request, res: Response) {
 
 //#region addNewCourse
 async function addNewCourse(req: Request, res: Response) {
-    const { depCode, name, code } = req.body
+    const { depCode, name, code, year } = req.body
 
-    if (!depCode || !name || !code) {
+    if (!depCode || !name || !code || !year) {
         return res.status(500).json({
             msg: "please fill all field"
         });
@@ -100,16 +124,20 @@ async function addNewCourse(req: Request, res: Response) {
             where: {
                 departmentCode: {
                     equals: String(depCode)
-                }
+                },
+                year: Number(year)
             }
         })
 
-        console.log(checkExistingDep)
 
         if (checkExistingDep || false) {
             const checkExisting = await prisma.code.findFirst({
                 where: {
-                    code: String(code)
+                    code: String(code),
+                    department: {
+                        departmentCode: depCode,
+                        year: Number(year)
+                    }
                 }
             })
 
@@ -120,7 +148,6 @@ async function addNewCourse(req: Request, res: Response) {
                     },
                     data: {
                         name: String(name),
-                        depCode: String(depCode),
                         code: String(code)
                     },
                 });
@@ -133,10 +160,8 @@ async function addNewCourse(req: Request, res: Response) {
             await prisma.code.create({
                 data: {
                     name: String(name),
-                    depCode: String(depCode),
                     code: String(code),
-                    uname: ''
-                    // Map other CSV columns to your Prisma model fields
+                    depID: checkExistingDep?.id
                 },
             });
 
@@ -169,7 +194,7 @@ async function deleteCourse(req: Request, res: Response) {
     if (!id) {
         return res.status(500).json({
             msg: "id not found",
-            
+
         });
     }
 
@@ -195,7 +220,7 @@ async function deleteCourse(req: Request, res: Response) {
                     }
                 }
             });
-            
+
             await prisma.student.deleteMany({
                 where: {
                     codeId: checkExisting.id,
@@ -243,6 +268,7 @@ async function deleteCourse(req: Request, res: Response) {
 //#region excelCourse
 async function excelCourse(req: Request, res: Response) {
     const files = req.file as Express.Multer.File;
+    const { year } = req.body
 
     const dest = await getFilePath(files);
     if (!dest) {
@@ -278,7 +304,7 @@ async function excelCourse(req: Request, res: Response) {
         })
         .on('end', async () => {
             for (let i = 0; i < tempdata.length; i++) {
-                await excelCourseInsert(tempdata[i])
+                await excelCourseInsert(tempdata[i], Number(year))
             }
 
             console.log('CSV file successfully processed');

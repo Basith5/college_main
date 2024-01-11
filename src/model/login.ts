@@ -2,7 +2,7 @@ import { z } from 'zod'
 
 export interface loginTokenType {
     id: number,
-    email: string,
+    uname: string,
     role: string
 }
 

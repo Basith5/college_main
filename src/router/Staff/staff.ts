@@ -11,18 +11,17 @@ async function excelStaffInsert(tempdata: { code: string; uname: string; name: s
     try {
         let check = await prisma.user.findFirst({
             where: {
-                email: tempdata.uname,
+                uname: tempdata.uname,
             },
         });
 
         if (!check) {
             check = await prisma.user.create({
                 data: {
-                    email: tempdata.uname,
+                    uname: tempdata.uname,
                     password: 'jmc',
                     name: tempdata.name,
                     role: 'Staff',
-                    uname: tempdata.uname
                 }
             })
 
@@ -41,8 +40,7 @@ async function excelStaffInsert(tempdata: { code: string; uname: string; name: s
 
         await prisma.staff.create({
             data: {
-                uname: check?.email,
-                staffInitial: 'none',
+                uname: check?.uname,
                 staffName: check.name,
                 codeId: getCourse?.id
             }
@@ -107,7 +105,7 @@ async function getAllStaff(req: Request, res: Response) {
 
 //#region getby CourseStaffTaken
 async function getByCourseStaffTaken(req: Request, res: Response) {
-    const { uname } = req.query
+    const { uname, year } = req.query
 
     if (!uname) {
         return res.status(400).json({
@@ -120,13 +118,23 @@ async function getByCourseStaffTaken(req: Request, res: Response) {
 
         const getDetails = await prisma.staff.findMany({
             where: {
-                uname: String(uname)
+                uname: String(uname),
+                code: {
+                    department: {
+                        year: Number(year)
+                    }
+                }
             },
             include: {
                 code: {
                     include: {
-                        pso: true
-                    }
+                        pso: true,
+                        department: {
+                            select: {
+                                departmentCode: true
+                            }
+                        }
+                    },
                 },
 
             }
@@ -161,6 +169,7 @@ async function getStaff(req: Request, res: Response) {
     try {
         const uname = req.query.uname as string;
         const department = req.query.department as string;
+        const year = req.query.year;
 
         if (!uname || !department) {
             return res.status(400).json({ msg: "'uname' and 'department' query parameters are required." });
@@ -170,19 +179,46 @@ async function getStaff(req: Request, res: Response) {
 
         if (uname !== 'admin') {
             staffRecords = await prisma.staff.findMany({
-                where: { uname: uname },
+                where: {
+                    uname: uname,
+                    code: {
+                        department: {
+                            year: Number(year)
+                        }
+                    }
+                },
                 select: {
                     code: {
-                        select: { name: true, depCode: true, code: true }, // Include code in the selection
+                        select: {
+                            name: true, department: {
+                                select: {
+                                    departmentCode: true
+                                }
+                            }, code: true
+                        }, // Include code in the selection
                     },
                 },
             });
         }
         else {
             staffRecords = await prisma.staff.findMany({
+                where: {
+                    code: {
+                        department: {
+                            year: Number(year)
+                        }
+                    }
+                },
                 select: {
                     code: {
-                        select: { name: true, depCode: true, code: true }, // Include code in the selection
+                        select: {
+                            name: true,
+                            department: {
+                                select: {
+                                    departmentCode: true
+                                }
+                            }, code: true
+                        }, // Include code in the selection
                     },
                 },
             });
@@ -194,11 +230,11 @@ async function getStaff(req: Request, res: Response) {
         }
 
         const codeInfo = staffRecords
-            .filter((record) => record.code.depCode === department)
+            .filter((record) => record.code.department.departmentCode === department)
             .map((record) => {
                 return {
                     name: record.code.name,
-                    depCode: record.code.depCode,
+                    depCode: record.code.department.departmentCode,
                     courseCode: record.code.code, // Include course code in the response
                 };
             });
@@ -213,18 +249,18 @@ async function getStaff(req: Request, res: Response) {
 //#region addNewStaff
 async function addStaff(req: Request, res: Response) {
     try {
-        const email = req.body.email as string;
+        const uname = req.body.email as string;
         const password = req.body.password as string;
         const name = req.body.name as string;
 
-        if (!email || !password || !name) {
+        if (!uname || !password || !name) {
             return res.status(400).json({ msg: "uname, name and password query parameters are required." });
         }
 
         const check = await prisma.user.findFirst({
             where: {
-                email: {
-                    equals: email
+                uname: {
+                    equals: uname
                 }
             }
         })
@@ -235,7 +271,7 @@ async function addStaff(req: Request, res: Response) {
 
         await prisma.user.create({
             data: {
-                email: email,
+                uname: uname,
                 password: password,
                 name: name,
             }
@@ -278,7 +314,6 @@ async function addStaffCourse(req: Request, res: Response) {
                 codeId: codeid,
                 staffName: name,
                 uname: uname,
-                staffInitial: 'none'
             }
         })
 
@@ -317,7 +352,7 @@ async function deleteStaff(req: Request, res: Response) {
 
             const checkExistingStaff = await prisma.staff.findMany({
                 where: {
-                    uname: checkExisting?.email
+                    uname: checkExisting?.uname
                 },
             })
 
@@ -398,7 +433,7 @@ async function deleteStaffCourse(req: Request, res: Response) {
 
 //#region searchCourse
 async function searchCourse(req: Request, res: Response) {
-    const { question } = req.query;
+    const { question, year } = req.query;
 
     try {
         if (question) {
@@ -407,6 +442,9 @@ async function searchCourse(req: Request, res: Response) {
                     code: {
                         contains: question as string,
                     },
+                    department:{
+                        year:Number(year)
+                    }
                 },
             });
 

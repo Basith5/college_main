@@ -121,15 +121,14 @@ async function login(req: Request, res: Response) {
 
   const user = await prisma.user.findFirst({
     where: {
-      email: requestBody.email,
+      uname: requestBody.email,
       password: requestBody.password,
     },
     select: {
       id: true,
-      email: true,
+      uname: true,
       role: true,
       name: true,
-      uname: true
     }
   });
 
@@ -165,7 +164,7 @@ async function changePass(req: Request, res: Response) {
     if (email && password) {
       const existingUser = await prisma.user.findFirst({
         where: {
-          email: String(email)
+          uname: String(email)
         }
       });
 

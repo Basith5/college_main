@@ -5,7 +5,6 @@ CREATE TABLE `department` (
     `name` VARCHAR(191) NOT NULL,
     `catagory` VARCHAR(191) NOT NULL DEFAULT 'Arts',
 
-    UNIQUE INDEX `department_departmentCode_key`(`departmentCode`),
     PRIMARY KEY (`id`)
 ) DEFAULT CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
 
@@ -14,7 +13,7 @@ CREATE TABLE `code` (
     `id` INTEGER NOT NULL AUTO_INCREMENT,
     `code` VARCHAR(191) NOT NULL,
     `name` VARCHAR(191) NOT NULL,
-    `depCode` VARCHAR(191) NOT NULL,
+    `depID` INTEGER NOT NULL,
     `uname` VARCHAR(191) NOT NULL,
 
     PRIMARY KEY (`id`)
@@ -25,7 +24,6 @@ CREATE TABLE `staff` (
     `id` INTEGER NOT NULL AUTO_INCREMENT,
     `uname` VARCHAR(191) NOT NULL,
     `staffName` VARCHAR(191) NOT NULL,
-    `staffInitial` VARCHAR(191) NOT NULL,
     `codeId` INTEGER NOT NULL,
 
     PRIMARY KEY (`id`)
@@ -55,18 +53,18 @@ CREATE TABLE `marks` (
     `ASG2` DOUBLE NULL,
     `ASGCO1` DOUBLE NULL,
     `ASGCO2` DOUBLE NULL,
-    `ELOT` DOUBLE NULL,
-    `EMOT` DOUBLE NULL,
-    `EHOT` DOUBLE NULL,
+    `ESELOT` DOUBLE NULL,
+    `ESEMOT` DOUBLE NULL,
+    `ESEHOT` DOUBLE NULL,
     `TLOT` DOUBLE NULL,
     `TMOT` DOUBLE NULL,
     `THOT` DOUBLE NULL,
     `C1STATUS` VARCHAR(191) NULL,
     `C2STATUS` VARCHAR(191) NULL,
-    `ESTATUS` VARCHAR(191) NULL,
+    `ESESTATUS` VARCHAR(191) NULL,
     `C1STAFF` VARCHAR(191) NULL,
     `C2STAFF` VARCHAR(191) NULL,
-    `ESTAFF` VARCHAR(191) NULL,
+    `ESESTAFF` VARCHAR(191) NULL,
     `ASG1STAFF` VARCHAR(191) NULL,
     `ASG2STAFF` VARCHAR(191) NULL,
     `studentId` INTEGER NOT NULL,
@@ -110,18 +108,16 @@ CREATE TABLE `PSO` (
 -- CreateTable
 CREATE TABLE `User` (
     `id` INTEGER NOT NULL AUTO_INCREMENT,
-    `email` VARCHAR(191) NOT NULL,
+    `uname` VARCHAR(191) NOT NULL,
     `password` VARCHAR(191) NOT NULL,
     `role` ENUM('Admin', 'Staff') NOT NULL DEFAULT 'Staff',
     `name` VARCHAR(191) NOT NULL DEFAULT 'none',
-    `uname` VARCHAR(191) NOT NULL DEFAULT 'Staffid',
 
-    UNIQUE INDEX `User_email_key`(`email`),
     PRIMARY KEY (`id`)
 ) DEFAULT CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
 
 -- AddForeignKey
-ALTER TABLE `code` ADD CONSTRAINT `code_depCode_fkey` FOREIGN KEY (`depCode`) REFERENCES `department`(`departmentCode`) ON DELETE RESTRICT ON UPDATE CASCADE;
+ALTER TABLE `code` ADD CONSTRAINT `code_depID_fkey` FOREIGN KEY (`depID`) REFERENCES `department`(`id`) ON DELETE RESTRICT ON UPDATE CASCADE;
 
 -- AddForeignKey
 ALTER TABLE `staff` ADD CONSTRAINT `staff_codeId_fkey` FOREIGN KEY (`codeId`) REFERENCES `code`(`id`) ON DELETE RESTRICT ON UPDATE CASCADE;

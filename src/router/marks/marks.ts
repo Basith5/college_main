@@ -13,10 +13,10 @@ const prisma = new PrismaClient();
 
 //#region addMarks
 async function addMark(req: Request, res: Response) {
-    const { regNo, exam, code, department, claass, section } = req.body;
+    const { regNo, exam, code, department, claass, section, year } = req.body;
 
     // Check for missing required fields
-    if (!regNo || !exam || !code || !department || !claass || !section) {
+    if (!regNo || !exam || !code || !department || !claass || !section || !year) {
         return res.status(400).json({
             msg: "Missing required fields",
         });
@@ -26,7 +26,10 @@ async function addMark(req: Request, res: Response) {
 
         const check = await prisma.code.findFirst({
             where: {
-                depCode: department,
+                department: {
+                    departmentCode: department,
+                    year: Number(year) 
+                },
                 code: code,
             },
         });
@@ -37,7 +40,6 @@ async function addMark(req: Request, res: Response) {
             });
         }
 
-        // Check if the student exists
         let student = await prisma.student.findFirst({
             where: {
                 codeId: check.id,
@@ -324,13 +326,13 @@ async function addMark(req: Request, res: Response) {
 
 //#region get Marks by code
 async function getMarkByCode(req: Request, res: Response) {
-    const { code, department, page, pageSize, sortby } = req.query;
+    const { code, department, page, pageSize, sortby, year } = req.query;
 
     try {
-        // Check if the department exists
         const existingDepartment = await prisma.department.findFirst({
             where: {
                 departmentCode: department?.toString(),
+                year: Number(year)
             },
         });
 
@@ -344,7 +346,7 @@ async function getMarkByCode(req: Request, res: Response) {
         const existingCode = await prisma.code.findFirst({
             where: {
                 code: code?.toString(),
-                depCode: existingDepartment.departmentCode
+                depID: existingDepartment.id
             },
         });
 
@@ -368,7 +370,7 @@ async function getMarkByCode(req: Request, res: Response) {
                 marks: true,
             },
             orderBy: {
-                id: sortby == 'true' ? "asc" : "desc",
+                regNo: sortby == 'true' ? "asc" : "desc",
             },
             skip, // Skip records based on the page number
             take: pageSizeNumber, // Limit the number of records per page
@@ -528,22 +530,19 @@ async function deleteMark(req: Request, res: Response) {
 }
 //#endregion
 
-async function excelMarksInsert(row: { RegNo: string, Exam: string; LOT: string; MOT: string; HOT: string; }, courseCode: string, depCode: string) {
+async function excelMarksInsert(row: { RegNo: string, Exam: string; LOT: string; MOT: string; HOT: string; }, courseCode: string, depCode: string,year:number) {
     let exam: string = row.Exam;
-    const code = courseCode;
-    const department = depCode;
-    const claass = depCode;
     const section = 'A';
-    const staff = 'Jmc Admin';
-    let Markdata: { LOT: any; MOT: any; HOT: any; STATUS: any; STAFF: any; }
+    const staff = 'admin';
 
     try {
-        let regNo = row.RegNo
-
         const check = await prisma.code.findFirst({
             where: {
-                depCode: department,
-                code: code,
+                department:{
+                    departmentCode:depCode,
+                    year:Number(year)
+                },
+                code: courseCode,
             },
         });
 
@@ -555,15 +554,15 @@ async function excelMarksInsert(row: { RegNo: string, Exam: string; LOT: string;
         let student = await prisma.student.findFirst({
             where: {
                 codeId: check.id,
-                regNo: regNo,
+                regNo: row.RegNo,
             },
         });
 
         if (!student) {
             student = await prisma.student.create({
                 data: {
-                    regNo: regNo,
-                    claass: claass,
+                    regNo: row.RegNo,
+                    claass: '',
                     section: section,
                     codeId: check.id,
                 },
@@ -640,8 +639,6 @@ async function excelMarksInsert(row: { RegNo: string, Exam: string; LOT: string;
             }
         }
         else if (exam === "Ass - I") {
-
-            // Update the assignment marks
             let marks = await prisma.marks.findFirst({
                 where: {
                     studentId: student ? student.id : 0,
@@ -737,8 +734,9 @@ async function excelMarks(req: Request, res: Response) {
     const files = req.file as Express.Multer.File;
     const { courseCode } = req.body;
     const { depCode } = req.body;
+    const { year } = req.body
 
-    if (!courseCode || !depCode) {
+    if (!courseCode || !depCode || !year) {
         return res.status(500).json({
             msg: 'please fill all details'
         });
@@ -791,7 +789,7 @@ async function excelMarks(req: Request, res: Response) {
         .on('end', async () => {
             for (let i = 0; i < tempdata.length; i++) {
                 if (tempdata[i]['RegNo'] !== '') {
-                    await excelMarksInsert(tempdata[i], courseCode, depCode)
+                    await excelMarksInsert(tempdata[i], courseCode, depCode,Number(year))
                 }
                 else {
                     break;

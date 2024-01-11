@@ -47,9 +47,60 @@ userRouter.post("/addPso", addPso);
 userRouter.get("/searchDepartment", searchDepartment);
 userRouter.put("/byCode", getMarksWithCode);
 userRouter.get("/searchCode", getCode);
+userRouter.get("/getYear", getYear);
+userRouter.post("/setYear", setYear);
+
+//#region getYear
+async function getYear(req: Request, res: Response) {
+
+  try {
+      const getYear = await prisma.date.findFirst();
+
+      return res.status(200).json({
+        data: getYear?.date,
+      });
+
+  } catch (error) {
+    console.log(error);
+    return res.status(500).json({
+      msg: "Internal server error",
+      
+    });
+  }
+}
+//#endregion
+
+//#region setYear
+async function setYear(req: Request, res: Response) {
+  const {year} = req.query
+
+  try {
+      const getYear = await prisma.date.update({
+        where:{
+          id:1
+        },
+        data:{
+          date:Number(year)
+        }
+      });
+
+      return res.status(200).json({
+        success: 'updated',
+      });
+      
+  } catch (error) {
+    console.log(error);
+    return res.status(500).json({
+      msg: "Internal server error",
+      
+    });
+  }
+}
+//#endregion
+
 
 //automate
-userRouter.put("/addMarksAutomates", addMarksAutomate)
+// userRouter.put("/addMarksAutomates", addMarksAutomate)
 // userRouter.put("/addDep", addDep)
 // userRouter.put("/addCourse", addCourseAutomate)
 // userRouter.get("/getadd", uploadCSV)
@@ -82,6 +133,9 @@ async function addPso(req: Request, res: Response) {
     const existingCode = await prisma.code.findFirst({
       where: {
         code: resultData.code,
+        department:{
+          year:Number(req.body.year)
+        }
       },
     });
 
@@ -183,6 +237,7 @@ async function addPso(req: Request, res: Response) {
 //#region searchDepartment
 async function searchDepartment(req: Request, res: Response) {
   const { question } = req.query;
+  const {year}=req.query
 
   try {
     if (question) {
@@ -191,6 +246,7 @@ async function searchDepartment(req: Request, res: Response) {
           departmentCode: {
             contains: question as string,
           },
+          year:Number(year)
         },
       });
       return res.status(200).json({
@@ -207,21 +263,18 @@ async function searchDepartment(req: Request, res: Response) {
 
 //#region getCode
 async function getCode(req: Request, res: Response) {
-  const { question, uname } = req.query;
+  const { question,year } = req.query;
 
   try {
     if (question) {
 
-      const where: { depCode: string; uname?: string } = {
-        depCode: question as string,
-      };
-
-      if (uname !== "all") {
-        where.uname = uname as string;
-      }
-
       const Courses = await prisma.code.findMany({
-        where: where,
+        where: {
+          department:{
+            departmentCode:question as string,
+            year:Number(year)
+          } ,
+        },
       });
 
       return res.status(200).json({
@@ -241,11 +294,11 @@ async function getCode(req: Request, res: Response) {
 //#region get marks by code
 async function getMarksWithCode(req: Request, res: Response) {
   try {
-    const { department, code, regNo } = req.body;
+    const { department, code, regNo,year } = req.body;
 
-    if (!department || !code || !regNo) {
+    if (!department || !code || !regNo|| !year) {
       return res.status(400).json({
-        msg: "Missing required parameters: department, code, or regNo",
+        msg: "Missing required parameters: department, code,year or regNo",
       });
     }
 
@@ -267,31 +320,6 @@ async function getMarksWithCode(req: Request, res: Response) {
       });
     }
 
-    const dep = await prisma.code.findFirst({
-      where: {
-        depCode: {
-          contains: department.toUpperCase()
-        }
-      }
-    })
-
-    const coder = await prisma.code.findFirst({
-      where: {
-        code: code,
-      }
-    })
-
-    const reg1 = await prisma.student.findFirst({
-      where: {
-        regNo: regNo,
-      }
-    })
-
-    // return res.json({
-    //   msg : {reg1,coder,dep}
-    // })
-
-    // Query the database to get the marks based on department, code, and regNo
     const marks = await prisma.marks.findMany({
       where: {
         student: {
@@ -299,6 +327,9 @@ async function getMarksWithCode(req: Request, res: Response) {
           code: {
             department: {
               departmentCode: department,
+              year:{
+                equals:year
+              }
             },
             code: code,
           },
@@ -452,232 +483,232 @@ async function getMarksWithCode(req: Request, res: Response) {
 
 
 // #region Add Marks
-async function addMarksAutomate(req: Request, res: Response) {
+// async function addMarksAutomate(req: Request, res: Response) {
 
-  let exam: string = 'ESE';
-  const code = '23MCA1CC3';
-  const department = 'MCA';
-  const claass = 'MCA';
-  const section = 'a';
-  const staff = 'ABDUL QADIR O S';
-
-
+//   let exam: string = 'ESE';
+//   const code = '23MCA1CC3';
+//   const department = 'MCA';
+//   const claass = 'MCA';
+//   const section = 'a';
+//   const staff = 'ABDUL QADIR O S';
 
 
-  try {
 
 
-    for (let i = 93; i < 111; i++) {
+//   try {
 
-      let regNo = '23' + department + String(i).padStart(3, '0')
 
-      let Markdata = {
-        "LOT": Math.round(Math.random() * 29),
-        "MOT": Math.round(Math.random() * 36),
-        "HOT": Math.round(Math.random() * 10),
-        "STATUS": "present",
-        "STAFF": staff,
-      }
+//     for (let i = 93; i < 111; i++) {
 
-      let MarkdataAss = {
-        "ASG1": Math.round(Math.random() * 3),
-        "ASG2": Math.round(Math.random() * 3),
-      }
+//       let regNo = '23' + department + String(i).padStart(3, '0')
 
-      const check = await prisma.code.findFirst({
-        where: {
-          depCode: department,
-          code: code,
-        },
-      });
+//       let Markdata = {
+//         "LOT": Math.round(Math.random() * 29),
+//         "MOT": Math.round(Math.random() * 36),
+//         "HOT": Math.round(Math.random() * 10),
+//         "STATUS": "present",
+//         "STAFF": staff,
+//       }
 
-      if (!check) {
-        return res.status(404).json({
-          msg: "Department code not found",
+//       let MarkdataAss = {
+//         "ASG1": Math.round(Math.random() * 3),
+//         "ASG2": Math.round(Math.random() * 3),
+//       }
+
+//       const check = await prisma.code.findFirst({
+//         where: {
+//           dep: department,
+//           code: code,
+//         },
+//       });
+
+//       if (!check) {
+//         return res.status(404).json({
+//           msg: "Department code not found",
         
-        });
-      }
+//         });
+//       }
 
-      // Check if the student exists
-      let student = await prisma.student.findFirst({
-        where: {
-          codeId: check.id,
-          regNo: regNo,
-        },
-      });
+//       // Check if the student exists
+//       let student = await prisma.student.findFirst({
+//         where: {
+//           codeId: check.id,
+//           regNo: regNo,
+//         },
+//       });
 
-      if (!student) {
-        student = await prisma.student.create({
-          data: {
-            regNo: regNo,
-            claass: claass,
-            section: section,
-            codeId: check.id,
-          },
-        });
+//       if (!student) {
+//         student = await prisma.student.create({
+//           data: {
+//             regNo: regNo,
+//             claass: claass,
+//             section: section,
+//             codeId: check.id,
+//           },
+//         });
 
-        if (!student) {
-          return res.json({
-            msg: "Error occurred while creating the student",
+//         if (!student) {
+//           return res.json({
+//             msg: "Error occurred while creating the student",
             
-          });
-        }
-      }
+//           });
+//         }
+//       }
 
 
-      // Now, create the marks
-      if (exam === "C1") {
+//       // Now, create the marks
+//       if (exam === "C1") {
 
 
-        let marks = await prisma.marks.findFirst({
-          where: {
-            studentId: student ? student.id : 0,
-          },
-        });
+//         let marks = await prisma.marks.findFirst({
+//           where: {
+//             studentId: student ? student.id : 0,
+//           },
+//         });
 
-        if (marks) {
-          // Marks already exist, update them
-          const updatedMark = await prisma.marks.update({
-            where: { id: marks.id }, // Assuming there's an ID for the existing mark
-            data: {
-              C1LOT: Markdata.LOT,
-              C1MOT: Markdata.MOT,
-              C1HOT: Markdata.HOT,
+//         if (marks) {
+//           // Marks already exist, update them
+//           const updatedMark = await prisma.marks.update({
+//             where: { id: marks.id }, // Assuming there's an ID for the existing mark
+//             data: {
+//               C1LOT: Markdata.LOT,
+//               C1MOT: Markdata.MOT,
+//               C1HOT: Markdata.HOT,
 
-              C1STATUS: Markdata.STATUS,
-              C1STAFF: Markdata.STAFF,
-              studentId: student ? student.id : 0,
-            },
-          });
+//               C1STATUS: Markdata.STATUS,
+//               C1STAFF: Markdata.STAFF,
+//               studentId: student ? student.id : 0,
+//             },
+//           });
 
-          return res.json({
-            success: "CIA-1 marks are updated successfully",
-          });
-        }
+//           return res.json({
+//             success: "CIA-1 marks are updated successfully",
+//           });
+//         }
 
-        // If marks do not exist, create them
-        const mark = await prisma.marks.create({
-          data: {
-            C1LOT: Markdata.LOT,
-            C1MOT: Markdata.MOT,
-            C1HOT: Markdata.HOT,
+//         // If marks do not exist, create them
+//         const mark = await prisma.marks.create({
+//           data: {
+//             C1LOT: Markdata.LOT,
+//             C1MOT: Markdata.MOT,
+//             C1HOT: Markdata.HOT,
 
-            C1STATUS: Markdata.STATUS,
-            C1STAFF: Markdata.STAFF,
-            studentId: student ? student.id : 0,
+//             C1STATUS: Markdata.STATUS,
+//             C1STAFF: Markdata.STAFF,
+//             studentId: student ? student.id : 0,
 
-          },
-        });
-
-
-      }
-
-      else if (exam === "C2") {
-        let marks = await prisma.marks.findFirst({
-          where: {
-            studentId: student ? student.id : 0,
-          },
-        });
-
-        if (marks) {
-          // Marks already exist, update them
-          const updatedMark = await prisma.marks.update({
-            where: { id: marks.id }, // Assuming there's an ID for the existing mark
-            data: {
-              C2LOT: Markdata.LOT,
-              C2MOT: Markdata.MOT,
-              C2HOT: Markdata.HOT,
-
-              C2STATUS: Markdata.STATUS,
-              C2STAFF: Markdata.STAFF,
-              studentId: student ? student.id : 0,
-
-            },
-          });
-
-        }
-        else {
-
-        }
-      }
-
-      else if (exam === "ASG") {
-
-        // Update the assignment marks
-        let marks = await prisma.marks.findFirst({
-          where: {
-            studentId: student ? student.id : 0,
-          },
-        });
-
-        if (marks) {
-          const updateAssignment = await prisma.marks.update({
-            where: {
-              id: marks.id,
-            },
-            data: {
-              ASG1: MarkdataAss.ASG1,
-              ASGCO1: Math.round((MarkdataAss.ASG1 || 0) * (5 / 3)),
-              ASG1STAFF: staff,
-              ASG2: MarkdataAss.ASG2,
-              ASGCO2: Math.round((MarkdataAss.ASG2 || 0) * (5 / 3)),
-              ASG2STAFF: staff,
-            },
-          });
-        }
-        else {
-          console.log('no')
-        }
-
-      }
-
-      else if (exam === "ESE") {
-        let marks = await prisma.marks.findFirst({
-          where: {
-            studentId: student ? student.id : 0,
-          },
-        });
-
-        if (marks) {
-          // Marks already exist, update them
-          const updatedMark = await prisma.marks.update({
-            where: { id: marks.id }, // Assuming there's an ID for the existing mark
-            data: {
-              ESELOT: Markdata.LOT,
-              ESEMOT: Markdata.MOT,
-              ESEHOT: Markdata.HOT,
-
-              ESESTATUS: Markdata.STATUS,
-              ESESTAFF: Markdata.STAFF,
-              studentId: student ? student.id : 0,
-
-            },
-          });
-        }
-        else {
-          console.log('no')
-        }
+//           },
+//         });
 
 
-      } else {
-        return res.status(404).json({
-          msg: "Invalid Exam type",
+//       }
+
+//       else if (exam === "C2") {
+//         let marks = await prisma.marks.findFirst({
+//           where: {
+//             studentId: student ? student.id : 0,
+//           },
+//         });
+
+//         if (marks) {
+//           // Marks already exist, update them
+//           const updatedMark = await prisma.marks.update({
+//             where: { id: marks.id }, // Assuming there's an ID for the existing mark
+//             data: {
+//               C2LOT: Markdata.LOT,
+//               C2MOT: Markdata.MOT,
+//               C2HOT: Markdata.HOT,
+
+//               C2STATUS: Markdata.STATUS,
+//               C2STAFF: Markdata.STAFF,
+//               studentId: student ? student.id : 0,
+
+//             },
+//           });
+
+//         }
+//         else {
+
+//         }
+//       }
+
+//       else if (exam === "ASG") {
+
+//         // Update the assignment marks
+//         let marks = await prisma.marks.findFirst({
+//           where: {
+//             studentId: student ? student.id : 0,
+//           },
+//         });
+
+//         if (marks) {
+//           const updateAssignment = await prisma.marks.update({
+//             where: {
+//               id: marks.id,
+//             },
+//             data: {
+//               ASG1: MarkdataAss.ASG1,
+//               ASGCO1: Math.round((MarkdataAss.ASG1 || 0) * (5 / 3)),
+//               ASG1STAFF: staff,
+//               ASG2: MarkdataAss.ASG2,
+//               ASGCO2: Math.round((MarkdataAss.ASG2 || 0) * (5 / 3)),
+//               ASG2STAFF: staff,
+//             },
+//           });
+//         }
+//         else {
+//           console.log('no')
+//         }
+
+//       }
+
+//       else if (exam === "ESE") {
+//         let marks = await prisma.marks.findFirst({
+//           where: {
+//             studentId: student ? student.id : 0,
+//           },
+//         });
+
+//         if (marks) {
+//           // Marks already exist, update them
+//           const updatedMark = await prisma.marks.update({
+//             where: { id: marks.id }, // Assuming there's an ID for the existing mark
+//             data: {
+//               ESELOT: Markdata.LOT,
+//               ESEMOT: Markdata.MOT,
+//               ESEHOT: Markdata.HOT,
+
+//               ESESTATUS: Markdata.STATUS,
+//               ESESTAFF: Markdata.STAFF,
+//               studentId: student ? student.id : 0,
+
+//             },
+//           });
+//         }
+//         else {
+//           console.log('no')
+//         }
+
+
+//       } else {
+//         return res.status(404).json({
+//           msg: "Invalid Exam type",
         
-        });
-      }
-    }
-    console.log('sad')
+//         });
+//       }
+//     }
+//     console.log('sad')
 
 
-  } catch (error) {
-    console.error(error);
-    res.status(500).json({
-      msg: "Internal server error",
+//   } catch (error) {
+//     console.error(error);
+//     res.status(500).json({
+//       msg: "Internal server error",
       
-    });
-  }
+//     });
+//   }
 
-}
+// }
 // #endregion
 
 

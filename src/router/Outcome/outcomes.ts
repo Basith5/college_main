@@ -6,6 +6,7 @@ const prisma = new PrismaClient();
 //#region get student
 async function StudentOutcome(req: Request, res: Response) {
   const { RegNO } = req.body;
+  const { year } = req.body;
 
   if (!RegNO) {
     return res.status(400).json({
@@ -20,6 +21,11 @@ async function StudentOutcome(req: Request, res: Response) {
       where: {
         regNo: {
           equals: RegNO
+        },
+        code:{
+          department:{
+            year:Number(year)
+          }
         }
       },
       include: {
@@ -27,6 +33,9 @@ async function StudentOutcome(req: Request, res: Response) {
         marks: true
       }
     })
+
+
+    student.map(s => console.log(s))
 
     if (!student) {
       return res.status(500).json({
@@ -318,11 +327,11 @@ async function CourseOutCome(req: Request, res: Response) {
 
 //#region get by department
 async function DepartmentOutcome(req: Request, res: Response) {
-  const { department } = req.body;
+  const { department, year } = req.body;
 
-  if (!department) {
+  if (!department || !year) {
     return res.status(400).json({
-      msg: "Missing required field department.",
+      msg: "Missing required field departmentcand year.",
 
     });
   }
@@ -342,7 +351,10 @@ async function DepartmentOutcome(req: Request, res: Response) {
     // Retrieve all course codes under the given department
     const courseCodes = await prisma.code.findMany({
       where: {
-        depCode: department,
+        department: {
+          departmentCode: department,
+          year: year
+        },
       },
     });
 
@@ -384,7 +396,7 @@ async function DepartmentOutcome(req: Request, res: Response) {
 
 //#region get by category
 async function ProgramOutcome(req: Request, res: Response) {
-  const { catagory } = req.body;
+  const { catagory, year } = req.body;
 
   const getDepByCatagory = await prisma.department.findMany({
     where: {
@@ -406,7 +418,10 @@ async function ProgramOutcome(req: Request, res: Response) {
       // Retrieve all course codes under the given department
       const courseCodes = await prisma.code.findMany({
         where: {
-          depCode: eachDep.departmentCode,
+          department: {
+            departmentCode: eachDep.departmentCode,
+            year: year
+          }
         },
       });
 

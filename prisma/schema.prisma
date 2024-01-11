@@ -11,31 +11,30 @@ datasource db {
 
 model department {
   id             Int    @id @default(autoincrement())
-  departmentCode String @unique
+  departmentCode String
   name           String
   catagory       String @default("Arts")
-  codes          code[] 
+  year           Int
+  codes          code[]
 }
 
 model code {
   id         Int        @id @default(autoincrement())
   code       String
   name       String
-  depCode    String
-  uname      String
-  department department @relation(fields: [depCode], references: [departmentCode])
+  depID      Int
+  department department @relation(fields: [depID], references: [id])
   students   student[]
   staff      staff[]
   pso        PSO[]
 }
 
 model staff {
-  id           Int    @id @default(autoincrement())
-  uname        String
-  staffName    String
-  staffInitial String
-  codeId       Int
-  code         code   @relation(fields: [codeId], references: [id])
+  id        Int    @id @default(autoincrement())
+  uname     String
+  staffName String
+  codeId    Int
+  code      code   @relation(fields: [codeId], references: [id])
 }
 
 model student {
@@ -111,14 +110,18 @@ model PSO {
 
 model User {
   id       Int    @id @default(autoincrement())
-  email    String @unique
+  uname    String
   password String
   role     Role   @default(Staff)
   name     String @default("none")
-  uname    String @default("Staffid")
 }
 
 enum Role {
   Admin
   Staff
+}
+
+model date {
+  id   Int @id @default(autoincrement())
+  date Int
 }
