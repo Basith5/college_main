@@ -419,7 +419,7 @@ async function ProgramOutcome(req: Request, res: Response) {
         where: {
           department: {
             departmentCode: eachDep.departmentCode,
-            year: year
+            year:Number(year)
           }
         },
       });
