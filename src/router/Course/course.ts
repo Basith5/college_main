@@ -28,7 +28,7 @@ async function excelCourseInsert(tempdata: { code: string; depCode: string; name
 
                 await prisma.code.create({
                     data: {
-                        depID:getDepId.id,
+                        depID: getDepId.id,
                         code: tempdata.code,
                         name: tempdata.name,
                     }
@@ -68,21 +68,27 @@ async function getAllCourses(req: Request, res: Response) {
                     year: Number(year) || 2023
                 }
             },
-            select:{
-                department:{
-                    select:{
-                        departmentCode:true
+            select: {
+                department: {
+                    select: {
+                        departmentCode: true
                     }
                 },
-                name:true,
-                code:true,
-                id:true
+                name: true,
+                code: true,
+                id: true
 
             }
 
         })
 
-        const getDataCount = await prisma.code.count()
+        const getDataCount = await prisma.code.count({
+            where: {
+                department: {
+                    year: Number(year) || 2023
+                }
+            },
+        })
 
         const totalPages = Math.ceil(getDataCount / pageSizeNumber);
 
@@ -283,10 +289,10 @@ async function excelCourse(req: Request, res: Response) {
         });
     }
 
-    let totalCourse = 1
+
     let tempdata: { code: string, name: string, depCode: string }[] = [];
 
-    fs.createReadStream(dest)
+    const readStream = fs.createReadStream(dest)
         .pipe(csv())
         .on('data', async (row) => {
             if ('course_id' in row) {
@@ -296,22 +302,30 @@ async function excelCourse(req: Request, res: Response) {
                         name: row.Title,
                         depCode: row.course_id.trim(),
                     })
-                    totalCourse = totalCourse + 1
+
                 }
             }
-
+            else {
+                readStream.destroy(); // Stop reading the stream
+                return res.status(400).json({
+                    msg: 'Incorrect file format. Missing "course_id" field or incorrect "Subject_Type"'
+                });
+            }
 
         })
         .on('end', async () => {
             for (let i = 0; i < tempdata.length; i++) {
                 await excelCourseInsert(tempdata[i], Number(year))
             }
-
-            console.log('CSV file successfully processed');
+            return res.status(200).json({
+                success: tempdata.length + ' Courses updated successfully'
+            });
         });
 
-    return res.status(200).json({
-        success: totalCourse + ' Courses updated successfully'
+    readStream.on('error', (err) => {
+        res.status(500).json({
+            msg: 'An error occurred while processing the file'
+        });
     });
 
 }

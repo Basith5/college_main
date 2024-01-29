@@ -4,6 +4,7 @@ CREATE TABLE `department` (
     `departmentCode` VARCHAR(191) NOT NULL,
     `name` VARCHAR(191) NOT NULL,
     `catagory` VARCHAR(191) NOT NULL DEFAULT 'Arts',
+    `year` INTEGER NOT NULL,
 
     PRIMARY KEY (`id`)
 ) DEFAULT CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
@@ -14,7 +15,6 @@ CREATE TABLE `code` (
     `code` VARCHAR(191) NOT NULL,
     `name` VARCHAR(191) NOT NULL,
     `depID` INTEGER NOT NULL,
-    `uname` VARCHAR(191) NOT NULL,
 
     PRIMARY KEY (`id`)
 ) DEFAULT CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
@@ -112,6 +112,14 @@ CREATE TABLE `User` (
     `password` VARCHAR(191) NOT NULL,
     `role` ENUM('Admin', 'Staff') NOT NULL DEFAULT 'Staff',
     `name` VARCHAR(191) NOT NULL DEFAULT 'none',
+
+    PRIMARY KEY (`id`)
+) DEFAULT CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
+
+-- CreateTable
+CREATE TABLE `date` (
+    `id` INTEGER NOT NULL AUTO_INCREMENT,
+    `date` INTEGER NOT NULL,
 
     PRIMARY KEY (`id`)
 ) DEFAULT CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;

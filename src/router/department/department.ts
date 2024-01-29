@@ -57,7 +57,11 @@ async function getAllDepartment(req: Request, res: Response) {
 
         })
 
-        const getDataCount = await prisma.department.count()
+        const getDataCount = await prisma.department.count({
+            where: {
+                year: Number(year)
+            }
+        })
 
         const totalPages = Math.ceil(getDataCount / pageSizeNumber);
 
@@ -162,7 +166,7 @@ async function deleteDepartment(req: Request, res: Response) {
         const checkExisting = await prisma.department.findFirst({
             where: {
                 id: Number(id),
-                
+
             }
         })
 
@@ -270,10 +274,9 @@ async function excelDepartment(req: Request, res: Response) {
         });
     }
 
-    let totalCourse = 1
     let tempdata: { category: string, name: string, depCode: string }[] = [];
 
-    fs.createReadStream(dest)
+    const readStream = fs.createReadStream(dest)
         .pipe(csv())
         .on('data', async (row) => {
             if ('depCode' in row) {
@@ -282,21 +285,29 @@ async function excelDepartment(req: Request, res: Response) {
                     name: row.name,
                     depCode: row.depCode.trim(),
                 })
-                totalCourse = totalCourse + 1
+                
+            }
+            else {
+                readStream.destroy(); // Stop reading the stream
+                return res.status(400).json({
+                    msg: 'Incorrect file format.'
+                });
             }
         })
         .on('end', async () => {
             for (let i = 0; i < tempdata.length; i++) {
                 await excelDepInsert(tempdata[i], Number(year))
             }
-
-            console.log('CSV file successfully processed');
+            return res.status(200).json({
+                success: tempdata.length + ' Program updated successfully'
+            });
         });
 
-    return res.status(200).json({
-        success: totalCourse + ' Program updated successfully'
+    readStream.on('error', (err) => {
+        res.status(500).json({
+            msg: 'An error occurred while processing the file'
+        });
     });
-
 }
 //#endregion
 

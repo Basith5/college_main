@@ -28,7 +28,7 @@ async function addMark(req: Request, res: Response) {
             where: {
                 department: {
                     departmentCode: department,
-                    year: Number(year) 
+                    year: Number(year)
                 },
                 code: code,
             },
@@ -530,17 +530,16 @@ async function deleteMark(req: Request, res: Response) {
 }
 //#endregion
 
-async function excelMarksInsert(row: { RegNo: string, Exam: string; LOT: string; MOT: string; HOT: string; }, courseCode: string, depCode: string,year:number) {
+async function excelMarksInsert(row: { RegNo: string, Exam: string; LOT: string; MOT: string; HOT: string; }, courseCode: string, depCode: string, year: number, staff: string) {
     let exam: string = row.Exam;
     const section = 'A';
-    const staff = 'admin';
 
     try {
         const check = await prisma.code.findFirst({
             where: {
-                department:{
-                    departmentCode:depCode,
-                    year:Number(year)
+                department: {
+                    departmentCode: depCode,
+                    year: Number(year)
                 },
                 code: courseCode,
             },
@@ -569,97 +568,64 @@ async function excelMarksInsert(row: { RegNo: string, Exam: string; LOT: string;
             });
         }
 
+        let marks;
+
+        marks = await prisma.marks.findFirst({
+            where: {
+                studentId: student ? student.id : 0,
+            },
+        });
+
+        if (!marks) {
+            marks = await prisma.marks.create({
+                data: {
+                    studentId: student ? student.id : 0,
+                },
+            });
+        }
 
         // Now, create the marks
         if (exam === "CIA - I") {
-
-            let marks = await prisma.marks.findFirst({
-                where: {
-                    studentId: student ? student.id : 0,
-                },
-            });
-
-            if (marks) {
-                // Marks already exist, update them
-                const updatedMark = await prisma.marks.update({
-                    where: { id: marks.id }, // Assuming there's an ID for the existing mark
-                    data: {
-                        C1LOT: Number(row.LOT),
-                        C1MOT: Number(row.MOT),
-                        C1HOT: Number(row.HOT),
-                        C1STATUS: 'present',
-                        C1STAFF: staff,
-                        studentId: student ? student.id : 0,
-                    },
-                });
-
-                return
-            }
-
-            // If marks do not exist, create them
-            const mark = await prisma.marks.create({
+            await prisma.marks.update({
+                where: { id: marks.id }, // Assuming there's an ID for the existing mark
                 data: {
-                    C1LOT: Number(row.LOT),
-                    C1MOT: Number(row.MOT),
-                    C1HOT: Number(row.HOT),
-                    C1STATUS: 'present',
+                    C1LOT: row.LOT !== '' ? Number(row.LOT) : null,
+                    C1MOT: row.MOT !== '' ? Number(row.MOT) : null,
+                    C1HOT: row.HOT !== '' ? Number(row.HOT) : null,
+                    C1STATUS: row.LOT === 'AA' ? 'absent' : 'present',
                     C1STAFF: staff,
                     studentId: student ? student.id : 0,
-
                 },
             });
-
 
         }
         else if (exam === "CIA - II") {
-            let marks = await prisma.marks.findFirst({
-                where: {
+            await prisma.marks.update({
+                where: { id: marks.id }, // Assuming there's an ID for the existing mark
+                data: {
+                    C2LOT: row.LOT !== '' ? Number(row.LOT) : null,
+                    C2MOT: row.MOT !== '' ? Number(row.MOT) : null,
+                    C2HOT: row.HOT !== '' ? Number(row.HOT) : null,
+                    C2STATUS: row.LOT === 'AA' ? 'absent' : 'present',
+                    C2STAFF: staff,
                     studentId: student ? student.id : 0,
+
                 },
             });
 
-            if (marks) {
-                // Marks already exist, update them
-                const updatedMark = await prisma.marks.update({
-                    where: { id: marks.id }, // Assuming there's an ID for the existing mark
-                    data: {
-                        C2LOT: Number(row.LOT),
-                        C2MOT: Number(row.MOT),
-                        C2HOT: Number(row.HOT),
-                        C2STATUS: 'present',
-                        C2STAFF: staff,
-                        studentId: student ? student.id : 0,
-
-                    },
-                });
-
-            }
-            else {
-
-            }
         }
         else if (exam === "Ass - I") {
-            let marks = await prisma.marks.findFirst({
+
+            await prisma.marks.update({
                 where: {
-                    studentId: student ? student.id : 0,
+                    id: marks.id,
+                },
+                data: {
+                    ASG1: Number(row.LOT),
+                    ASGCO1: Math.round((Number(row.LOT) || 0) * (5 / 3)),
+                    ASG1STAFF: staff,
                 },
             });
-
-            if (marks) {
-                const updateAssignment = await prisma.marks.update({
-                    where: {
-                        id: marks.id,
-                    },
-                    data: {
-                        ASG1: Number(row.LOT),
-                        ASGCO1: Math.round((Number(row.LOT) || 0) * (5 / 3)),
-                        ASG1STAFF: staff,
-                    },
-                });
-            }
-            else {
-                console.log('no')
-            }
 
         }
         else if (exam === "Ass - II") {
@@ -689,38 +655,21 @@ async function excelMarksInsert(row: { RegNo: string, Exam: string; LOT: string;
 
         }
         else if (exam === "ESE") {
-            let marks = await prisma.marks.findFirst({
-                where: {
+            await prisma.marks.update({
+                where: { id: marks.id }, // Assuming there's an ID for the existing mark
+                data: {
+                    ESELOT: row.LOT !== '' ? Number(row.LOT) : null,
+                    ESEMOT: row.MOT !== '' ? Number(row.MOT) : null,
+                    ESEHOT: row.HOT !== '' ? Number(row.HOT) : null,
+                    ESESTATUS: row.LOT === 'AA' ? 'absent' : 'present',
+                    ESESTAFF: staff,
                     studentId: student ? student.id : 0,
+
                 },
             });
-
-            if (marks) {
-                // Marks already exist, update them
-                const updatedMark = await prisma.marks.update({
-                    where: { id: marks.id }, // Assuming there's an ID for the existing mark
-                    data: {
-                        ESELOT: Number(row.LOT) || null,
-                        ESEMOT: Number(row.MOT) || null,
-                        ESEHOT: Number(row.HOT) || null,
-                        ESESTATUS: 'present',
-                        ESESTAFF: staff,
-                        studentId: student ? student.id : 0,
-
-                    },
-                });
-            }
-            else {
-                console.log('no')
-            }
-
-
         } else {
-            console.log(exam)
             return
         }
-
-
 
     } catch (error) {
         console.error(error);
@@ -734,9 +683,10 @@ async function excelMarks(req: Request, res: Response) {
     const files = req.file as Express.Multer.File;
     const { courseCode } = req.body;
     const { depCode } = req.body;
-    const { year } = req.body
+    const { year } = req.body;
+    const { staff } = req.body;
 
-    if (!courseCode || !depCode || !year) {
+    if (!courseCode || !depCode || !year || !staff) {
         return res.status(500).json({
             msg: 'please fill all details'
         });
@@ -764,15 +714,16 @@ async function excelMarks(req: Request, res: Response) {
     fs.createReadStream(dest)
         .pipe(csv())
         .on('data', async (row) => {
+            console.log(row)
             if ('Register Number' in row) {
-                // console.log(row['Register Number'])
+                console.log(row['Register Number'])
                 if (rowCount < 1) {
                     temp = row['Register Number']
                 }
                 tempdata.push({
                     RegNo: temp,
                     Exam: row.Exam,
-                    LOT: row.LOT,
+                    LOT: row.Exam === 'Ass - I' || row.Exam === 'Ass - II' ? row.OC : row.LOT,
                     MOT: row.MOT,
                     HOT: row.HOT
                 })
@@ -785,11 +736,14 @@ async function excelMarks(req: Request, res: Response) {
                 }
 
             }
+            else {
+                console.log('no')
+            }
         })
         .on('end', async () => {
             for (let i = 0; i < tempdata.length; i++) {
                 if (tempdata[i]['RegNo'] !== '') {
-                    await excelMarksInsert(tempdata[i], courseCode, depCode,Number(year))
+                    await excelMarksInsert(tempdata[i], courseCode, depCode, Number(year), staff)
                 }
                 else {
                     break;
@@ -802,7 +756,7 @@ async function excelMarks(req: Request, res: Response) {
         });
 
     return res.status(200).json({
-        success: 'Course Updated' + dest
+        success: 'Mark Uploaded ' + dest
     });
 
 }

@@ -8,6 +8,7 @@ import { upload } from './common';
 import { addMark, deleteMark, excelMarks, getMarkByCode } from './marks/marks';
 import { addNewDepartment, deleteDepartment, excelDepartment, getAllDepartment } from './department/department';
 import { addStaff, addStaffCourse, deleteStaff, deleteStaffCourse, excelStaff, getAllStaff, getByCourseStaffTaken, getStaff, searchCourse } from './Staff/staff';
+import { EntryReport, EntryReportBydepartment, PSOReport, PSOReportBydepartment } from './reports/reports';
 
 const prisma = new PrismaClient();
 export const userRouter = express.Router();
@@ -49,6 +50,11 @@ userRouter.put("/byCode", getMarksWithCode);
 userRouter.get("/searchCode", getCode);
 userRouter.get("/getYear", getYear);
 userRouter.post("/setYear", setYear);
+//reports
+userRouter.get('/EntryReport',EntryReport);
+userRouter.get('/EntryReportBydepartment',EntryReportBydepartment);
+userRouter.get('/PSOReport',PSOReport);
+userRouter.get('/PSOReportBydepartment',PSOReportBydepartment);
 
 //#region getYear
 async function getYear(req: Request, res: Response) {

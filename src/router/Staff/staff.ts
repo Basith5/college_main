@@ -6,7 +6,7 @@ import { getFilePath } from '../common';
 
 const prisma = new PrismaClient();
 
-async function excelStaffInsert(tempdata: { code: string; uname: string; name: string; }) {
+async function excelStaffInsert(tempdata: { code: string; uname: string; name: string; }, year: number) {
 
     try {
         let check = await prisma.user.findFirst({
@@ -30,11 +30,26 @@ async function excelStaffInsert(tempdata: { code: string; uname: string; name: s
         const getCourse = await prisma.code.findFirst({
             where: {
                 code: {
-                    equals: tempdata.code
+                    equals: tempdata.code,
+                },
+                department: {
+                    year: year
                 }
             }
         })
         if (!getCourse) {
+            return
+        }
+
+        const getExisting = await prisma.staff.findFirst({
+            where: {
+                uname: check?.uname,
+                staffName: check.name,
+                codeId: getCourse?.id
+            }
+        })
+
+        if(getExisting){
             return
         }
 
@@ -266,10 +281,10 @@ async function addStaff(req: Request, res: Response) {
         })
 
         if (check) {
-            return res.status(400).json({ msg: "User already exist" });
+            return res.status(400).json({ msg: "Staff already exist" });
         }
 
-        await prisma.user.create({
+        const createdStaff = await prisma.user.create({
             data: {
                 uname: uname,
                 password: password,
@@ -279,7 +294,7 @@ async function addStaff(req: Request, res: Response) {
 
 
 
-        res.status(200).json();
+        res.status(200).json({ createdStaff });
     } catch (error) {
         console.error(error);
         res.status(500).json({ msg: "Internal server error." });
@@ -442,8 +457,8 @@ async function searchCourse(req: Request, res: Response) {
                     code: {
                         contains: question as string,
                     },
-                    department:{
-                        year:Number(year)
+                    department: {
+                        year: Number(year)
                     }
                 },
             });
@@ -463,6 +478,7 @@ async function searchCourse(req: Request, res: Response) {
 //#region excelCourse
 async function excelStaff(req: Request, res: Response) {
     const files = req.file as Express.Multer.File;
+    const { year } = req.query
 
     const dest = await getFilePath(files);
     if (!dest) {
@@ -477,10 +493,9 @@ async function excelStaff(req: Request, res: Response) {
         });
     }
 
-    let totalCourse = 1
     let tempdata: { code: string, name: string, uname: string }[] = [];
 
-    fs.createReadStream(dest)
+    const readStream = fs.createReadStream(dest)
         .pipe(csv())
         .on('data', async (row) => {
             if ('sub_code' in row) {
@@ -489,19 +504,31 @@ async function excelStaff(req: Request, res: Response) {
                     name: row.staff_name,
                     uname: row.uname.trim().toUpperCase(),
                 })
-                totalCourse = totalCourse + 1
+            }
+            else {
+                readStream.destroy(); // Stop reading the stream
+                return res.status(400).json({
+                    msg: 'Incorrect file format.'
+                });
             }
         })
         .on('end', async () => {
             for (let i = 0; i < tempdata.length; i++) {
-                await excelStaffInsert(tempdata[i])
+                if (tempdata[i].code === '23UEN1AC2') {
+                    console.log(tempdata[i])
+                }
+                await excelStaffInsert(tempdata[i], Number(year))
             }
 
-            console.log('CSV file successfully processed');
+            return res.status(200).json({
+                success: tempdata.length + ' Staff updated successfully'
+            });
         });
 
-    return res.status(200).json({
-        success: totalCourse + ' Program updated successfully'
+    readStream.on('error', (err) => {
+        res.status(500).json({
+            msg: 'An error occurred while processing the file'
+        });
     });
 
 }

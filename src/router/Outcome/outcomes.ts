@@ -35,8 +35,6 @@ async function StudentOutcome(req: Request, res: Response) {
     })
 
 
-    student.map(s => console.log(s))
-
     if (!student) {
       return res.status(500).json({
         msg: "No Student Record found",
@@ -400,7 +398,8 @@ async function ProgramOutcome(req: Request, res: Response) {
 
   const getDepByCatagory = await prisma.department.findMany({
     where: {
-      catagory: catagory
+      catagory: catagory,
+      year:year
     }
   })
 
