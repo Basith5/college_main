@@ -399,7 +399,7 @@ async function ProgramOutcome(req: Request, res: Response) {
   const getDepByCatagory = await prisma.department.findMany({
     where: {
       catagory: catagory,
-      year:year
+      year:Number(year)
     }
   })
 
