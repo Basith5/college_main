@@ -67,9 +67,12 @@ async function excelStaffInsert(tempdata: { code: string; uname: string; name: s
 
 //#region getAllStaff
 async function getAllStaff(req: Request, res: Response) {
-    const { page, question } = req.query
+    
 
     try {
+
+        const { page, question } = req.query
+
         const pageNumber = parseInt(page?.toString() || '1', 10);
         const pageSizeNumber = parseInt('10', 10);
         const skip = (pageNumber - 1) * pageSizeNumber;
@@ -120,16 +123,18 @@ async function getAllStaff(req: Request, res: Response) {
 
 //#region getby CourseStaffTaken
 async function getByCourseStaffTaken(req: Request, res: Response) {
-    const { uname, year } = req.query
 
-    if (!uname) {
-        return res.status(400).json({
-            msg: "Id missing",
-
-        });
-    }
 
     try {
+
+        const { uname, year } = req.query
+
+        if (!uname) {
+            return res.status(400).json({
+                msg: "Id missing",
+    
+            });
+        }
 
         const getDetails = await prisma.staff.findMany({
             where: {
@@ -182,16 +187,18 @@ async function getByCourseStaffTaken(req: Request, res: Response) {
 
 //#region getStaffbyCode
 async function getStaffbyCode(req: Request, res: Response) {
-    const { id } = req.query
 
-    if (!id) {
-        return res.status(400).json({
-            msg: "Id missing",
-
-        });
-    }
 
     try {
+
+        const { id } = req.query
+
+        if (!id) {
+            return res.status(400).json({
+                msg: "Id missing",
+    
+            });
+        }
 
         const getDetails = await prisma.staff.findMany({
             where: {
@@ -388,15 +395,18 @@ async function addStaffCourse(req: Request, res: Response) {
 
 //#region deleteStaff
 async function deleteStaff(req: Request, res: Response) {
-    const { id } = req.query
 
-    if (!id) {
-        return res.status(400).json({
-            msg: "ID not found",
-        });
-    }
 
     try {
+
+        const { id } = req.query
+
+        if (!id) {
+            return res.status(400).json({
+                msg: "ID not found",
+            });
+        }
+
         const checkExisting = await prisma.user.findFirst({
             where: {
                 id: Number(id)
@@ -448,15 +458,18 @@ async function deleteStaff(req: Request, res: Response) {
 
 //#region deleteStaffCourse
 async function deleteStaffCourse(req: Request, res: Response) {
-    const { id } = req.query
 
-    if (!id) {
-        return res.status(400).json({
-            msg: "ID not found",
-        });
-    }
 
     try {
+
+        const { id } = req.query
+
+        if (!id) {
+            return res.status(400).json({
+                msg: "ID not found",
+            });
+        }
+
         const checkExisting = await prisma.staff.findFirst({
             where: {
                 id: Number(id),
@@ -493,9 +506,11 @@ async function deleteStaffCourse(req: Request, res: Response) {
 
 //#region searchCourse
 async function searchCourse(req: Request, res: Response) {
-    const { question, year } = req.query;
-
+    
     try {
+
+        const { question, year } = req.query;
+
         if (question) {
             const code = await prisma.code.findMany({
                 where: {
@@ -522,7 +537,10 @@ async function searchCourse(req: Request, res: Response) {
 
 //#region excelCourse
 async function excelStaff(req: Request, res: Response) {
-    const files = req.file as Express.Multer.File;
+
+    try{
+
+        const files = req.file as Express.Multer.File;
     const { year } = req.query
 
     const dest = await getFilePath(files);
@@ -576,6 +594,11 @@ async function excelStaff(req: Request, res: Response) {
         });
     });
 
+    } catch(error) {
+        return res.status(400).json({
+            error: error
+        })
+    }
 }
 //#endregion
 

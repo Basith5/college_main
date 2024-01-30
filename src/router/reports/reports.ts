@@ -5,10 +5,12 @@ const prisma = new PrismaClient();
 
 //#region Entry reports
 async function EntryReport(req: Request, res: Response) {
-    const { year, pageNo, search } = req.query;
+ 
 
 
     try {
+
+        const { year, pageNo, search } = req.query;
 
         const page = pageNo ? Number(pageNo) : 1;
         const pageSize = 10;
@@ -69,12 +71,15 @@ async function EntryReport(req: Request, res: Response) {
 
 //#region EntryReportBydepartment
 async function EntryReportBydepartment(req: Request, res: Response) {
-    const { year, search } = req.query;
-    if(!year || !search){
-        res.status(500).json({ msg: 'year or depcode not found' });
-    }
+
 
     try {
+
+        const { year, search } = req.query;
+        if(!year || !search){
+            res.status(500).json({ msg: 'year or depcode not found' });
+        }
+
         const code = await prisma.code.findMany({
             where: {
                 students: {
@@ -115,10 +120,12 @@ async function EntryReportBydepartment(req: Request, res: Response) {
 
 //#region PSO reports
 async function PSOReport(req: Request, res: Response) {
-    const { year, pageNo, search } = req.query;
-
+    
 
     try {
+
+        const { year, pageNo, search } = req.query;
+
 
         const page = pageNo ? Number(pageNo) : 1;
         const pageSize = 10;
@@ -179,9 +186,11 @@ async function PSOReport(req: Request, res: Response) {
 
 //#region PSOReportBydepartment
 async function PSOReportBydepartment(req: Request, res: Response) {
-    const { year, search } = req.query;
+    
 
     try {
+
+        const { year, search } = req.query;
 
         const code = await prisma.code.findMany({
             where: {

@@ -9,20 +9,19 @@ import csv from 'csv-parser';
 
 const prisma = new PrismaClient();
 
-
-
 //#region addMarks
 async function addMark(req: Request, res: Response) {
-    const { regNo, exam, code, department, claass, section, year } = req.body;
-
-    // Check for missing required fields
-    if (!regNo || !exam || !code || !department || !claass || !section || !year) {
-        return res.status(400).json({
-            msg: "Missing required fields",
-        });
-    }
 
     try {
+
+        const { regNo, exam, code, department, claass, section, year } = req.body;
+
+        // Check for missing required fields
+        if (!regNo || !exam || !code || !department || !claass || !section || !year) {
+            return res.status(400).json({
+                msg: "Missing required fields",
+            });
+        }
 
         const check = await prisma.code.findFirst({
             where: {
@@ -326,9 +325,12 @@ async function addMark(req: Request, res: Response) {
 
 //#region get Marks by code
 async function getMarkByCode(req: Request, res: Response) {
-    const { code, department, page, pageSize, sortby, year } = req.query;
+    
 
     try {
+
+        const { code, department, page, pageSize, sortby, year } = req.query;
+
         const existingDepartment = await prisma.department.findFirst({
             where: {
                 departmentCode: department?.toString(),
@@ -401,7 +403,7 @@ async function getMarkByCode(req: Request, res: Response) {
 
 //#region deleteMark
 async function deleteMark(req: Request, res: Response) {
-    console.log(req.body)
+    
     try {
         const { id, exam } = req.body;
 
@@ -531,10 +533,13 @@ async function deleteMark(req: Request, res: Response) {
 //#endregion
 
 async function excelMarksInsert(row: { RegNo: string, Exam: string; LOT: string; MOT: string; HOT: string; }, courseCode: string, depCode: string, year: number, staff: string) {
-    let exam: string = row.Exam;
-    const section = 'A';
+    
 
     try {
+
+        let exam: string = row.Exam;
+        const section = 'A';
+
         const check = await prisma.code.findFirst({
             where: {
                 department: {
@@ -680,6 +685,10 @@ async function excelMarksInsert(row: { RegNo: string, Exam: string; LOT: string;
 
 //#region excelMarks
 async function excelMarks(req: Request, res: Response) {
+
+
+    try{
+
     const files = req.file as Express.Multer.File;
     const { courseCode } = req.body;
     const { depCode } = req.body;
@@ -759,6 +768,11 @@ async function excelMarks(req: Request, res: Response) {
         success: 'Mark Uploaded ' + dest
     });
 
+    } catch(error) {
+        return res.status(400).json({
+            error: error
+        })
+    }
 }
 //#endregion
 

@@ -79,9 +79,12 @@ async function getYear(req: Request, res: Response) {
 
 //#region setYear
 async function setYear(req: Request, res: Response) {
-  const {year} = req.query
+
 
   try {
+
+    const {year} = req.query
+
       const getYear = await prisma.date.update({
         where:{
           id:1
@@ -117,17 +120,20 @@ async function setYear(req: Request, res: Response) {
 //#region addPso
 async function addPso(req: Request, res: Response) {
 
-  const data = psoSchema.safeParse(req.body);
 
-  if (!data.success) {
-    let errMessage = fromZodError(data.error).message;
-    return res.status(400).json({
-      msg: errMessage,
-      
-    });
-  }
 
   try {
+
+    const data = psoSchema.safeParse(req.body);
+
+    if (!data.success) {
+      let errMessage = fromZodError(data.error).message;
+      return res.status(400).json({
+        msg: errMessage,
+        
+      });
+    }
+
     const resultData = data.data;
 
     if (!resultData) {
@@ -243,10 +249,13 @@ async function addPso(req: Request, res: Response) {
 
 //#region searchDepartment
 async function searchDepartment(req: Request, res: Response) {
-  const { question } = req.query;
-  const {year}=req.query
+
 
   try {
+
+    const { question } = req.query;
+    const {year}=req.query
+
     if (question) {
       const departments = await prisma.department.findMany({
         where: {
@@ -270,9 +279,12 @@ async function searchDepartment(req: Request, res: Response) {
 
 //#region getCode
 async function getCode(req: Request, res: Response) {
-  const { question,year } = req.query;
+  
 
   try {
+
+    const { question,year } = req.query;
+
     if (question) {
 
       const Courses = await prisma.code.findMany({

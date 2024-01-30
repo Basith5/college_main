@@ -44,16 +44,17 @@ async function excelCourseInsert(tempdata: { code: string; depCode: string; name
 
 //#region getAllCourses
 async function getAllCourses(req: Request, res: Response) {
-    const { page, question, year } = req.query
 
     try {
+
+        const { page, question, year } = req.query
 
         const pageNumber = parseInt(page?.toString() || '1', 10);
         const pageSizeNumber = parseInt('10', 10);
         const skip = (pageNumber - 1) * pageSizeNumber;
 
         const getData = await prisma.code.findMany({
-            skip, // Skip records based on the page number
+            skip,
             take: pageSizeNumber,
             orderBy: {
                 department: {
@@ -104,12 +105,9 @@ async function getAllCourses(req: Request, res: Response) {
         });
 
 
-
     } catch (error) {
-
         return res.status(500).json({
             msg: "An error occurred while fetching data",
-
         });
     }
 }
@@ -117,15 +115,18 @@ async function getAllCourses(req: Request, res: Response) {
 
 //#region addNewCourse
 async function addNewCourse(req: Request, res: Response) {
-    const { depCode, name, code, year } = req.body
 
-    if (!depCode || !name || !code || !year) {
-        return res.status(500).json({
-            msg: "please fill all field"
-        });
-    }
 
     try {
+
+        const { depCode, name, code, year } = req.body
+
+        if (!depCode || !name || !code || !year) {
+            return res.status(500).json({
+                msg: "please fill all field"
+            });
+        }
+
         const checkExistingDep = await prisma.department.findFirst({
             where: {
                 departmentCode: {
@@ -195,16 +196,19 @@ async function addNewCourse(req: Request, res: Response) {
 
 //#region deleteCourse
 async function deleteCourse(req: Request, res: Response) {
-    const { id } = req.query
 
-    if (!id) {
-        return res.status(500).json({
-            msg: "id not found",
-
-        });
-    }
 
     try {
+
+        const { id } = req.query
+
+        if (!id) {
+            return res.status(500).json({
+                msg: "id not found",
+    
+            });
+        }
+
         const checkExisting = await prisma.code.findFirst({
             where: {
                 id: Number(id)
@@ -273,7 +277,9 @@ async function deleteCourse(req: Request, res: Response) {
 
 //#region excelCourse
 async function excelCourse(req: Request, res: Response) {
-    const files = req.file as Express.Multer.File;
+
+    try{
+        const files = req.file as Express.Multer.File;
     const { year } = req.body
 
     const dest = await getFilePath(files);
@@ -327,7 +333,11 @@ async function excelCourse(req: Request, res: Response) {
             msg: 'An error occurred while processing the file'
         });
     });
-
+    }   catch(error){
+        return res.status(400).json({
+            error: error
+        })
+    }
 }
 //#endregion
 

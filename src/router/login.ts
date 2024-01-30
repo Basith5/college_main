@@ -106,7 +106,9 @@ export function allowStaffOnly(req: Request, res: Response, next: NextFunction) 
 
 async function login(req: Request, res: Response) {
 
-  const validationResult = loginSchema.safeParse(req.body);
+  try{
+
+    const validationResult = loginSchema.safeParse(req.body);
 
   if (!validationResult.success) {
     return res.status(400).json({
@@ -151,15 +153,21 @@ async function login(req: Request, res: Response) {
       }
     }
   });
+
+  } catch(error) {
+    return res.status(400).json({
+      error: error
+    })
+  }
+
+  
 }
 
 async function changePass(req: Request, res: Response) {
-
-
-  const { email, password } = req.query;
-
-
+  
   try {
+
+    const { email, password } = req.query;
 
     if (email && password) {
       const existingUser = await prisma.user.findFirst({

@@ -8,8 +8,10 @@ const prisma = new PrismaClient();
 
 async function excelDepInsert(tempdata: { category: string; depCode: string; name: string; }, year: number) {
 
-    let isUG = tempdata.depCode[0] === 'U' ? 'UG' : 'PG'
     try {
+
+        let isUG = tempdata.depCode[0] === 'U' ? 'UG' : 'PG'
+
         const check = await prisma.department.findFirst({
             where: {
                 departmentCode: tempdata.depCode,
@@ -29,14 +31,16 @@ async function excelDepInsert(tempdata: { category: string; depCode: string; nam
         }
 
     } catch (error) {
+        console.log(error)
     }
 }
 
 //#region getAllDepartment
 async function getAllDepartment(req: Request, res: Response) {
-    const { page, question, year } = req.query
-
+    
     try {
+
+        const { page, question, year } = req.query
 
         const pageNumber = parseInt(page?.toString() || '1', 10);
         const pageSizeNumber = parseInt('10', 10);
@@ -77,8 +81,6 @@ async function getAllDepartment(req: Request, res: Response) {
             getDataCount
         });
 
-
-
     } catch (error) {
 
         return res.status(500).json({
@@ -94,16 +96,19 @@ async function getAllDepartment(req: Request, res: Response) {
 
 //#region addNewDepartment
 async function addNewDepartment(req: Request, res: Response) {
-    const { depCode, name, cat, year } = req.body
 
-    if (!depCode || !name || !cat) {
-        return res.status(500).json({
-            msg: "Fill details",
-
-        });
-    }
 
     try {
+
+        const { depCode, name, cat, year } = req.body
+
+        if (!depCode || !name || !cat) {
+            return res.status(500).json({
+                msg: "Fill details",
+    
+            });
+        }
+
         const checkExisting = await prisma.department.findFirst({
             where: {
                 departmentCode: String(depCode),
@@ -153,16 +158,19 @@ async function addNewDepartment(req: Request, res: Response) {
 
 //#region DeleteDepartment
 async function deleteDepartment(req: Request, res: Response) {
-    const { id, year } = req.query
 
-    if (!id) {
-        return res.status(500).json({
-            msg: "id not found",
-
-        });
-    }
 
     try {
+
+        const { id, year } = req.query
+
+        if (!id) {
+            return res.status(500).json({
+                msg: "id not found",
+    
+            });
+        }
+
         const checkExisting = await prisma.department.findFirst({
             where: {
                 id: Number(id),
@@ -258,7 +266,9 @@ async function deleteDepartment(req: Request, res: Response) {
 
 //#region excelCourse
 async function excelDepartment(req: Request, res: Response) {
-    const files = req.file as Express.Multer.File;
+
+    try{
+        const files = req.file as Express.Multer.File;
     const { year } = req.query;
 
     const dest = await getFilePath(files);
@@ -308,6 +318,11 @@ async function excelDepartment(req: Request, res: Response) {
             msg: 'An error occurred while processing the file'
         });
     });
+    } catch(error) {
+        return res.status(400).json({
+            error: error
+        })
+    }
 }
 //#endregion
 
