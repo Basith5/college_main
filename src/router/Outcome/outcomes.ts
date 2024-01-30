@@ -4,67 +4,92 @@ import express, { Request, Response, response } from 'express';
 const prisma = new PrismaClient();
 
 //#region get student
+async function getPer(mark: number, max: number): Promise<number> {
+  if (max === 0) {
+    throw new Error("Maximum value should not be zero to avoid division by zero.");
+  }
+  return 100 * (mark / max);
+}
+
+function calculateAttainLevel(percentage: number): number {
+  return percentage >= 75 ? 3 : percentage >= 60 ? 2 : percentage >= 40 ? 1 : 0;
+}
+
+async function calculateAverageAttainLevel(item: any): Promise<number> {
+  const CLOT = (item?.marks?.[0]?.C1LOT ?? 0) + (item?.marks?.[0]?.C2LOT ?? 0) + (item?.marks?.[0]?.ASGCO1 ?? 0) + (item?.marks?.[0]?.ASGCO2 ?? 0);
+  const CMOT = (item?.marks?.[0]?.C1MOT ?? 0) + (item?.marks?.[0]?.C2MOT ?? 0);
+  const CHOT = (item?.marks?.[0]?.C1HOT ?? 0) + (item?.marks?.[0]?.C2HOT ?? 0);
+  const ELOT = item?.marks?.[0]?.ESELOT ?? 0;
+  const EMOT = item?.marks?.[0]?.ESEMOT ?? 0;
+  const EHOT = item?.marks?.[0]?.ESEHOT ?? 0;
+
+  const PCLOT = await getPer(CLOT, 68);
+  const PCMOT = await getPer(CMOT, 72);
+  const PCHOT = await getPer(CHOT, 20);
+  const PELOT = await getPer(ELOT, 29);
+  const PEMOT = await getPer(EMOT, 36);
+  const PEHOT = await getPer(EHOT, 10);
+
+  const ACLOT = calculateAttainLevel(PCLOT);
+  const ACMOT = calculateAttainLevel(PCMOT);
+  const ACHOT = calculateAttainLevel(PCHOT);
+  const AELOT = calculateAttainLevel(PELOT);
+  const AEMOT = calculateAttainLevel(PEMOT);
+  const AEHOT = calculateAttainLevel(PEHOT);
+
+  const LOT = (ACLOT + AELOT) / 2;
+  const MOT = (ACMOT + AEMOT) / 2;
+  const HOT = (ACHOT + AEHOT) / 2;
+
+  return (LOT + MOT + HOT) / 3;
+}
+
 async function StudentOutcome(req: Request, res: Response) {
-  const { RegNO } = req.body;
-  const { year } = req.body;
-
-  if (!RegNO) {
-    return res.status(400).json({
-      msg: "Required  Register No.",
-
-    });
-  }
-
-  if (!year) {
-    return res.status(400).json({
-      msg: "Year required ",
-
-    });
-  }
-
   try {
+    const { RegNO, year } = req.body;
 
-    interface AttainData {
-      CourseId: number,
-      courseCode: string,
-      name: string;
-      Attain: number;
+    if (!RegNO || !year) {
+      return res.status(400).json({
+        msg: !RegNO ? "Required Register No." : "Year required",
+      });
     }
 
-    let Data: AttainData[] = [];
-
-    const student = await prisma.student.findMany({
+    const students = await prisma.student.findMany({
       where: {
-        regNo: {
-          equals: RegNO
-        },
+        regNo: RegNO,
         code: {
-          department: {
-            year: Number(year)
-          }
-        }
+          department: { year: Number(year) },
+        },
       },
       include: {
         code: true,
-        marks: true
-      }
-    })
-
-    student.map((item)=>{
-      console.log(item)
-    })
-
-    if (!student) {
-      return res.status(500).json({
-        msg: "No Student Record found",
-      })
-    }
-
-    return res.status(200).json({
-      student
+        marks: true,
+      },
     });
 
+    if (!students || students.length === 0) {
+      return res.status(404).json({
+        msg: "No Student Record found",
+      });
+    }
+
+    const Data = await Promise.all(
+      students.map(async (item) => {
+        const averageAttainLevel = (await calculateAverageAttainLevel(item)).toFixed(2);
+        return {
+          CourseId: item?.code?.id,
+          courseCode: item?.code?.code,
+          name: item?.code?.name,
+          Attain: averageAttainLevel,
+        };
+      })
+    );
+
+    return res.status(200).json({
+      students: Data,
+    });
   } catch (error) {
+    console.error("Error:", error);
     res.status(500).json({ msg: 'Internal server error.' });
   }
 }
@@ -263,11 +288,11 @@ async function Course(code: string) {
         }
       })
       if (getPso) {
-        psoCOS.ps1 = ((getPso.PSO1CO1 * overAll.CO1) + (getPso.PSO1CO2 * overAll.CO1) + (getPso.PSO1CO3 * overAll.CO2) + (getPso.PSO1CO4 * overAll.CO2) + (getPso.PSO1CO5 * overAll.CO3)) /( getPso.PSO1CO1 + getPso.PSO1CO2 + getPso.PSO1CO3 + getPso.PSO1CO4 + getPso.PSO1CO5)
-        psoCOS.ps2 = ((getPso.PSO2CO1 * overAll.CO1) + (getPso.PSO2CO2 * overAll.CO1) + (getPso.PSO2CO3 * overAll.CO2) + (getPso.PSO2CO4 * overAll.CO2) + (getPso.PSO2CO5 * overAll.CO3)) /( getPso.PSO2CO1 + getPso.PSO2CO2 + getPso.PSO2CO3 + getPso.PSO2CO4 + getPso.PSO2CO5)
-        psoCOS.ps3 = ((getPso.PSO3CO1 * overAll.CO1) + (getPso.PSO3CO2 * overAll.CO1) + (getPso.PSO3CO3 * overAll.CO2) + (getPso.PSO3CO4 * overAll.CO2) + (getPso.PSO3CO5 * overAll.CO3)) /( getPso.PSO3CO1 + getPso.PSO3CO2 + getPso.PSO3CO3 + getPso.PSO3CO4 + getPso.PSO3CO5)
-        psoCOS.ps4 = ((getPso.PSO4CO1 * overAll.CO1) + (getPso.PSO4CO2 * overAll.CO1) + (getPso.PSO4CO3 * overAll.CO2) + (getPso.PSO4CO4 * overAll.CO2) + (getPso.PSO4CO5 * overAll.CO3)) /( getPso.PSO4CO1 + getPso.PSO4CO2 + getPso.PSO4CO3 + getPso.PSO4CO4 + getPso.PSO4CO5)
-        psoCOS.ps5 = ((getPso.PSO5CO1 * overAll.CO1) + (getPso.PSO5CO2 * overAll.CO1) + (getPso.PSO5CO3 * overAll.CO2) + (getPso.PSO5CO4 * overAll.CO2) + (getPso.PSO5CO5 * overAll.CO3)) /( getPso.PSO5CO1 + getPso.PSO5CO2 + getPso.PSO5CO3 + getPso.PSO5CO4 + getPso.PSO5CO5)
+        psoCOS.ps1 = ((getPso.PSO1CO1 * overAll.CO1) + (getPso.PSO1CO2 * overAll.CO1) + (getPso.PSO1CO3 * overAll.CO2) + (getPso.PSO1CO4 * overAll.CO2) + (getPso.PSO1CO5 * overAll.CO3)) / (getPso.PSO1CO1 + getPso.PSO1CO2 + getPso.PSO1CO3 + getPso.PSO1CO4 + getPso.PSO1CO5)
+        psoCOS.ps2 = ((getPso.PSO2CO1 * overAll.CO1) + (getPso.PSO2CO2 * overAll.CO1) + (getPso.PSO2CO3 * overAll.CO2) + (getPso.PSO2CO4 * overAll.CO2) + (getPso.PSO2CO5 * overAll.CO3)) / (getPso.PSO2CO1 + getPso.PSO2CO2 + getPso.PSO2CO3 + getPso.PSO2CO4 + getPso.PSO2CO5)
+        psoCOS.ps3 = ((getPso.PSO3CO1 * overAll.CO1) + (getPso.PSO3CO2 * overAll.CO1) + (getPso.PSO3CO3 * overAll.CO2) + (getPso.PSO3CO4 * overAll.CO2) + (getPso.PSO3CO5 * overAll.CO3)) / (getPso.PSO3CO1 + getPso.PSO3CO2 + getPso.PSO3CO3 + getPso.PSO3CO4 + getPso.PSO3CO5)
+        psoCOS.ps4 = ((getPso.PSO4CO1 * overAll.CO1) + (getPso.PSO4CO2 * overAll.CO1) + (getPso.PSO4CO3 * overAll.CO2) + (getPso.PSO4CO4 * overAll.CO2) + (getPso.PSO4CO5 * overAll.CO3)) / (getPso.PSO4CO1 + getPso.PSO4CO2 + getPso.PSO4CO3 + getPso.PSO4CO4 + getPso.PSO4CO5)
+        psoCOS.ps5 = ((getPso.PSO5CO1 * overAll.CO1) + (getPso.PSO5CO2 * overAll.CO1) + (getPso.PSO5CO3 * overAll.CO2) + (getPso.PSO5CO4 * overAll.CO2) + (getPso.PSO5CO5 * overAll.CO3)) / (getPso.PSO5CO1 + getPso.PSO5CO2 + getPso.PSO5CO3 + getPso.PSO5CO4 + getPso.PSO5CO5)
         // psoCOS.ps1 = (getPso.PSO1CO1 * overAll.CO1) + (getPso.PSO2CO1 * overAll.CO1) + (getPso.PSO3CO1 * overAll.CO2) + (getPso.PSO4CO1 * overAll.CO2) + (getPso.PSO5CO1 * overAll.CO3) / getPso.PSO1CO1 + getPso.PSO2CO1 + getPso.PSO3CO1 + getPso.PSO4CO1 + getPso.PSO5CO1
         // psoCOS.ps2 = (getPso.PSO2CO1 * overAll.CO1) + (getPso.PSO2CO2 * overAll.CO1) + (getPso.PSO2CO3 * overAll.CO2) + (getPso.PSO2CO4 * overAll.CO2) + (getPso.PSO2CO5 * overAll.CO3) / getPso.PSO2CO1 + getPso.PSO2CO2 + getPso.PSO2CO3 + getPso.PSO2CO4 + getPso.PSO2CO5
         // psoCOS.ps3 = (getPso.PSO3CO1 * overAll.CO1) + (getPso.PSO3CO2 * overAll.CO1) + (getPso.PSO3CO3 * overAll.CO2) + (getPso.PSO3CO4 * overAll.CO2) + (getPso.PSO3CO5 * overAll.CO3) / getPso.PSO3CO1 + getPso.PSO3CO2 + getPso.PSO3CO3 + getPso.PSO3CO4 + getPso.PSO3CO5
