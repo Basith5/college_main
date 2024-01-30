@@ -15,16 +15,32 @@ async function StudentOutcome(req: Request, res: Response) {
     });
   }
 
+  if (!year) {
+    return res.status(400).json({
+      msg: "Year required ",
+
+    });
+  }
+
   try {
+
+    interface AttainData {
+      CourseId: number,
+      courseCode: string,
+      name: string;
+      Attain: number;
+    }
+
+    let Data: AttainData[] = [];
 
     const student = await prisma.student.findMany({
       where: {
         regNo: {
           equals: RegNO
         },
-        code:{
-          department:{
-            year:Number(year)
+        code: {
+          department: {
+            year: Number(year)
           }
         }
       },
@@ -34,6 +50,9 @@ async function StudentOutcome(req: Request, res: Response) {
       }
     })
 
+    student.map((item)=>{
+      console.log(item)
+    })
 
     if (!student) {
       return res.status(500).json({
@@ -223,6 +242,9 @@ async function Course(code: string) {
     const existingCode = await prisma.code.findFirst({
       where: {
         code: code,
+        department: {
+          year: 2023
+        }
       },
     });
 
@@ -241,11 +263,26 @@ async function Course(code: string) {
         }
       })
       if (getPso) {
-        psoCOS.ps1 = (getPso.PSO1CO1 * overAll.CO1) + (getPso.PSO1CO2 * overAll.CO1) + (getPso.PSO1CO3 * overAll.CO2) + (getPso.PSO1CO4 * overAll.CO2) + (getPso.PSO1CO5 * overAll.CO3) / getPso.PSO1CO1 + getPso.PSO1CO2 + getPso.PSO1CO3 + getPso.PSO1CO4 + getPso.PSO1CO5
-        psoCOS.ps2 = (getPso.PSO2CO1 * overAll.CO1) + (getPso.PSO2CO2 * overAll.CO1) + (getPso.PSO2CO3 * overAll.CO2) + (getPso.PSO2CO4 * overAll.CO2) + (getPso.PSO2CO5 * overAll.CO3) / getPso.PSO2CO1 + getPso.PSO2CO2 + getPso.PSO2CO3 + getPso.PSO2CO4 + getPso.PSO2CO5
-        psoCOS.ps3 = (getPso.PSO3CO1 * overAll.CO1) + (getPso.PSO3CO2 * overAll.CO1) + (getPso.PSO3CO3 * overAll.CO2) + (getPso.PSO3CO4 * overAll.CO2) + (getPso.PSO3CO5 * overAll.CO3) / getPso.PSO3CO1 + getPso.PSO3CO2 + getPso.PSO3CO3 + getPso.PSO3CO4 + getPso.PSO3CO5
-        psoCOS.ps4 = (getPso.PSO4CO1 * overAll.CO1) + (getPso.PSO4CO2 * overAll.CO1) + (getPso.PSO4CO3 * overAll.CO2) + (getPso.PSO4CO4 * overAll.CO2) + (getPso.PSO4CO5 * overAll.CO3) / getPso.PSO4CO1 + getPso.PSO4CO2 + getPso.PSO4CO3 + getPso.PSO4CO4 + getPso.PSO4CO5
-        psoCOS.ps5 = (getPso.PSO5CO1 * overAll.CO1) + (getPso.PSO5CO2 * overAll.CO1) + (getPso.PSO5CO3 * overAll.CO2) + (getPso.PSO5CO4 * overAll.CO2) + (getPso.PSO5CO5 * overAll.CO3) / getPso.PSO5CO1 + getPso.PSO5CO2 + getPso.PSO5CO3 + getPso.PSO5CO4 + getPso.PSO5CO5
+        psoCOS.ps1 = ((getPso.PSO1CO1 * overAll.CO1) + (getPso.PSO1CO2 * overAll.CO1) + (getPso.PSO1CO3 * overAll.CO2) + (getPso.PSO1CO4 * overAll.CO2) + (getPso.PSO1CO5 * overAll.CO3)) /( getPso.PSO1CO1 + getPso.PSO1CO2 + getPso.PSO1CO3 + getPso.PSO1CO4 + getPso.PSO1CO5)
+        psoCOS.ps2 = ((getPso.PSO2CO1 * overAll.CO1) + (getPso.PSO2CO2 * overAll.CO1) + (getPso.PSO2CO3 * overAll.CO2) + (getPso.PSO2CO4 * overAll.CO2) + (getPso.PSO2CO5 * overAll.CO3)) /( getPso.PSO2CO1 + getPso.PSO2CO2 + getPso.PSO2CO3 + getPso.PSO2CO4 + getPso.PSO2CO5)
+        psoCOS.ps3 = ((getPso.PSO3CO1 * overAll.CO1) + (getPso.PSO3CO2 * overAll.CO1) + (getPso.PSO3CO3 * overAll.CO2) + (getPso.PSO3CO4 * overAll.CO2) + (getPso.PSO3CO5 * overAll.CO3)) /( getPso.PSO3CO1 + getPso.PSO3CO2 + getPso.PSO3CO3 + getPso.PSO3CO4 + getPso.PSO3CO5)
+        psoCOS.ps4 = ((getPso.PSO4CO1 * overAll.CO1) + (getPso.PSO4CO2 * overAll.CO1) + (getPso.PSO4CO3 * overAll.CO2) + (getPso.PSO4CO4 * overAll.CO2) + (getPso.PSO4CO5 * overAll.CO3)) /( getPso.PSO4CO1 + getPso.PSO4CO2 + getPso.PSO4CO3 + getPso.PSO4CO4 + getPso.PSO4CO5)
+        psoCOS.ps5 = ((getPso.PSO5CO1 * overAll.CO1) + (getPso.PSO5CO2 * overAll.CO1) + (getPso.PSO5CO3 * overAll.CO2) + (getPso.PSO5CO4 * overAll.CO2) + (getPso.PSO5CO5 * overAll.CO3)) /( getPso.PSO5CO1 + getPso.PSO5CO2 + getPso.PSO5CO3 + getPso.PSO5CO4 + getPso.PSO5CO5)
+        // psoCOS.ps1 = (getPso.PSO1CO1 * overAll.CO1) + (getPso.PSO2CO1 * overAll.CO1) + (getPso.PSO3CO1 * overAll.CO2) + (getPso.PSO4CO1 * overAll.CO2) + (getPso.PSO5CO1 * overAll.CO3) / getPso.PSO1CO1 + getPso.PSO2CO1 + getPso.PSO3CO1 + getPso.PSO4CO1 + getPso.PSO5CO1
+        // psoCOS.ps2 = (getPso.PSO2CO1 * overAll.CO1) + (getPso.PSO2CO2 * overAll.CO1) + (getPso.PSO2CO3 * overAll.CO2) + (getPso.PSO2CO4 * overAll.CO2) + (getPso.PSO2CO5 * overAll.CO3) / getPso.PSO2CO1 + getPso.PSO2CO2 + getPso.PSO2CO3 + getPso.PSO2CO4 + getPso.PSO2CO5
+        // psoCOS.ps3 = (getPso.PSO3CO1 * overAll.CO1) + (getPso.PSO3CO2 * overAll.CO1) + (getPso.PSO3CO3 * overAll.CO2) + (getPso.PSO3CO4 * overAll.CO2) + (getPso.PSO3CO5 * overAll.CO3) / getPso.PSO3CO1 + getPso.PSO3CO2 + getPso.PSO3CO3 + getPso.PSO3CO4 + getPso.PSO3CO5
+        // psoCOS.ps4 = (getPso.PSO4CO1 * overAll.CO1) + (getPso.PSO4CO2 * overAll.CO1) + (getPso.PSO4CO3 * overAll.CO2) + (getPso.PSO4CO4 * overAll.CO2) + (getPso.PSO4CO5 * overAll.CO3) / getPso.PSO4CO1 + getPso.PSO4CO2 + getPso.PSO4CO3 + getPso.PSO4CO4 + getPso.PSO4CO5
+        // psoCOS.ps5 = (getPso.PSO5CO1 * overAll.CO1) + (getPso.PSO5CO2 * overAll.CO1) + (getPso.PSO5CO3 * overAll.CO2) + (getPso.PSO5CO4 * overAll.CO2) + (getPso.PSO5CO5 * overAll.CO3) / getPso.PSO5CO1 + getPso.PSO5CO2 + getPso.PSO5CO3 + getPso.PSO5CO4 + getPso.PSO5CO5
+        console.log(((getPso.PSO1CO1 * overAll.CO1) + (getPso.PSO2CO1 * overAll.CO1) + (getPso.PSO3CO1 * overAll.CO2) + (getPso.PSO4CO1 * overAll.CO2) + (getPso.PSO5CO1 * overAll.CO3)) / (getPso.PSO1CO1 + getPso.PSO2CO1 + getPso.PSO3CO1 + getPso.PSO4CO1 + getPso.PSO5CO1))
+        console.log(getPso.PSO1CO1, getPso.PSO2CO1, getPso.PSO3CO1, getPso.PSO4CO1, getPso.PSO5CO1)
+        console.log(overAll.CO1, overAll.CO2, overAll.CO3)
+
+        // psoCOS.ps1 = ((getPso.PSO1CO1 * overAll.CO1) + (getPso.PSO2CO1 * overAll.CO1) + (getPso.PSO3CO1 * overAll.CO2) + (getPso.PSO4CO1 * overAll.CO2) + (getPso.PSO5CO1 * overAll.CO3)) / (getPso.PSO1CO1 + getPso.PSO2CO1 + getPso.PSO3CO1 + getPso.PSO4CO1 + getPso.PSO5CO1)
+        // psoCOS.ps2 = ((getPso.PSO1CO2 * overAll.CO1) + (getPso.PSO2CO2 * overAll.CO1) + (getPso.PSO3CO2 * overAll.CO2) + (getPso.PSO4CO2 * overAll.CO2) + (getPso.PSO5CO2 * overAll.CO3)) / (getPso.PSO1CO2 + getPso.PSO2CO2 + getPso.PSO3CO2 + getPso.PSO4CO2 + getPso.PSO5CO2)
+        // psoCOS.ps3 = ((getPso.PSO1CO3 * overAll.CO1) + (getPso.PSO2CO3 * overAll.CO1) + (getPso.PSO3CO3 * overAll.CO2) + (getPso.PSO4CO3 * overAll.CO2) + (getPso.PSO5CO3 * overAll.CO3)) / (getPso.PSO1CO3 + getPso.PSO2CO3 + getPso.PSO3CO3 + getPso.PSO4CO3 + getPso.PSO5CO3)
+        // psoCOS.ps4 = ((getPso.PSO1CO4 * overAll.CO1) + (getPso.PSO2CO4 * overAll.CO1) + (getPso.PSO3CO4 * overAll.CO2) + (getPso.PSO4CO4 * overAll.CO2) + (getPso.PSO5CO4 * overAll.CO3)) / (getPso.PSO1CO4 + getPso.PSO2CO4 + getPso.PSO3CO4 + getPso.PSO4CO4 + getPso.PSO5CO4)
+        // psoCOS.ps5 = ((getPso.PSO1CO5 * overAll.CO1) + (getPso.PSO2CO5 * overAll.CO1) + (getPso.PSO3CO5 * overAll.CO2) + (getPso.PSO4CO5 * overAll.CO2) + (getPso.PSO5CO5 * overAll.CO3)) / (getPso.PSO1CO5 + getPso.PSO2CO5 + getPso.PSO3CO5 + getPso.PSO4CO5 + getPso.PSO5CO5)
+
       }
     }
 
@@ -274,11 +311,18 @@ async function Course(code: string) {
 
 //#region get Course
 async function CourseOutCome(req: Request, res: Response) {
-  const { code, department } = req.body;
+  const { code, department, year } = req.body;
 
   if (!code || !department) {
     return res.status(400).json({
       msg: "Missing required fields code or department.",
+
+    });
+  }
+
+  if (!year) {
+    return res.status(400).json({
+      msg: "Year required ",
 
     });
   }
@@ -288,6 +332,7 @@ async function CourseOutCome(req: Request, res: Response) {
     const departmentWithCode = await prisma.department.findFirst({
       where: {
         departmentCode: department,
+        year: Number(year),
         codes: {
           some: {
             code: code,
@@ -329,7 +374,7 @@ async function DepartmentOutcome(req: Request, res: Response) {
 
   if (!department || !year) {
     return res.status(400).json({
-      msg: "Missing required field departmentcand year.",
+      msg: "Missing required field department and year.",
 
     });
   }
@@ -392,14 +437,21 @@ async function DepartmentOutcome(req: Request, res: Response) {
 }
 //#endregion
 
-//#region get by category
+//#region get by category 
 async function ProgramOutcome(req: Request, res: Response) {
   const { catagory, year } = req.body;
+
+  if (!year) {
+    return res.status(400).json({
+      msg: "Missing field",
+
+    });
+  }
 
   const getDepByCatagory = await prisma.department.findMany({
     where: {
       catagory: catagory,
-      year:Number(year)
+      year: Number(year)
     }
   })
 
@@ -419,7 +471,7 @@ async function ProgramOutcome(req: Request, res: Response) {
         where: {
           department: {
             departmentCode: eachDep.departmentCode,
-            year:Number(year)
+            year: Number(year)
           }
         },
       });

@@ -49,7 +49,7 @@ async function excelStaffInsert(tempdata: { code: string; uname: string; name: s
             }
         })
 
-        if(getExisting){
+        if (getExisting) {
             return
         }
 
@@ -179,6 +179,51 @@ async function getByCourseStaffTaken(req: Request, res: Response) {
 
 }
 //#endregion
+
+//#region getStaffbyCode
+async function getStaffbyCode(req: Request, res: Response) {
+    const { id } = req.query
+
+    if (!id) {
+        return res.status(400).json({
+            msg: "Id missing",
+
+        });
+    }
+
+    try {
+
+        const getDetails = await prisma.staff.findMany({
+            where: {
+                codeId: Number(id)
+            },
+        })
+
+        if (getDetails) {
+            return res.status(200).json({
+                data: getDetails
+            });
+        }
+
+        return res.status(500).json({
+            msg: "An error occurred while fetching data",
+
+        });
+
+
+    } catch (error) {
+
+        return res.status(500).json({
+            msg: "An error occurred while fetching data",
+
+        });
+    }
+
+
+
+}
+//#endregion
+
 
 async function getStaff(req: Request, res: Response) {
     try {
@@ -534,4 +579,4 @@ async function excelStaff(req: Request, res: Response) {
 }
 //#endregion
 
-export { getAllStaff, getByCourseStaffTaken, getStaff, addStaff, deleteStaff, excelStaff, deleteStaffCourse, searchCourse, addStaffCourse }
+export { getAllStaff, getByCourseStaffTaken, getStaff, addStaff, deleteStaff, excelStaff, deleteStaffCourse, searchCourse, addStaffCourse,getStaffbyCode }

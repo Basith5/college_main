@@ -7,7 +7,7 @@ import { addNewCourse, deleteCourse, excelCourse, getAllCourses } from './Course
 import { upload } from './common';
 import { addMark, deleteMark, excelMarks, getMarkByCode } from './marks/marks';
 import { addNewDepartment, deleteDepartment, excelDepartment, getAllDepartment } from './department/department';
-import { addStaff, addStaffCourse, deleteStaff, deleteStaffCourse, excelStaff, getAllStaff, getByCourseStaffTaken, getStaff, searchCourse } from './Staff/staff';
+import { addStaff, addStaffCourse, deleteStaff, deleteStaffCourse, excelStaff, getAllStaff, getByCourseStaffTaken, getStaff, getStaffbyCode, searchCourse } from './Staff/staff';
 import { EntryReport, EntryReportBydepartment, PSOReport, PSOReportBydepartment } from './reports/reports';
 
 const prisma = new PrismaClient();
@@ -35,6 +35,7 @@ userRouter.delete("/deleteDepartment", deleteDepartment)
 userRouter.post('/addDepartmentByExcel', upload.single('Excel'), excelDepartment)
 //staff
 userRouter.get("/getStaffsDetails", getByCourseStaffTaken)
+userRouter.get("/getStaffbyCode", getStaffbyCode)
 userRouter.get("/getAllStaff", getAllStaff)
 userRouter.get("/getStaff", getStaff)
 userRouter.post('/addStaff', addStaff)
