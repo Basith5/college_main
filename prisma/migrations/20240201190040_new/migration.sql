@@ -15,6 +15,7 @@ CREATE TABLE `code` (
     `code` VARCHAR(191) NOT NULL,
     `name` VARCHAR(191) NOT NULL,
     `depID` INTEGER NOT NULL,
+    `semester` VARCHAR(191) NOT NULL,
 
     PRIMARY KEY (`id`)
 ) DEFAULT CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
@@ -119,7 +120,8 @@ CREATE TABLE `User` (
 -- CreateTable
 CREATE TABLE `date` (
     `id` INTEGER NOT NULL AUTO_INCREMENT,
-    `date` INTEGER NOT NULL,
+    `date` INTEGER NOT NULL DEFAULT 2023,
+    `sem` VARCHAR(191) NOT NULL DEFAULT 'odd',
 
     PRIMARY KEY (`id`)
 ) DEFAULT CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;

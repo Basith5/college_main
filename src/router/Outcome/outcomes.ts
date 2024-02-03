@@ -46,7 +46,7 @@ async function calculateAverageAttainLevel(item: any): Promise<number> {
 
 async function StudentOutcome(req: Request, res: Response) {
   try {
-    const { RegNO, year } = req.body;
+    const { RegNO, year, sem } = req.body;
 
     if (!RegNO || !year) {
       return res.status(400).json({
@@ -59,6 +59,7 @@ async function StudentOutcome(req: Request, res: Response) {
         regNo: RegNO,
         code: {
           department: { year: Number(year) },
+          semester: sem as string
         },
       },
       include: {
@@ -344,17 +345,17 @@ async function CourseOutCome(req: Request, res: Response) {
     if (!code || !department) {
       return res.status(400).json({
         msg: "Missing required fields code or department.",
-  
+
       });
     }
-  
+
     if (!year) {
       return res.status(400).json({
         msg: "Year required ",
-  
+
       });
     }
-  
+
     // Check if the department is associated with the provided code
     const departmentWithCode = await prisma.department.findFirst({
       where: {
@@ -401,12 +402,12 @@ async function DepartmentOutcome(req: Request, res: Response) {
 
   try {
 
-    const { department, year } = req.body;
+    const { department, year, sem } = req.body;
 
-    if (!department || !year) {
+    if (!department || !year || !sem) {
       return res.status(400).json({
         msg: "Missing required field department and year.",
-  
+
       });
     }
 
@@ -428,6 +429,7 @@ async function DepartmentOutcome(req: Request, res: Response) {
           departmentCode: department,
           year: year
         },
+        semester: sem as string
       },
     });
 
@@ -470,31 +472,29 @@ async function DepartmentOutcome(req: Request, res: Response) {
 //#region get by category 
 async function ProgramOutcome(req: Request, res: Response) {
 
-
   try {
 
-    const { catagory, year } = req.body;
+    const { catagory, year, sem } = req.body;
 
     if (!year) {
       return res.status(400).json({
         msg: "Missing field",
-  
       });
     }
-  
+
     const getDepByCatagory = await prisma.department.findMany({
       where: {
         catagory: catagory,
         year: Number(year)
       }
     })
-  
+
     interface AttainDataForEachDep {
       depTitle: string,
       depCode: string,
       overAtain: string;
     }
-  
+
     let returnDepData: AttainDataForEachDep[] = [];
 
     await Promise.all(getDepByCatagory.map(async (eachDep) => {
@@ -505,7 +505,8 @@ async function ProgramOutcome(req: Request, res: Response) {
           department: {
             departmentCode: eachDep.departmentCode,
             year: Number(year)
-          }
+          },
+          semester:sem as string
         },
       });
 

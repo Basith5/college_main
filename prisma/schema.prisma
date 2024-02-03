@@ -23,6 +23,7 @@ model code {
   code       String
   name       String
   depID      Int
+  semester   String
   department department @relation(fields: [depID], references: [id])
   students   student[]
   staff      staff[]
@@ -123,5 +124,5 @@ enum Role {
 
 model date {
   id   Int @id @default(autoincrement())
-  date Int
+  date Int @default(2023)
 }

@@ -6,7 +6,7 @@ import { getFilePath } from '../common';
 
 const prisma = new PrismaClient();
 
-async function excelCourseInsert(tempdata: { code: string; depCode: string; name: string; }, year: number) {
+async function excelCourseInsert(tempdata: { code: string; depCode: string; name: string; }, year: number, sem: string) {
 
     try {
         const getDepId = await prisma.department.findFirst({
@@ -25,15 +25,14 @@ async function excelCourseInsert(tempdata: { code: string; depCode: string; name
             });
 
             if (!check) {
-
                 await prisma.code.create({
                     data: {
                         depID: getDepId.id,
                         code: tempdata.code,
                         name: tempdata.name,
+                        semester: sem
                     }
                 })
-
             }
         }
 
@@ -47,7 +46,7 @@ async function getAllCourses(req: Request, res: Response) {
 
     try {
 
-        const { page, question, year } = req.query
+        const { page, question, year, sem } = req.query
 
         const pageNumber = parseInt(page?.toString() || '1', 10);
         const pageSizeNumber = parseInt('10', 10);
@@ -65,8 +64,9 @@ async function getAllCourses(req: Request, res: Response) {
                 name: {
                     contains: question as string
                 },
+                semester: sem as string,
                 department: {
-                    year: Number(year) || 2023
+                    year: Number(year)
                 }
             },
             select: {
@@ -78,15 +78,18 @@ async function getAllCourses(req: Request, res: Response) {
                 name: true,
                 code: true,
                 id: true
-
             }
 
         })
 
         const getDataCount = await prisma.code.count({
             where: {
+                name: {
+                    contains: question as string
+                },
+                semester: sem as string,
                 department: {
-                    year: Number(year) || 2023
+                    year: Number(year)
                 }
             },
         })
@@ -119,7 +122,7 @@ async function addNewCourse(req: Request, res: Response) {
 
     try {
 
-        const { depCode, name, code, year } = req.body
+        const { depCode, name, code, year, sem } = req.body
 
         if (!depCode || !name || !code || !year) {
             return res.status(500).json({
@@ -155,7 +158,6 @@ async function addNewCourse(req: Request, res: Response) {
                     },
                     data: {
                         name: String(name),
-                        code: String(code)
                     },
                 });
                 return res.status(200).json({
@@ -168,7 +170,8 @@ async function addNewCourse(req: Request, res: Response) {
                 data: {
                     name: String(name),
                     code: String(code),
-                    depID: checkExistingDep?.id
+                    depID: checkExistingDep?.id,
+                    semester: sem
                 },
             });
 
@@ -205,7 +208,7 @@ async function deleteCourse(req: Request, res: Response) {
         if (!id) {
             return res.status(500).json({
                 msg: "id not found",
-    
+
             });
         }
 
@@ -278,62 +281,62 @@ async function deleteCourse(req: Request, res: Response) {
 //#region excelCourse
 async function excelCourse(req: Request, res: Response) {
 
-    try{
+    try {
         const files = req.file as Express.Multer.File;
-    const { year } = req.body
+        const { year, sem } = req.body
 
-    const dest = await getFilePath(files);
-    if (!dest) {
-        return res.status(500).json({
-            success: 'Failed with file name'
-        });
-    }
+        const dest = await getFilePath(files);
+        if (!dest) {
+            return res.status(500).json({
+                success: 'Failed with file name'
+            });
+        }
 
-    if (!files) {
-        return res.status(500).json({
-            success: 'please upload file'
-        });
-    }
+        if (!files) {
+            return res.status(500).json({
+                success: 'please upload file'
+            });
+        }
 
 
-    let tempdata: { code: string, name: string, depCode: string }[] = [];
+        let tempdata: { code: string, name: string, depCode: string }[] = [];
 
-    const readStream = fs.createReadStream(dest)
-        .pipe(csv())
-        .on('data', async (row) => {
-            if ('course_id' in row) {
-                if (row.Subject_Type === 'THEORY') {
-                    tempdata.push({
-                        code: row.Sub_Code.trim(),
-                        name: row.Title,
-                        depCode: row.course_id.trim(),
-                    })
+        const readStream = fs.createReadStream(dest)
+            .pipe(csv())
+            .on('data', async (row) => {
+                if ('course_id' in row) {
+                    if (row.Subject_Type === 'THEORY') {
+                        tempdata.push({
+                            code: row.Sub_Code.trim(),
+                            name: row.Title,
+                            depCode: row.course_id.trim(),
+                        })
 
+                    }
                 }
-            }
-            else {
-                readStream.destroy(); // Stop reading the stream
-                return res.status(400).json({
-                    msg: 'Incorrect file format. Missing "course_id" field or incorrect "Subject_Type"'
-                });
-            }
+                else {
+                    readStream.destroy(); // Stop reading the stream
+                    return res.status(400).json({
+                        msg: 'Incorrect file format. Missing "course_id" field or incorrect "Subject_Type"'
+                    });
+                }
 
-        })
-        .on('end', async () => {
-            for (let i = 0; i < tempdata.length; i++) {
-                await excelCourseInsert(tempdata[i], Number(year))
-            }
-            return res.status(200).json({
-                success: tempdata.length + ' Courses updated successfully'
+            })
+            .on('end', async () => {
+                for (let i = 0; i < tempdata.length; i++) {
+                    await excelCourseInsert(tempdata[i], Number(year), sem)
+                }
+                return res.status(200).json({
+                    success: tempdata.length + ' Courses updated successfully'
+                });
+            });
+
+        readStream.on('error', (err) => {
+            res.status(500).json({
+                msg: 'An error occurred while processing the file'
             });
         });
-
-    readStream.on('error', (err) => {
-        res.status(500).json({
-            msg: 'An error occurred while processing the file'
-        });
-    });
-    }   catch(error){
+    } catch (error) {
         return res.status(400).json({
             error: error
         })

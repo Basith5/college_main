@@ -14,10 +14,10 @@ async function addMark(req: Request, res: Response) {
 
     try {
 
-        const { regNo, exam, code, department, claass, section, year } = req.body;
+        const { regNo, exam, code, department, claass, section, year, sem } = req.body;
 
         // Check for missing required fields
-        if (!regNo || !exam || !code || !department || !claass || !section || !year) {
+        if (!regNo || !exam || !code || !department || !claass || !section || !year || !sem) {
             return res.status(400).json({
                 msg: "Missing required fields",
             });
@@ -325,11 +325,9 @@ async function addMark(req: Request, res: Response) {
 
 //#region get Marks by code
 async function getMarkByCode(req: Request, res: Response) {
-    
-
     try {
 
-        const { code, department, page, pageSize, sortby, year } = req.query;
+        const { code, department, page, pageSize, sortby, year, sem } = req.query;
 
         const existingDepartment = await prisma.department.findFirst({
             where: {
@@ -348,7 +346,7 @@ async function getMarkByCode(req: Request, res: Response) {
         const existingCode = await prisma.code.findFirst({
             where: {
                 code: code?.toString(),
-                depID: existingDepartment.id
+                depID: existingDepartment.id,
             },
         });
 
@@ -381,9 +379,6 @@ async function getMarkByCode(req: Request, res: Response) {
         // Calculate the total number of students that match the query
         const totalStudentsCount = await prisma.student.count({
             where: {
-                code: {
-                    code: code?.toString(),
-                },
                 codeId: existingCode.id,
             },
         });
@@ -403,7 +398,7 @@ async function getMarkByCode(req: Request, res: Response) {
 
 //#region deleteMark
 async function deleteMark(req: Request, res: Response) {
-    
+
     try {
         const { id, exam } = req.body;
 
@@ -532,8 +527,8 @@ async function deleteMark(req: Request, res: Response) {
 }
 //#endregion
 
-async function excelMarksInsert(row: { RegNo: string, Exam: string; LOT: string; MOT: string; HOT: string; }, courseCode: string, depCode: string, year: number, staff: string) {
-    
+async function excelMarksInsert(row: { RegNo: string, Exam: string; LOT: string; MOT: string; HOT: string; }, courseCode: string, depCode: string, year: number, staff: string, sem: string) {
+
 
     try {
 
@@ -687,88 +682,89 @@ async function excelMarksInsert(row: { RegNo: string, Exam: string; LOT: string;
 async function excelMarks(req: Request, res: Response) {
 
 
-    try{
+    try {
 
-    const files = req.file as Express.Multer.File;
-    const { courseCode } = req.body;
-    const { depCode } = req.body;
-    const { year } = req.body;
-    const { staff } = req.body;
+        const files = req.file as Express.Multer.File;
+        const { courseCode } = req.body;
+        const { depCode } = req.body;
+        const { year } = req.body;
+        const { staff } = req.body;
+        const { sem } = req.body;
 
-    if (!courseCode || !depCode || !year || !staff) {
-        return res.status(500).json({
-            msg: 'please fill all details'
-        });
-    }
+        if (!courseCode || !depCode || !year || !staff || !sem) {
+            return res.status(500).json({
+                msg: 'please fill all details'
+            });
+        }
 
-    const dest = await getFilePath(files);
-    if (!dest) {
-        return res.status(500).json({
-            msg: 'Failed with file name'
-        });
-    }
+        const dest = await getFilePath(files);
+        if (!dest) {
+            return res.status(500).json({
+                msg: 'Failed with file name'
+            });
+        }
 
-    if (!files) {
-        return res.status(500).json({
-            msg: 'please upload file'
-        });
-    }
+        if (!files) {
+            return res.status(500).json({
+                msg: 'please upload file'
+            });
+        }
 
-    let rowCount = 0;
-    let temp = ''
-    let totalStudent = 1
+        let rowCount = 0;
+        let temp = ''
+        let totalStudent = 1
 
-    let tempdata: { RegNo: string, Exam: string, LOT: string, MOT: string, HOT: string }[] = [];
+        let tempdata: { RegNo: string, Exam: string, LOT: string, MOT: string, HOT: string }[] = [];
 
-    fs.createReadStream(dest)
-        .pipe(csv())
-        .on('data', async (row) => {
-            console.log(row)
-            if ('Register Number' in row) {
-                console.log(row['Register Number'])
-                if (rowCount < 1) {
-                    temp = row['Register Number']
-                }
-                tempdata.push({
-                    RegNo: temp,
-                    Exam: row.Exam,
-                    LOT: row.Exam === 'Ass - I' || row.Exam === 'Ass - II' ? row.OC : row.LOT,
-                    MOT: row.MOT,
-                    HOT: row.HOT
-                })
-                if (rowCount > 4) {
-                    rowCount = 0
-                    totalStudent = totalStudent + 1
-                }
-                else {
-                    rowCount = rowCount + 1
-                }
+        fs.createReadStream(dest)
+            .pipe(csv())
+            .on('data', async (row) => {
+                console.log(row)
+                if ('Register Number' in row) {
+                    console.log(row['Register Number'])
+                    if (rowCount < 1) {
+                        temp = row['Register Number']
+                    }
+                    tempdata.push({
+                        RegNo: temp,
+                        Exam: row.Exam,
+                        LOT: row.Exam === 'Ass - I' || row.Exam === 'Ass - II' ? row.OC : row.LOT,
+                        MOT: row.MOT,
+                        HOT: row.HOT
+                    })
+                    if (rowCount > 4) {
+                        rowCount = 0
+                        totalStudent = totalStudent + 1
+                    }
+                    else {
+                        rowCount = rowCount + 1
+                    }
 
-            }
-            else {
-                console.log('no')
-            }
-        })
-        .on('end', async () => {
-            for (let i = 0; i < tempdata.length; i++) {
-                if (tempdata[i]['RegNo'] !== '') {
-                    await excelMarksInsert(tempdata[i], courseCode, depCode, Number(year), staff)
                 }
                 else {
-                    break;
+                    console.log('no')
                 }
-            }
+            })
+            .on('end', async () => {
+                for (let i = 0; i < tempdata.length; i++) {
+                    if (tempdata[i]['RegNo'] !== '') {
+                        await excelMarksInsert(tempdata[i], courseCode, depCode, Number(year), staff, sem)
+                    }
+                    else {
+                        break;
+                    }
+                }
 
-            console.log('CSV file successfully processed');
+                console.log('CSV file successfully processed');
 
 
+            });
+
+        return res.status(200).json({
+            success: 'Mark Uploaded ' + dest
         });
 
-    return res.status(200).json({
-        success: 'Mark Uploaded ' + dest
-    });
-
-    } catch(error) {
+    } catch (error) {
         return res.status(400).json({
             error: error
         })

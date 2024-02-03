@@ -6,7 +6,7 @@ import { getFilePath } from '../common';
 
 const prisma = new PrismaClient();
 
-async function excelStaffInsert(tempdata: { code: string; uname: string; name: string; }, year: number) {
+async function excelStaffInsert(tempdata: { code: string; uname: string; name: string; }, year: number, sem: string) {
 
     try {
         let check = await prisma.user.findFirst({
@@ -34,7 +34,8 @@ async function excelStaffInsert(tempdata: { code: string; uname: string; name: s
                 },
                 department: {
                     year: year
-                }
+                },
+                semester: sem
             }
         })
         if (!getCourse) {
@@ -67,7 +68,7 @@ async function excelStaffInsert(tempdata: { code: string; uname: string; name: s
 
 //#region getAllStaff
 async function getAllStaff(req: Request, res: Response) {
-    
+
 
     try {
 
@@ -124,15 +125,13 @@ async function getAllStaff(req: Request, res: Response) {
 //#region getby CourseStaffTaken
 async function getByCourseStaffTaken(req: Request, res: Response) {
 
-
     try {
 
-        const { uname, year } = req.query
+        const { uname, year, sem } = req.query
 
-        if (!uname) {
+        if (!uname || !year || !sem) {
             return res.status(400).json({
-                msg: "Id missing",
-    
+                msg: "Field missing",
             });
         }
 
@@ -142,7 +141,8 @@ async function getByCourseStaffTaken(req: Request, res: Response) {
                 code: {
                     department: {
                         year: Number(year)
-                    }
+                    },
+                    semester: sem as string
                 }
             },
             include: {
@@ -196,7 +196,7 @@ async function getStaffbyCode(req: Request, res: Response) {
         if (!id) {
             return res.status(400).json({
                 msg: "Id missing",
-    
+
             });
         }
 
@@ -237,8 +237,9 @@ async function getStaff(req: Request, res: Response) {
         const uname = req.query.uname as string;
         const department = req.query.department as string;
         const year = req.query.year;
+        const sem = req.query.sem as string
 
-        if (!uname || !department) {
+        if (!uname || !department || !year || !sem) {
             return res.status(400).json({ msg: "'uname' and 'department' query parameters are required." });
         }
 
@@ -251,7 +252,8 @@ async function getStaff(req: Request, res: Response) {
                     code: {
                         department: {
                             year: Number(year)
-                        }
+                        },
+                        semester: sem
                     }
                 },
                 select: {
@@ -273,7 +275,8 @@ async function getStaff(req: Request, res: Response) {
                     code: {
                         department: {
                             year: Number(year)
-                        }
+                        },
+                        semester: sem
                     }
                 },
                 select: {
@@ -506,10 +509,10 @@ async function deleteStaffCourse(req: Request, res: Response) {
 
 //#region searchCourse
 async function searchCourse(req: Request, res: Response) {
-    
+
     try {
 
-        const { question, year } = req.query;
+        const { question, year, sem } = req.query;
 
         if (question) {
             const code = await prisma.code.findMany({
@@ -519,7 +522,8 @@ async function searchCourse(req: Request, res: Response) {
                     },
                     department: {
                         year: Number(year)
-                    }
+                    },
+                    semester: sem as string
                 },
             });
 
@@ -538,63 +542,63 @@ async function searchCourse(req: Request, res: Response) {
 //#region excelCourse
 async function excelStaff(req: Request, res: Response) {
 
-    try{
+    try {
 
         const files = req.file as Express.Multer.File;
-    const { year } = req.query
+        const { year, sem } = req.query
 
-    const dest = await getFilePath(files);
-    if (!dest) {
-        return res.status(500).json({
-            success: 'Failed with file name'
-        });
-    }
+        const dest = await getFilePath(files);
+        if (!dest) {
+            return res.status(500).json({
+                success: 'Failed with file name'
+            });
+        }
 
-    if (!files) {
-        return res.status(500).json({
-            success: 'please upload file'
-        });
-    }
+        if (!files) {
+            return res.status(500).json({
+                success: 'please upload file'
+            });
+        }
 
-    let tempdata: { code: string, name: string, uname: string }[] = [];
+        let tempdata: { code: string, name: string, uname: string }[] = [];
 
-    const readStream = fs.createReadStream(dest)
-        .pipe(csv())
-        .on('data', async (row) => {
-            if ('sub_code' in row) {
-                tempdata.push({
-                    code: row.sub_code.trim(),
-                    name: row.staff_name,
-                    uname: row.uname.trim().toUpperCase(),
-                })
-            }
-            else {
-                readStream.destroy(); // Stop reading the stream
-                return res.status(400).json({
-                    msg: 'Incorrect file format.'
-                });
-            }
-        })
-        .on('end', async () => {
-            for (let i = 0; i < tempdata.length; i++) {
-                if (tempdata[i].code === '23UEN1AC2') {
-                    console.log(tempdata[i])
+        const readStream = fs.createReadStream(dest)
+            .pipe(csv())
+            .on('data', async (row) => {
+                if ('sub_code' in row) {
+                    tempdata.push({
+                        code: row.sub_code.trim(),
+                        name: row.staff_name,
+                        uname: row.uname.trim().toUpperCase(),
+                    })
                 }
-                await excelStaffInsert(tempdata[i], Number(year))
-            }
+                else {
+                    readStream.destroy(); // Stop reading the stream
+                    return res.status(400).json({
+                        msg: 'Incorrect file format.'
+                    });
+                }
+            })
+            .on('end', async () => {
+                for (let i = 0; i < tempdata.length; i++) {
+                    if (tempdata[i].code === '23UEN1AC2') {
+                        console.log(tempdata[i])
+                    }
+                    await excelStaffInsert(tempdata[i], Number(year), String(sem))
+                }
 
-            return res.status(200).json({
-                success: tempdata.length + ' Staff updated successfully'
+                return res.status(200).json({
+                    success: tempdata.length + ' Staff updated successfully'
+                });
+            });
+
+        readStream.on('error', (err) => {
+            res.status(500).json({
+                msg: 'An error occurred while processing the file'
             });
         });
 
-    readStream.on('error', (err) => {
-        res.status(500).json({
-            msg: 'An error occurred while processing the file'
-        });
-    });
-
-    } catch(error) {
+    } catch (error) {
         return res.status(400).json({
             error: error
         })
@@ -602,4 +606,4 @@ async function excelStaff(req: Request, res: Response) {
 }
 //#endregion
 
-export { getAllStaff, getByCourseStaffTaken, getStaff, addStaff, deleteStaff, excelStaff, deleteStaffCourse, searchCourse, addStaffCourse,getStaffbyCode }
+export { getAllStaff, getByCourseStaffTaken, getStaff, addStaff, deleteStaff, excelStaff, deleteStaffCourse, searchCourse, addStaffCourse, getStaffbyCode }

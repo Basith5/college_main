@@ -5,12 +5,10 @@ const prisma = new PrismaClient();
 
 //#region Entry reports
 async function EntryReport(req: Request, res: Response) {
- 
-
 
     try {
 
-        const { year, pageNo, search } = req.query;
+        const { year, pageNo, search, sem } = req.query;
 
         const page = pageNo ? Number(pageNo) : 1;
         const pageSize = 10;
@@ -24,7 +22,8 @@ async function EntryReport(req: Request, res: Response) {
                 department: {
                     year: Number(year),
                     ...(search ? { departmentCode: search as string } : {})
-                }
+                },
+                semester: sem as string
             },
             include: {
                 staff: true,
@@ -45,8 +44,10 @@ async function EntryReport(req: Request, res: Response) {
                     none: {}
                 },
                 department: {
-                    year: Number(year)
-                }
+                    year: Number(year),
+                    ...(search ? { departmentCode: search as string } : {})
+                },
+                semester: sem as string
             },
         })
 
@@ -72,11 +73,11 @@ async function EntryReport(req: Request, res: Response) {
 //#region EntryReportBydepartment
 async function EntryReportBydepartment(req: Request, res: Response) {
 
-
     try {
 
-        const { year, search } = req.query;
-        if(!year || !search){
+        const { year, search, sem } = req.query;
+        
+        if (!year || !search || !sem) {
             res.status(500).json({ msg: 'year or depcode not found' });
         }
 
@@ -88,7 +89,8 @@ async function EntryReportBydepartment(req: Request, res: Response) {
                 department: {
                     year: Number(year),
                     departmentCode: search as string
-                }
+                },
+                semester: sem as string
             },
             include: {
                 staff: true,
@@ -120,7 +122,7 @@ async function EntryReportBydepartment(req: Request, res: Response) {
 
 //#region PSO reports
 async function PSOReport(req: Request, res: Response) {
-    
+
 
     try {
 
@@ -143,7 +145,7 @@ async function PSOReport(req: Request, res: Response) {
             },
             include: {
                 staff: true,
-                department:true
+                department: true
             },
             orderBy: {
                 department: {
@@ -186,7 +188,7 @@ async function PSOReport(req: Request, res: Response) {
 
 //#region PSOReportBydepartment
 async function PSOReportBydepartment(req: Request, res: Response) {
-    
+
 
     try {
 

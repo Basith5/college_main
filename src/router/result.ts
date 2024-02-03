@@ -283,9 +283,9 @@ async function getCode(req: Request, res: Response) {
 
   try {
 
-    const { question,year } = req.query;
+    const { question,year,sem } = req.query;
 
-    if (question) {
+    if (question && year && sem) {
 
       const Courses = await prisma.code.findMany({
         where: {
@@ -293,6 +293,7 @@ async function getCode(req: Request, res: Response) {
             departmentCode:question as string,
             year:Number(year)
           } ,
+          semester:sem as string
         },
       });
 
@@ -313,44 +314,27 @@ async function getCode(req: Request, res: Response) {
 //#region get marks by code
 async function getMarksWithCode(req: Request, res: Response) {
   try {
-    const { department, code, regNo,year } = req.body;
+    const { department, code, regNo,year,sem } = req.body;
 
-    if (!department || !code || !regNo|| !year) {
+    if (!department || !code || !regNo|| !year ||! sem) {
       return res.status(400).json({
         msg: "Missing required parameters: department, code,year or regNo",
-      });
-    }
-
-    if (typeof department !== 'string') {
-      return res.status(400).json({
-        msg: "department is string."
-      });
-    }
-
-    if (typeof code !== 'string') {
-      return res.status(400).json({
-        msg: "code is string."
-      });
-    }
-
-    if (typeof regNo !== 'string') {
-      return res.status(400).json({
-        msg: "regNo is string."
       });
     }
 
     const marks = await prisma.marks.findMany({
       where: {
         student: {
-          regNo: regNo,
+          regNo: regNo as string,
           code: {
             department: {
-              departmentCode: department,
+              departmentCode: department as string,
               year:{
                 equals:year
               }
             },
-            code: code,
+            code: code as string,
+            semester:sem as string
           },
         },
       },
