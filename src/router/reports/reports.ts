@@ -76,7 +76,7 @@ async function EntryReportBydepartment(req: Request, res: Response) {
     try {
 
         const { year, search, sem } = req.query;
-        
+
         if (!year || !search || !sem) {
             res.status(500).json({ msg: 'year or depcode not found' });
         }
@@ -126,7 +126,7 @@ async function PSOReport(req: Request, res: Response) {
 
     try {
 
-        const { year, pageNo, search } = req.query;
+        const { year, pageNo, search, sem } = req.query;
 
 
         const page = pageNo ? Number(pageNo) : 1;
@@ -141,7 +141,8 @@ async function PSOReport(req: Request, res: Response) {
                 department: {
                     year: Number(year),
                     ...(search ? { departmentCode: search as string } : {})
-                }
+                },
+                semester: sem as string
             },
             include: {
                 staff: true,
@@ -162,8 +163,10 @@ async function PSOReport(req: Request, res: Response) {
                     none: {}
                 },
                 department: {
-                    year: Number(year)
-                }
+                    year: Number(year),
+                    ...(search ? { departmentCode: search as string } : {})
+                },
+                semester: sem as string
             },
         })
 
@@ -192,7 +195,7 @@ async function PSOReportBydepartment(req: Request, res: Response) {
 
     try {
 
-        const { year, search } = req.query;
+        const { year, search,sem } = req.query;
 
         const code = await prisma.code.findMany({
             where: {
@@ -202,7 +205,8 @@ async function PSOReportBydepartment(req: Request, res: Response) {
                 department: {
                     year: Number(year),
                     ...(search ? { departmentCode: search as string } : {})
-                }
+                },
+                semester:sem as string
             },
             include: {
                 staff: true,

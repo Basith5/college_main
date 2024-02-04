@@ -327,7 +327,7 @@ async function addMark(req: Request, res: Response) {
 async function getMarkByCode(req: Request, res: Response) {
     try {
 
-        const { code, department, page, pageSize, sortby, year, sem } = req.query;
+        const { code, department, page, pageSize, sortby, year, inyear} = req.query;
 
         const existingDepartment = await prisma.department.findFirst({
             where: {
@@ -365,6 +365,9 @@ async function getMarkByCode(req: Request, res: Response) {
         const students = await prisma.student.findMany({
             where: {
                 codeId: existingCode.id,
+                regNo:{
+                    startsWith:inyear as string
+                }
             },
             include: {
                 marks: true,

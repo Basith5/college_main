@@ -38,6 +38,8 @@ async function excelStaffInsert(tempdata: { code: string; uname: string; name: s
                 semester: sem
             }
         })
+
+
         if (!getCourse) {
             return
         }
@@ -253,7 +255,7 @@ async function getStaff(req: Request, res: Response) {
                         department: {
                             year: Number(year)
                         },
-                        semester: sem
+                        semester: sem as string
                     }
                 },
                 select: {
