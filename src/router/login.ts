@@ -33,14 +33,14 @@ export function allowAdminOnly(req: Request, res: Response, next: NextFunction) 
   if (!xLoginToken) {
     return res.status(401).json({
       msg: "The request was missing a login token",
-    
+
     })
   }
 
   if (typeof xLoginToken !== "string") {
     return res.status(401).json({
       msg: "The TOKEN header must be a string",
-      
+
     });
   }
 
@@ -54,13 +54,13 @@ export function allowAdminOnly(req: Request, res: Response, next: NextFunction) 
     } else {
       return res.status(403).json({
         msg: "You are Staff not authorized to access this request",
-    
+
       });
     }
   } catch (e) {
     return res.status(403).json({
       msg: "You are not authorized to access this request",
-      
+
     });
   }
 }
@@ -72,14 +72,14 @@ export function allowStaffOnly(req: Request, res: Response, next: NextFunction) 
   if (!xLoginToken) {
     return res.status(401).json({
       msg: "The request was missing a login token",
-    
+
     })
   }
 
   if (typeof xLoginToken !== "string") {
     return res.status(401).json({
       msg: "The TOKEN header must be a string",
-      
+
     });
   }
 
@@ -93,78 +93,91 @@ export function allowStaffOnly(req: Request, res: Response, next: NextFunction) 
     } else {
       return res.status(403).json({
         msg: "You are Staff not authorized to access this request",
-    
+
       });
     }
   } catch (e) {
     return res.status(403).json({
       msg: "You are not authorized to access this request",
-      
+
     });
   }
 }
 
 async function login(req: Request, res: Response) {
 
-  try{
+  try {
 
     const validationResult = loginSchema.safeParse(req.body);
 
-  if (!validationResult.success) {
-    return res.status(400).json({
-      msg: "The request was missing required parameters ",
-    
-    });
-  }
+    if (!validationResult.success) {
+      return res.status(400).json({
+        msg: "The request was missing required parameters ",
 
-  const requestBody: loginType = validationResult.data;
-
-  const encryptedPassword: string = encrypt(requestBody.password, encryptKey);
-
-  const user = await prisma.user.findFirst({
-    where: {
-      uname: requestBody.email,
-      password: requestBody.password,
-    },
-    select: {
-      id: true,
-      uname: true,
-      role: true,
-      name: true,
+      });
     }
-  });
 
-  if (!user) {
-    return res.status(409).json({
-      msg: "Invalid username or password"
-      
+    const requestBody: loginType = validationResult.data;
+
+    const encryptedPassword: string = encrypt(requestBody.password, encryptKey);
+
+    const userName = await prisma.user.findFirst({
+      where: {
+        uname: requestBody.email,
+      },
     });
-  }
 
-  const loginTokenData: loginTokenType = { ...user, role: user.role };
-  const loginToken = generateSignInToken(loginTokenData, secretKey);
+    if (!userName) {
+      return res.status(409).json({
+        msg: "Invalid username"
 
-  return res.status(200).json({
-    success: {
-      message: "Logged in successfully",
-      data: {
-        token: loginToken,
-        expiry: '1d'
+      });
+    }
+
+    const userPass = await prisma.user.findFirst({
+      where: {
+        uname: requestBody.email,
+        password: requestBody.password,
+      },
+      select: {
+        id: true,
+        uname: true,
+        role: true,
+        name: true,
       }
-    }
-  });
+    });
 
-  } catch(error) {
+    if (!userPass) {
+      return res.status(409).json({
+        msg: "Wrong password"
+
+      });
+    }
+
+    const loginTokenData: loginTokenType = { ...userPass, role: userPass.role };
+    const loginToken = generateSignInToken(loginTokenData, secretKey);
+
+    return res.status(200).json({
+      success: {
+        message: "Logged in successfully",
+        data: {
+          token: loginToken,
+          expiry: '1d'
+        }
+      }
+    });
+
+  } catch (error) {
     return res.status(400).json({
       error: error
     })
   }
 
-  
+
 }
 
 async function changePass(req: Request, res: Response) {
-  
+
   try {
 
     const { email, password } = req.query;
@@ -196,13 +209,13 @@ async function changePass(req: Request, res: Response) {
 
       return res.status(200).json({
         msg: `${email} Not Found`
-  
+
       });
     }
     else {
       return res.status(400).json({
         msg: "Validation error",
-  
+
       });
     }
 
@@ -211,13 +224,13 @@ async function changePass(req: Request, res: Response) {
     if (error instanceof ValidationError) {
       return res.status(400).json({
         msg: "Validation error",
-  
+
       });
     }
 
     return res.status(500).json({
       msg: "An error occurred while creating the user",
-    
+
     });
   }
 }

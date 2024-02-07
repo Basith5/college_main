@@ -46,9 +46,9 @@ async function calculateAverageAttainLevel(item: any): Promise<number> {
 
 async function StudentOutcome(req: Request, res: Response) {
   try {
-    const { RegNO, year, sem } = req.body;
+    const { RegNO } = req.body;
 
-    if (!RegNO || !year) {
+    if (!RegNO ) {
       return res.status(400).json({
         msg: !RegNO ? "Required Register No." : "Year required",
       });
@@ -57,10 +57,6 @@ async function StudentOutcome(req: Request, res: Response) {
     const students = await prisma.student.findMany({
       where: {
         regNo: RegNO,
-        code: {
-          department: { year: Number(year) },
-          semester: sem as string
-        },
       },
       include: {
         code: true,
