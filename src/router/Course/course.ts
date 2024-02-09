@@ -304,12 +304,12 @@ async function excelCourse(req: Request, res: Response) {
         const readStream = fs.createReadStream(dest)
             .pipe(csv())
             .on('data', async (row) => {
-                if ('course_id' in row) {
-                    if (row.Subject_Type === 'THEORY') {
+                if ('Course_ID' in row) {
+                    if (row.Course_Type === 'THEORY') {
                         tempdata.push({
-                            code: row.Sub_Code.trim(),
-                            name: row.Title,
-                            depCode: row.course_id.trim(),
+                            code: row.Course_Code.trim(),
+                            name: row.Course_Title,
+                            depCode: row.Course_ID.trim(),
                         })
 
                     }

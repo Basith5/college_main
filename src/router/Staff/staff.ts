@@ -567,11 +567,11 @@ async function excelStaff(req: Request, res: Response) {
         const readStream = fs.createReadStream(dest)
             .pipe(csv())
             .on('data', async (row) => {
-                if ('sub_code' in row) {
+                if ('subject_code' in row) {
                     tempdata.push({
-                        code: row.sub_code.trim(),
+                        code: row.subject_code.trim(),
                         name: row.staff_name,
-                        uname: row.uname.trim().toUpperCase(),
+                        uname: row.staff_code.trim().toUpperCase(),
                     })
                 }
                 else {
