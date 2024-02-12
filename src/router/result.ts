@@ -9,9 +9,13 @@ import { addMark, deleteMark, excelMarks, getMarkByCode } from './marks/marks';
 import { addNewDepartment, deleteDepartment, excelDepartment, getAllDepartment } from './department/department';
 import { addStaff, addStaffCourse, deleteStaff, deleteStaffCourse, excelStaff, getAllStaff, getByCourseStaffTaken, getStaff, getStaffbyCode, searchCourse } from './Staff/staff';
 import { EntryReport, EntryReportBydepartment, PSOReport, PSOReportBydepartment } from './reports/reports';
+import { Dahsbaord } from './Dashboard/Dashboard';
 
 const prisma = new PrismaClient();
 export const userRouter = express.Router();
+
+//Dahsbaord
+userRouter.put("/dashboard", Dahsbaord)
 
 //marks
 userRouter.post("/addMarks", addMark);
