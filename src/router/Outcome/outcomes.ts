@@ -374,21 +374,7 @@ async function Course(code: string) {
         psoCOS.ps3 = ((getPso.PSO3CO1 * overAll.CO1) + (getPso.PSO3CO2 * overAll.CO1) + (getPso.PSO3CO3 * overAll.CO2) + (getPso.PSO3CO4 * overAll.CO2) + (getPso.PSO3CO5 * overAll.CO3)) / (getPso.PSO3CO1 + getPso.PSO3CO2 + getPso.PSO3CO3 + getPso.PSO3CO4 + getPso.PSO3CO5)
         psoCOS.ps4 = ((getPso.PSO4CO1 * overAll.CO1) + (getPso.PSO4CO2 * overAll.CO1) + (getPso.PSO4CO3 * overAll.CO2) + (getPso.PSO4CO4 * overAll.CO2) + (getPso.PSO4CO5 * overAll.CO3)) / (getPso.PSO4CO1 + getPso.PSO4CO2 + getPso.PSO4CO3 + getPso.PSO4CO4 + getPso.PSO4CO5)
         psoCOS.ps5 = ((getPso.PSO5CO1 * overAll.CO1) + (getPso.PSO5CO2 * overAll.CO1) + (getPso.PSO5CO3 * overAll.CO2) + (getPso.PSO5CO4 * overAll.CO2) + (getPso.PSO5CO5 * overAll.CO3)) / (getPso.PSO5CO1 + getPso.PSO5CO2 + getPso.PSO5CO3 + getPso.PSO5CO4 + getPso.PSO5CO5)
-        // psoCOS.ps1 = (getPso.PSO1CO1 * overAll.CO1) + (getPso.PSO2CO1 * overAll.CO1) + (getPso.PSO3CO1 * overAll.CO2) + (getPso.PSO4CO1 * overAll.CO2) + (getPso.PSO5CO1 * overAll.CO3) / getPso.PSO1CO1 + getPso.PSO2CO1 + getPso.PSO3CO1 + getPso.PSO4CO1 + getPso.PSO5CO1
-        // psoCOS.ps2 = (getPso.PSO2CO1 * overAll.CO1) + (getPso.PSO2CO2 * overAll.CO1) + (getPso.PSO2CO3 * overAll.CO2) + (getPso.PSO2CO4 * overAll.CO2) + (getPso.PSO2CO5 * overAll.CO3) / getPso.PSO2CO1 + getPso.PSO2CO2 + getPso.PSO2CO3 + getPso.PSO2CO4 + getPso.PSO2CO5
-        // psoCOS.ps3 = (getPso.PSO3CO1 * overAll.CO1) + (getPso.PSO3CO2 * overAll.CO1) + (getPso.PSO3CO3 * overAll.CO2) + (getPso.PSO3CO4 * overAll.CO2) + (getPso.PSO3CO5 * overAll.CO3) / getPso.PSO3CO1 + getPso.PSO3CO2 + getPso.PSO3CO3 + getPso.PSO3CO4 + getPso.PSO3CO5
-        // psoCOS.ps4 = (getPso.PSO4CO1 * overAll.CO1) + (getPso.PSO4CO2 * overAll.CO1) + (getPso.PSO4CO3 * overAll.CO2) + (getPso.PSO4CO4 * overAll.CO2) + (getPso.PSO4CO5 * overAll.CO3) / getPso.PSO4CO1 + getPso.PSO4CO2 + getPso.PSO4CO3 + getPso.PSO4CO4 + getPso.PSO4CO5
-        // psoCOS.ps5 = (getPso.PSO5CO1 * overAll.CO1) + (getPso.PSO5CO2 * overAll.CO1) + (getPso.PSO5CO3 * overAll.CO2) + (getPso.PSO5CO4 * overAll.CO2) + (getPso.PSO5CO5 * overAll.CO3) / getPso.PSO5CO1 + getPso.PSO5CO2 + getPso.PSO5CO3 + getPso.PSO5CO4 + getPso.PSO5CO5
-        console.log(((getPso.PSO1CO1 * overAll.CO1) + (getPso.PSO2CO1 * overAll.CO1) + (getPso.PSO3CO1 * overAll.CO2) + (getPso.PSO4CO1 * overAll.CO2) + (getPso.PSO5CO1 * overAll.CO3)) / (getPso.PSO1CO1 + getPso.PSO2CO1 + getPso.PSO3CO1 + getPso.PSO4CO1 + getPso.PSO5CO1))
-        console.log(getPso.PSO1CO1, getPso.PSO2CO1, getPso.PSO3CO1, getPso.PSO4CO1, getPso.PSO5CO1)
-        console.log(overAll.CO1, overAll.CO2, overAll.CO3)
-
-        // psoCOS.ps1 = ((getPso.PSO1CO1 * overAll.CO1) + (getPso.PSO2CO1 * overAll.CO1) + (getPso.PSO3CO1 * overAll.CO2) + (getPso.PSO4CO1 * overAll.CO2) + (getPso.PSO5CO1 * overAll.CO3)) / (getPso.PSO1CO1 + getPso.PSO2CO1 + getPso.PSO3CO1 + getPso.PSO4CO1 + getPso.PSO5CO1)
-        // psoCOS.ps2 = ((getPso.PSO1CO2 * overAll.CO1) + (getPso.PSO2CO2 * overAll.CO1) + (getPso.PSO3CO2 * overAll.CO2) + (getPso.PSO4CO2 * overAll.CO2) + (getPso.PSO5CO2 * overAll.CO3)) / (getPso.PSO1CO2 + getPso.PSO2CO2 + getPso.PSO3CO2 + getPso.PSO4CO2 + getPso.PSO5CO2)
-        // psoCOS.ps3 = ((getPso.PSO1CO3 * overAll.CO1) + (getPso.PSO2CO3 * overAll.CO1) + (getPso.PSO3CO3 * overAll.CO2) + (getPso.PSO4CO3 * overAll.CO2) + (getPso.PSO5CO3 * overAll.CO3)) / (getPso.PSO1CO3 + getPso.PSO2CO3 + getPso.PSO3CO3 + getPso.PSO4CO3 + getPso.PSO5CO3)
-        // psoCOS.ps4 = ((getPso.PSO1CO4 * overAll.CO1) + (getPso.PSO2CO4 * overAll.CO1) + (getPso.PSO3CO4 * overAll.CO2) + (getPso.PSO4CO4 * overAll.CO2) + (getPso.PSO5CO4 * overAll.CO3)) / (getPso.PSO1CO4 + getPso.PSO2CO4 + getPso.PSO3CO4 + getPso.PSO4CO4 + getPso.PSO5CO4)
-        // psoCOS.ps5 = ((getPso.PSO1CO5 * overAll.CO1) + (getPso.PSO2CO5 * overAll.CO1) + (getPso.PSO3CO5 * overAll.CO2) + (getPso.PSO4CO5 * overAll.CO2) + (getPso.PSO5CO5 * overAll.CO3)) / (getPso.PSO1CO5 + getPso.PSO2CO5 + getPso.PSO3CO5 + getPso.PSO4CO5 + getPso.PSO5CO5)
-
+       
       }
     }
 

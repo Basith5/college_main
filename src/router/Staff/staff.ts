@@ -480,7 +480,7 @@ async function deleteStaffCourse(req: Request, res: Response) {
                 id: Number(id),
             }
         })
-        console.log(checkExisting)
+       
         if (checkExisting) {
 
             await prisma.staff.delete({
@@ -583,9 +583,6 @@ async function excelStaff(req: Request, res: Response) {
             })
             .on('end', async () => {
                 for (let i = 0; i < tempdata.length; i++) {
-                    if (tempdata[i].code === '23UEN1AC2') {
-                        console.log(tempdata[i])
-                    }
                     await excelStaffInsert(tempdata[i], Number(year), String(sem))
                 }
 

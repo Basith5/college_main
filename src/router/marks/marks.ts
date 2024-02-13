@@ -487,7 +487,7 @@ async function deleteMark(req: Request, res: Response) {
 
 
             updateFields["ASG2STAFF"] = null;
-            console.log('asd')
+           
         }
         else {
             return res.status(404).json({
@@ -637,7 +637,7 @@ async function excelMarksInsert(row: { RegNo: string, Exam: string; LOT: string;
                 });
             }
             else {
-                console.log('no')
+              
             }
 
         }
