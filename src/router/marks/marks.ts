@@ -327,7 +327,7 @@ async function addMark(req: Request, res: Response) {
 async function getMarkByCode(req: Request, res: Response) {
     try {
 
-        const { code, department, page, pageSize, sortby, year, inyear} = req.query;
+        const { code, department, sortby, year, inyear} = req.query;
 
         const existingDepartment = await prisma.department.findFirst({
             where: {
@@ -356,11 +356,6 @@ async function getMarkByCode(req: Request, res: Response) {
             });
         }
 
-        // Calculate pagination parameters
-        const pageNumber = parseInt(page?.toString() || '1', 15);
-        const pageSizeNumber = parseInt(pageSize?.toString() || '10', 15);
-        const skip = (pageNumber - 1) * pageSizeNumber;
-
         // Retrieve students associated with the department and code, including their marks
         const students = await prisma.student.findMany({
             where: {
@@ -375,22 +370,11 @@ async function getMarkByCode(req: Request, res: Response) {
             orderBy: {
                 regNo: sortby == 'true' ? "asc" : "desc",
             },
-            skip, // Skip records based on the page number
-            take: pageSizeNumber, // Limit the number of records per page
+           
         });
-
-        // Calculate the total number of students that match the query
-        const totalStudentsCount = await prisma.student.count({
-            where: {
-                codeId: existingCode.id,
-            },
-        });
-
-        // Calculate the total number of pages
-        const totalPages = Math.ceil(totalStudentsCount / pageSizeNumber);
 
         // Return the students, their marks, and the total number of pages
-        res.status(200).json({ data: students, totalPages });
+        res.status(200).json({ data: students });
     } catch (error) {
         console.error(error);
         res.status(500).json({ msg: 'Internal server error.' });
@@ -723,8 +707,7 @@ async function excelMarks(req: Request, res: Response) {
             .pipe(csv())
             .on('data', async (row) => {
                 console.log(row)
-                if ('Register Number' in row) {
-                    console.log(row['Register Number'])
+                if ('Register Number' in row && row['Register Number'].slice(2,3) === depCode) {
                     if (rowCount < 1) {
                         temp = row['Register Number']
                     }
@@ -745,7 +728,7 @@ async function excelMarks(req: Request, res: Response) {
 
                 }
                 else {
-                    console.log('no')
+                    
                 }
             })
             .on('end', async () => {
