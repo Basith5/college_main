@@ -48,7 +48,7 @@ async function StudentOutcome(req: Request, res: Response) {
   try {
     const { RegNO } = req.body;
 
-    if (!RegNO ) {
+    if (!RegNO) {
       return res.status(400).json({
         msg: !RegNO ? "Required Register No." : "Year required",
       });
@@ -91,6 +91,90 @@ async function StudentOutcome(req: Request, res: Response) {
   }
 }
 //#endregion
+
+async function AttainLevel(item: any): Promise<{ Lot: number; Mot: number; Hot: number; attain: number; }> {
+  const CLOT = (item?.marks?.[0]?.C1LOT ?? 0) + (item?.marks?.[0]?.C2LOT ?? 0) + (item?.marks?.[0]?.ASGCO1 ?? 0) + (item?.marks?.[0]?.ASGCO2 ?? 0);
+  const CMOT = (item?.marks?.[0]?.C1MOT ?? 0) + (item?.marks?.[0]?.C2MOT ?? 0);
+  const CHOT = (item?.marks?.[0]?.C1HOT ?? 0) + (item?.marks?.[0]?.C2HOT ?? 0);
+  const ELOT = item?.marks?.[0]?.ESELOT ?? 0;
+  const EMOT = item?.marks?.[0]?.ESEMOT ?? 0;
+  const EHOT = item?.marks?.[0]?.ESEHOT ?? 0;
+
+  const PCLOT = await getPer(CLOT, 68);
+  const PCMOT = await getPer(CMOT, 72);
+  const PCHOT = await getPer(CHOT, 20);
+  const PELOT = await getPer(ELOT, 29);
+  const PEMOT = await getPer(EMOT, 36);
+  const PEHOT = await getPer(EHOT, 10);
+
+  const ACLOT = calculateAttainLevel(PCLOT);
+  const ACMOT = calculateAttainLevel(PCMOT);
+  const ACHOT = calculateAttainLevel(PCHOT);
+  const AELOT = calculateAttainLevel(PELOT);
+  const AEMOT = calculateAttainLevel(PEMOT);
+  const AEHOT = calculateAttainLevel(PEHOT);
+
+  const LOT = (ACLOT + AELOT) / 2;
+  const MOT = (ACMOT + AEMOT) / 2;
+  const HOT = (ACHOT + AEHOT) / 2;
+
+  return {
+    Lot: LOT,
+    Mot: MOT,
+    Hot: HOT,
+    attain: (LOT + MOT + HOT) / 3
+  }
+}
+
+async function EachStudentOutcome(req: Request, res: Response) {
+  try {
+    const { code, year, sem ,dep } = req.query;
+
+    if (!code || !year || !sem || !dep) {
+      return res.status(400).json({
+        msg: "details required",
+      });
+    }
+
+    const students = await prisma.student.findMany({
+      where: {
+        code: {
+          semester: sem as string,
+          department: {
+            year: Number(year),
+            departmentCode:dep as string
+          }
+        }
+      },
+      include: {
+        marks: true,
+      },
+    });
+
+    if (!students || students.length === 0) {
+      return res.status(404).json({
+        msg: "No Student Record found",
+      });
+    }
+
+    const Data = await Promise.all(
+      students.map(async (item) => {
+        const averageAttainLevel = (await AttainLevel(item));
+        return {
+          reg: item.regNo,
+          averageAttainLevel
+        };
+      })
+    );
+
+    return res.status(200).json({
+      data: Data,
+    });
+  } catch (error) {
+    console.error("Error:", error);
+    res.status(500).json({ msg: 'Internal server error.' });
+  }
+}
 
 //#region course reusable
 async function Course(code: string) {
@@ -443,8 +527,8 @@ async function DepartmentOutcome(req: Request, res: Response) {
     const outcomeResults = await Promise.all(courseCodes.map(async (courseCode) => {
       const DataOfCourse = await Course(courseCode.code)
 
-      const averageAttainLevelCIA = (DataOfCourse?.attainLevels?.TCO1 || 0) + (DataOfCourse?.attainLevels?.TCO2 || 0) + (DataOfCourse?.attainLevels?.TCO3 || 0) / 3
-      const averageAttainLevelESE = (DataOfCourse?.attainLevelsESECO?.ESECO1 || 0) + (DataOfCourse?.attainLevelsESECO?.ESECO2 || 0) + (DataOfCourse?.attainLevelsESECO?.ESECO3 || 0) / 3
+      const averageAttainLevelCIA = ((DataOfCourse?.attainLevels?.TCO1 || 0) + (DataOfCourse?.attainLevels?.TCO2 || 0) + (DataOfCourse?.attainLevels?.TCO3 || 0)) / 3
+      const averageAttainLevelESE = ((DataOfCourse?.attainLevelsESECO?.ESECO1 || 0) + (DataOfCourse?.attainLevelsESECO?.ESECO2 || 0) + (DataOfCourse?.attainLevelsESECO?.ESECO3 || 0)) / 3
 
       returnData.push({
         courseCode: courseCode.code,
@@ -502,7 +586,7 @@ async function ProgramOutcome(req: Request, res: Response) {
             departmentCode: eachDep.departmentCode,
             year: Number(year)
           },
-          semester:sem as string
+          semester: sem as string
         },
       });
 
@@ -550,4 +634,4 @@ async function ProgramOutcome(req: Request, res: Response) {
 }
 //#endregion
 
-export { StudentOutcome, CourseOutCome, DepartmentOutcome, ProgramOutcome }
+export { StudentOutcome, CourseOutCome, DepartmentOutcome, ProgramOutcome,EachStudentOutcome }

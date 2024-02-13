@@ -117,12 +117,7 @@ async function Dahsbaord(req: Request, res: Response) {
         const coures = couresCount.length;
         const staff = staffCount.length;
 
-        if (!staff || !coures || !studentCount) {
-            return res.status(400).json({
-                msg: "No data found for the specified year and semester ",
-            });
-        }
-
+        
         res.status(200).json({ studentCount, coures, staff, department, cia1, cia2, oc1, oc2, ese });
 
     } catch (error) {

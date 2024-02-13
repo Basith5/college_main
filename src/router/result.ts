@@ -2,7 +2,7 @@ import express, { Request, Response } from 'express';
 import { PrismaClient } from '@prisma/client';
 import { fromZodError } from "zod-validation-error"
 import { psoSchema } from '../model/result';
-import { CourseOutCome, DepartmentOutcome, ProgramOutcome, StudentOutcome } from './Outcome/outcomes';
+import { CourseOutCome, DepartmentOutcome, EachStudentOutcome, ProgramOutcome, StudentOutcome } from './Outcome/outcomes';
 import { addNewCourse, deleteCourse, excelCourse, getAllCourses } from './Course/course';
 import { upload } from './common';
 import { addMark, deleteMark, excelMarks, getMarkByCode } from './marks/marks';
@@ -24,6 +24,7 @@ userRouter.get("/getMarkByCode", getMarkByCode);
 userRouter.put("/deleteMark", deleteMark)
 //outcomes
 userRouter.put("/getStudent", StudentOutcome);
+userRouter.get("/EachStudentOutcome", EachStudentOutcome);
 userRouter.put("/getMarks", CourseOutCome);
 userRouter.put("/getByDepartment", DepartmentOutcome)
 userRouter.put("/getByCategory", ProgramOutcome)

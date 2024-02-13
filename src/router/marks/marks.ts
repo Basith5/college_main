@@ -706,8 +706,7 @@ async function excelMarks(req: Request, res: Response) {
         fs.createReadStream(dest)
             .pipe(csv())
             .on('data', async (row) => {
-                console.log(row)
-                if ('Register Number' in row && row['Register Number'].slice(2,3) === depCode) {
+                if ('Register Number' in row ) {
                     if (rowCount < 1) {
                         temp = row['Register Number']
                     }
@@ -729,11 +728,14 @@ async function excelMarks(req: Request, res: Response) {
                 }
                 else {
                     
+                    
+                    
                 }
             })
             .on('end', async () => {
                 for (let i = 0; i < tempdata.length; i++) {
-                    if (tempdata[i]['RegNo'] !== '') {
+                    if (tempdata[i]['RegNo'] !== '' && tempdata[i]['RegNo'].slice(2,5) === depCode) {
+                        
                         await excelMarksInsert(tempdata[i], courseCode, depCode, Number(year), staff, sem)
                     }
                     else {
