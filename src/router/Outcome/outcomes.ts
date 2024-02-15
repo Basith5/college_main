@@ -128,7 +128,7 @@ async function AttainLevel(item: any): Promise<{ Lot: number; Mot: number; Hot: 
 
 async function EachStudentOutcome(req: Request, res: Response) {
   try {
-    const { code, year, sem ,dep } = req.query;
+    const { code, year, sem, dep } = req.query;
 
     if (!code || !year || !sem || !dep) {
       return res.status(400).json({
@@ -142,13 +142,20 @@ async function EachStudentOutcome(req: Request, res: Response) {
           semester: sem as string,
           department: {
             year: Number(year),
-            departmentCode:dep as string
-          }
-        }
+            departmentCode: dep as string
+          },
+          code: code as string,
+
+        },
+
       },
+
       include: {
         marks: true,
       },
+      orderBy: {
+        regNo: 'asc'
+      }
     });
 
     if (!students || students.length === 0) {
@@ -159,6 +166,7 @@ async function EachStudentOutcome(req: Request, res: Response) {
 
     const Data = await Promise.all(
       students.map(async (item) => {
+        console.log(item.codeId)
         const averageAttainLevel = (await AttainLevel(item));
         return {
           reg: item.regNo,
@@ -374,7 +382,7 @@ async function Course(code: string) {
         psoCOS.ps3 = ((getPso.PSO3CO1 * overAll.CO1) + (getPso.PSO3CO2 * overAll.CO1) + (getPso.PSO3CO3 * overAll.CO2) + (getPso.PSO3CO4 * overAll.CO2) + (getPso.PSO3CO5 * overAll.CO3)) / (getPso.PSO3CO1 + getPso.PSO3CO2 + getPso.PSO3CO3 + getPso.PSO3CO4 + getPso.PSO3CO5)
         psoCOS.ps4 = ((getPso.PSO4CO1 * overAll.CO1) + (getPso.PSO4CO2 * overAll.CO1) + (getPso.PSO4CO3 * overAll.CO2) + (getPso.PSO4CO4 * overAll.CO2) + (getPso.PSO4CO5 * overAll.CO3)) / (getPso.PSO4CO1 + getPso.PSO4CO2 + getPso.PSO4CO3 + getPso.PSO4CO4 + getPso.PSO4CO5)
         psoCOS.ps5 = ((getPso.PSO5CO1 * overAll.CO1) + (getPso.PSO5CO2 * overAll.CO1) + (getPso.PSO5CO3 * overAll.CO2) + (getPso.PSO5CO4 * overAll.CO2) + (getPso.PSO5CO5 * overAll.CO3)) / (getPso.PSO5CO1 + getPso.PSO5CO2 + getPso.PSO5CO3 + getPso.PSO5CO4 + getPso.PSO5CO5)
-       
+
       }
     }
 
@@ -620,4 +628,4 @@ async function ProgramOutcome(req: Request, res: Response) {
 }
 //#endregion
 
-export { StudentOutcome, CourseOutCome, DepartmentOutcome, ProgramOutcome,EachStudentOutcome }
+export { StudentOutcome, CourseOutCome, DepartmentOutcome, ProgramOutcome, EachStudentOutcome }
