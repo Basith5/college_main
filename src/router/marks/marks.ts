@@ -215,12 +215,11 @@ async function addMark(req: Request, res: Response) {
             }
 
             // Check if there is anything to update
-            if (!resultData.ASG1 && !resultData.ASG2) {
-                return res.status(400).json({
-                    msg: "Nothing to update",
-
-                });
-            }
+            // if (!resultData.ASG1 && !resultData.ASG2) {
+            //     return res.status(400).json({
+            //         msg: "Nothing to update",
+            //     });
+            // }
 
             // Prepare the data for update
             const updateData: any = {};
