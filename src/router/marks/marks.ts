@@ -326,7 +326,7 @@ async function addMark(req: Request, res: Response) {
 async function getMarkByCode(req: Request, res: Response) {
     try {
 
-        const { code, department, sortby, year, inyear} = req.query;
+        const { code, department, sortby, year, inyear } = req.query;
 
         const existingDepartment = await prisma.department.findFirst({
             where: {
@@ -359,8 +359,8 @@ async function getMarkByCode(req: Request, res: Response) {
         const students = await prisma.student.findMany({
             where: {
                 codeId: existingCode.id,
-                regNo:{
-                    startsWith:inyear as string
+                regNo: {
+                    startsWith: inyear as string
                 }
             },
             include: {
@@ -369,7 +369,7 @@ async function getMarkByCode(req: Request, res: Response) {
             orderBy: {
                 regNo: sortby == 'true' ? "asc" : "desc",
             },
-           
+
         });
 
         // Return the students, their marks, and the total number of pages
@@ -486,7 +486,7 @@ async function deleteMark(req: Request, res: Response) {
 
 
             updateFields["ASG2STAFF"] = null;
-           
+
         }
         else {
             return res.status(404).json({
@@ -575,9 +575,9 @@ async function excelMarksInsert(row: { RegNo: string, Exam: string; LOT: string;
             await prisma.marks.update({
                 where: { id: marks.id }, // Assuming there's an ID for the existing mark
                 data: {
-                    C1LOT: row.LOT !== '' ? Number(row.LOT) : null,
-                    C1MOT: row.MOT !== '' ? Number(row.MOT) : null,
-                    C1HOT: row.HOT !== '' ? Number(row.HOT) : null,
+                    C1LOT: row.LOT !== '' ? Number(row.LOT) : marks.C1LOT,
+                    C1MOT: row.MOT !== '' ? Number(row.MOT) : marks.C1MOT,
+                    C1HOT: row.HOT !== '' ? Number(row.HOT) : marks.C1HOT,
                     C1STATUS: row.LOT === 'AA' ? 'absent' : 'present',
                     C1STAFF: staff,
                     studentId: student ? student.id : 0,
@@ -589,9 +589,9 @@ async function excelMarksInsert(row: { RegNo: string, Exam: string; LOT: string;
             await prisma.marks.update({
                 where: { id: marks.id }, // Assuming there's an ID for the existing mark
                 data: {
-                    C2LOT: row.LOT !== '' ? Number(row.LOT) : null,
-                    C2MOT: row.MOT !== '' ? Number(row.MOT) : null,
-                    C2HOT: row.HOT !== '' ? Number(row.HOT) : null,
+                    C2LOT: row.LOT !== '' ? Number(row.LOT) : marks.C2LOT,
+                    C2MOT: row.MOT !== '' ? Number(row.MOT) : marks.C2MOT,
+                    C2HOT: row.HOT !== '' ? Number(row.HOT) : marks.C2HOT,
                     C2STATUS: row.LOT === 'AA' ? 'absent' : 'present',
                     C2STAFF: staff,
                     studentId: student ? student.id : 0,
@@ -607,7 +607,7 @@ async function excelMarksInsert(row: { RegNo: string, Exam: string; LOT: string;
                     id: marks.id,
                 },
                 data: {
-                    ASG1: Number(row.LOT),
+                    ASG1: row.LOT !== '' ? Number(row.LOT) : marks.ASG1,
                     ASGCO1: Math.round((Number(row.LOT) || 0) * (5 / 3)),
                     ASG1STAFF: staff,
                 },
@@ -616,37 +616,25 @@ async function excelMarksInsert(row: { RegNo: string, Exam: string; LOT: string;
         }
         else if (exam === "Ass - II") {
 
-            // Update the assignment marks
-            let marks = await prisma.marks.findFirst({
+            await prisma.marks.update({
                 where: {
-                    studentId: student ? student.id : 0,
+                    id: marks.id,
+                },
+                data: {
+                    ASG2: row.LOT !== '' ? Number(row.LOT) : marks.ASG2,
+                    ASGCO2: Math.round((Number(row.LOT) || 0) * (5 / 3)),
+                    ASG2STAFF: staff,
                 },
             });
-
-            if (marks) {
-                const updateAssignment = await prisma.marks.update({
-                    where: {
-                        id: marks.id,
-                    },
-                    data: {
-                        ASG2: Number(row.LOT),
-                        ASGCO2: Math.round((Number(row.LOT) || 0) * (5 / 3)),
-                        ASG2STAFF: staff,
-                    },
-                });
-            }
-            else {
-              
-            }
 
         }
         else if (exam === "ESE") {
             await prisma.marks.update({
                 where: { id: marks.id }, // Assuming there's an ID for the existing mark
                 data: {
-                    ESELOT: row.LOT !== '' ? Number(row.LOT) : null,
-                    ESEMOT: row.MOT !== '' ? Number(row.MOT) : null,
-                    ESEHOT: row.HOT !== '' ? Number(row.HOT) : null,
+                    ESELOT: row.LOT !== '' ? Number(row.LOT) : marks.ESELOT,
+                    ESEMOT: row.MOT !== '' ? Number(row.MOT) : marks.ESEMOT,
+                    ESEHOT: row.HOT !== '' ? Number(row.HOT) : marks.ESEHOT,
                     ESESTATUS: row.LOT === 'AA' ? 'absent' : 'present',
                     ESESTAFF: staff,
                     studentId: student ? student.id : 0,
@@ -705,7 +693,7 @@ async function excelMarks(req: Request, res: Response) {
         fs.createReadStream(dest)
             .pipe(csv())
             .on('data', async (row) => {
-                if ('Register Number' in row ) {
+                if ('Register Number' in row) {
                     if (rowCount < 1) {
                         temp = row['Register Number']
                     }
@@ -726,15 +714,15 @@ async function excelMarks(req: Request, res: Response) {
 
                 }
                 else {
-                    
-                    
-                    
+
+
+
                 }
             })
             .on('end', async () => {
                 for (let i = 0; i < tempdata.length; i++) {
-                    if (tempdata[i]['RegNo'] !== '' && tempdata[i]['RegNo'].slice(2,5) === depCode) {
-                        
+                    if (tempdata[i]['RegNo'] !== '' && tempdata[i]['RegNo'].slice(2, 5) === depCode) {
+
                         await excelMarksInsert(tempdata[i], courseCode, depCode, Number(year), staff, sem)
                     }
                     else {
