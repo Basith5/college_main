@@ -8,7 +8,7 @@ const prisma = new PrismaClient();
 async function Dahsbaord(req: Request, res: Response) {
     try {
         const { year, sem } = req.query;
-        
+
         let cia1 = 0;
         let cia2 = 0;
         let oc1 = 0;
@@ -93,20 +93,22 @@ async function Dahsbaord(req: Request, res: Response) {
             }
 
             function incrementCounter(counter: number, mark: { marks: Mark[] } | null, field: keyof Mark) {
-                if (mark !== null && mark.marks[0][field] !== null) {
+                if (mark !== null && mark?.marks && mark.marks.length > 0 && mark.marks[0][field] !== null) {
                     counter++;
                 }
                 return counter;
             }
 
+            if (marks) {
+                marks.forEach((mark) => {
+                    cia1 = incrementCounter(cia1, mark, 'C1STAFF');
+                    cia2 = incrementCounter(cia2, mark, 'C2STAFF');
+                    oc1 = incrementCounter(oc1, mark, 'ASG1STAFF');
+                    oc2 = incrementCounter(oc2, mark, 'ASG2STAFF');
+                    ese = incrementCounter(ese, mark, 'ESESTAFF');
+                });
+            }
 
-            marks.forEach((mark) => {
-                cia1 = incrementCounter(cia1, mark, 'C1STAFF');
-                cia2 = incrementCounter(cia2, mark, 'C2STAFF');
-                oc1 = incrementCounter(oc1, mark, 'ASG1STAFF');
-                oc2 = incrementCounter(oc2, mark, 'ASG2STAFF');
-                ese = incrementCounter(ese, mark, 'ESESTAFF');
-            });
 
         }
 
@@ -117,7 +119,7 @@ async function Dahsbaord(req: Request, res: Response) {
         const coures = couresCount.length;
         const staff = staffCount.length;
 
-        
+
         res.status(200).json({ studentCount, coures, staff, department, cia1, cia2, oc1, oc2, ese });
 
     } catch (error) {
