@@ -636,7 +636,7 @@ async function excelMarksInsert(row: { RegNo: string, Exam: string; LOT: string;
                     ESEMOT: row.MOT !== '' ? Number(row.MOT) : marks.ESEMOT,
                     ESEHOT: row.HOT !== '' ? Number(row.HOT) : marks.ESEHOT,
                     ESESTATUS: row.LOT !== ''? row.LOT === 'AA' ? 'absent' : 'present' : marks.ESESTATUS,
-                    ESESTAFF: row.LOT!==""? staff : marks.ESESTAFF,
+                    ESESTAFF: row.LOT!== ''? staff : marks.ESESTAFF,
                     studentId: student ? student.id : 0,
 
                 },
