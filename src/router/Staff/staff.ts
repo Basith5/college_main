@@ -6,7 +6,7 @@ import { getFilePath } from '../common';
 
 const prisma = new PrismaClient();
 
-async function excelStaffInsert(tempdata: { code: string; uname: string; name: string; }, year: number, sem: string) {
+async function excelStaffInsert(tempdata: { code: string; uname: string; name: string; dep_code: string }, year: number, sem: string) {
 
     try {
         let check = await prisma.user.findFirst({
@@ -33,7 +33,8 @@ async function excelStaffInsert(tempdata: { code: string; uname: string; name: s
                     equals: tempdata.code,
                 },
                 department: {
-                    year: year
+                    year: year,
+                    departmentCode: tempdata.dep_code
                 },
                 semester: sem
             }
@@ -71,7 +72,6 @@ async function excelStaffInsert(tempdata: { code: string; uname: string; name: s
 //#region getAllStaff
 async function getAllStaff(req: Request, res: Response) {
 
-
     try {
 
         const { page, question } = req.query
@@ -87,9 +87,18 @@ async function getAllStaff(req: Request, res: Response) {
                 name: "asc",
             },
             where: {
-                name: {
-                    contains: question as string,
-                },
+                OR: [
+                    {
+                        name: {
+                            contains: question as string,
+                        }
+                    },
+                    {
+                        uname: {
+                            contains: question as string,
+                        }
+                    }
+                ],
                 role: {
                     not: 'Admin'
                 }
@@ -97,7 +106,29 @@ async function getAllStaff(req: Request, res: Response) {
 
         })
 
-        const getDataCount = await prisma.user.count()
+        const getDataCount = await prisma.user.count({
+            orderBy: {
+                name: "asc",
+            },
+            where: {
+                OR: [
+                    {
+                        name: {
+                            contains: question as string,
+                        }
+                    },
+                    {
+                        uname: {
+                            contains: question as string,
+                        }
+                    }
+                ],
+                role: {
+                    not: 'Admin'
+                }
+            }
+
+        })
 
         const totalPages = Math.ceil(getDataCount / pageSizeNumber);
 
@@ -241,11 +272,12 @@ async function getStaff(req: Request, res: Response) {
         const year = req.query.year;
         const sem = req.query.sem as string
 
-        if (!uname || !department || !year || !sem) {
+        if (!uname || !year || !sem) {
             return res.status(400).json({ msg: "'uname' and 'department' query parameters are required." });
         }
 
         let staffRecords;
+        let codeInfo;
 
         if (uname !== 'admin') {
             staffRecords = await prisma.staff.findMany({
@@ -270,8 +302,23 @@ async function getStaff(req: Request, res: Response) {
                     },
                 },
             });
+
+            if (!staffRecords || staffRecords.length === 0) {
+                return res.status(404).json({ msg: "No staff records found for the provided uname and department." });
+            }
+
+            codeInfo = staffRecords
+               .map((record) => {
+                    return {
+                        name: record.code.name,
+                        depCode: record.code.department.departmentCode,
+                        courseCode: record.code.code, // Include course code in the response
+                    };
+                });
+
         }
         else {
+
             staffRecords = await prisma.staff.findMany({
                 where: {
                     code: {
@@ -294,22 +341,21 @@ async function getStaff(req: Request, res: Response) {
                     },
                 },
             });
+
+            if (!staffRecords || staffRecords.length === 0) {
+                return res.status(404).json({ msg: "No staff records found for the provided uname and department." });
+            }
+
+            codeInfo = staffRecords
+                .filter((record) => record.code.department.departmentCode === department)
+                .map((record) => {
+                    return {
+                        name: record.code.name,
+                        depCode: record.code.department.departmentCode,
+                        courseCode: record.code.code, // Include course code in the response
+                    };
+                });
         }
-
-
-        if (!staffRecords || staffRecords.length === 0) {
-            return res.status(404).json({ msg: "No staff records found for the provided uname and department." });
-        }
-
-        const codeInfo = staffRecords
-            .filter((record) => record.code.department.departmentCode === department)
-            .map((record) => {
-                return {
-                    name: record.code.name,
-                    depCode: record.code.department.departmentCode,
-                    courseCode: record.code.code, // Include course code in the response
-                };
-            });
 
         res.status(200).json({ codeInfo: codeInfo });
     } catch (error) {
@@ -397,7 +443,6 @@ async function addStaffCourse(req: Request, res: Response) {
 }
 //#endregion
 
-
 //#region deleteStaff
 async function deleteStaff(req: Request, res: Response) {
 
@@ -480,7 +525,7 @@ async function deleteStaffCourse(req: Request, res: Response) {
                 id: Number(id),
             }
         })
-       
+
         if (checkExisting) {
 
             await prisma.staff.delete({
@@ -562,7 +607,7 @@ async function excelStaff(req: Request, res: Response) {
             });
         }
 
-        let tempdata: { code: string, name: string, uname: string }[] = [];
+        let tempdata: { code: string, name: string, uname: string, dep_code: string }[] = [];
 
         const readStream = fs.createReadStream(dest)
             .pipe(csv())
@@ -572,6 +617,7 @@ async function excelStaff(req: Request, res: Response) {
                         code: row.subject_code.trim(),
                         name: row.staff_name,
                         uname: row.staff_code.trim().toUpperCase(),
+                        dep_code: row.dep_code.trim().toUpperCase(),
                     })
                 }
                 else {
