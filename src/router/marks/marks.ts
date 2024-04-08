@@ -578,8 +578,8 @@ async function excelMarksInsert(row: { RegNo: string, Exam: string; LOT: string;
                     C1LOT: row.LOT !== '' ? Number(row.LOT) : marks.C1LOT,
                     C1MOT: row.MOT !== '' ? Number(row.MOT) : marks.C1MOT,
                     C1HOT: row.HOT !== '' ? Number(row.HOT) : marks.C1HOT,
-                    C1STATUS: row.LOT === 'AA' ? 'absent' : 'present',
-                    C1STAFF: staff,
+                    C1STATUS: row.LOT !== ''? row.LOT === 'AA' ? 'absent' : 'present' : marks.C1STATUS,
+                    C1STAFF: row.LOT !== ''? staff : marks.C1STAFF,
                     studentId: student ? student.id : 0,
                 },
             });
@@ -592,8 +592,8 @@ async function excelMarksInsert(row: { RegNo: string, Exam: string; LOT: string;
                     C2LOT: row.LOT !== '' ? Number(row.LOT) : marks.C2LOT,
                     C2MOT: row.MOT !== '' ? Number(row.MOT) : marks.C2MOT,
                     C2HOT: row.HOT !== '' ? Number(row.HOT) : marks.C2HOT,
-                    C2STATUS: row.LOT === 'AA' ? 'absent' : 'present',
-                    C2STAFF: staff,
+                    C2STATUS: row.LOT !== ''? row.LOT === 'AA' ? 'absent' : 'present' : marks.C2STATUS,
+                    C2STAFF: row.LOT !==''? staff : marks.C2STAFF,
                     studentId: student ? student.id : 0,
 
                 },
@@ -609,7 +609,7 @@ async function excelMarksInsert(row: { RegNo: string, Exam: string; LOT: string;
                 data: {
                     ASG1: row.LOT !== '' ? Number(row.LOT) : marks.ASG1,
                     ASGCO1: Math.round((Number(row.LOT) || 0) * (5 / 3)),
-                    ASG1STAFF: staff,
+                    ASG1STAFF: row.LOT !==''? staff : marks.ASG1STAFF,
                 },
             });
 
@@ -623,7 +623,7 @@ async function excelMarksInsert(row: { RegNo: string, Exam: string; LOT: string;
                 data: {
                     ASG2: row.LOT !== '' ? Number(row.LOT) : marks.ASG2,
                     ASGCO2: Math.round((Number(row.LOT) || 0) * (5 / 3)),
-                    ASG2STAFF: staff,
+                    ASG2STAFF: row.LOT !==''? staff : marks.ASG2STAFF,
                 },
             });
 
@@ -635,8 +635,8 @@ async function excelMarksInsert(row: { RegNo: string, Exam: string; LOT: string;
                     ESELOT: row.LOT !== '' ? Number(row.LOT) : marks.ESELOT,
                     ESEMOT: row.MOT !== '' ? Number(row.MOT) : marks.ESEMOT,
                     ESEHOT: row.HOT !== '' ? Number(row.HOT) : marks.ESEHOT,
-                    ESESTATUS: row.LOT === 'AA' ? 'absent' : 'present',
-                    ESESTAFF: staff,
+                    ESESTATUS: row.LOT !== ''? row.LOT === 'AA' ? 'absent' : 'present' : marks.ESESTATUS,
+                    ESESTAFF: row.LOT!==""? staff : marks.ESESTAFF,
                     studentId: student ? student.id : 0,
 
                 },
