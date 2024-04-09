@@ -61,9 +61,18 @@ async function getAllCourses(req: Request, res: Response) {
                 }
             },
             where: {
-                name: {
-                    contains: question as string
-                },
+                OR: [
+                    {
+                        name: {
+                            contains: question as string
+                        },
+                    },
+                    {
+                        code: {
+                            contains: question as string
+                        }
+                    }
+                ],
                 semester: sem as string,
                 department: {
                     year: Number(year)
@@ -83,10 +92,25 @@ async function getAllCourses(req: Request, res: Response) {
         })
 
         const getDataCount = await prisma.code.count({
+
+            orderBy: {
+                department: {
+                    departmentCode: 'asc'
+                }
+            },
             where: {
-                name: {
-                    contains: question as string
-                },
+                OR: [
+                    {
+                        name: {
+                            contains: question as string
+                        },
+                    },
+                    {
+                        code: {
+                            contains: question as string
+                        }
+                    }
+                ],
                 semester: sem as string,
                 department: {
                     year: Number(year)
