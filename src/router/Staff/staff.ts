@@ -614,10 +614,10 @@ async function excelStaff(req: Request, res: Response) {
             .on('data', async (row) => {
                 if ('subject_code' in row) {
                     tempdata.push({
-                        code: row.subject_code.trim(),
+                        code: row.subject_code?.trim(),
                         name: row.staff_name,
-                        uname: row.staff_code.trim().toUpperCase(),
-                        dep_code: row.dep_code.trim().toUpperCase(),
+                        uname: row.staff_code?.trim().toUpperCase(),
+                        dep_code: row.dep_code?.trim().toUpperCase(),
                     })
                 }
                 else {
