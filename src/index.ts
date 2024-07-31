@@ -16,10 +16,12 @@ app.use(express.urlencoded({ extended: true }))
 
 const PORT = process.env.PORT || 3001;
 
+app.use('/staff', userRouter, loginRouter);
 
-
-app.use('/staff', userRouter,loginRouter);
+app.get('/health', (req, res) => {
+    res.status(200).send('Server is healthy');
+});
 
 app.listen(PORT, () => {
-    console.log(`college backend server listening on ${PORT}`)    
+    console.log(`College backend server listening on ${PORT}`)    
 })
